@@ -11,8 +11,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Inter:wght@300;400;500;600;700&family=Tiro+Devanagari+Marathi:ital@0;1&display=swap" rel="stylesheet">
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <link rel="stylesheet" href="assets/css/style.css" />
 <link rel="stylesheet" href="assets/css/app.css" />
+<link rel="stylesheet" href="assets/css/cards.css" />
+<link rel="stylesheet" href="assets/css/map.css" />
+<link rel="stylesheet" href="assets/css/intel.css" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%233A0B0B'/%3E%3Ccircle cx='50' cy='26' r='11' fill='%23E2361B'/%3E%3Cpolygon points='28,42 72,42 50,68' fill='%23E2361B'/%3E%3Cpolygon points='50,68 31,90 69,90' fill='%23C9A227'/%3E%3C/svg%3E">
 </head>
 <body class="appbody">
@@ -127,6 +131,32 @@
       <circle cx="92" cy="60" r="4" fill="currentColor"/>
     </symbol>
 
+    <symbol id="i-filter" viewBox="0 0 24 24">
+      <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        d="M3 5h18l-7 8v6l-4 2v-8Z"/>
+    </symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24">
+      <path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+        d="M4 12h15M13 6l6 6-6 6"/>
+    </symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24">
+      <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        d="M13 2 4 14h7l-1 8 9-12h-7Z"/>
+    </symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 7v5.5l3.5 2"/>
+    </symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24">
+      <path fill="currentColor" d="M12 2.2l1.85 5.45L19.3 9.5l-5.45 1.85L12 16.8l-1.85-5.45L4.7 9.5l5.45-1.85Z"/>
+      <path fill="currentColor" opacity=".65" d="M18.6 13.6l.86 2.54 2.54.86-2.54.86-.86 2.54-.86-2.54-2.54-.86 2.54-.86Z"/>
+      <path fill="currentColor" opacity=".45" d="M5.4 15.2l.62 1.84 1.84.62-1.84.62L5.4 20.1l-.62-1.82-1.84-.62 1.84-.62Z"/>
+    </symbol>
+    <symbol id="i-pulse" viewBox="0 0 24 24">
+      <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        d="M2 12h4l3-8 4 16 3-8h6"/>
+    </symbol>
+
     <symbol id="g-supervisor" viewBox="0 0 120 100">
       <path fill="none" stroke="currentColor" stroke-width="4"
         d="M20 94 V52 q0-14 10-21 q-3-12 9-16 q4-11 21-11 q17 0 21 11 q12 4 9 16 q10 7 10 21 V94"/>
@@ -137,6 +167,7 @@
 </svg>
 
 <div class="grain" aria-hidden="true"></div>
+<div class="cursor" id="cursor" aria-hidden="true"><span class="cursor__dot"></span><span class="cursor__ring"></span></div>
 
 <!-- ═══════════════════════ LOGIN ═══════════════════════ -->
 <div class="login" id="loginScreen">
@@ -221,17 +252,18 @@
 
         <div class="stat-strip" id="statStrip"></div>
 
+        <div class="dash-hero">
+          <div class="dial-card" id="dashDial"></div>
+          <div class="dash-hero__side">
+            <section class="mcard" id="dashDomains"></section>
+            <section class="panel panel--palkhi">
+              <h2 class="panel__title"><svg class="panel__icon" viewBox="0 0 220 120"><use href="#w-palkhi"/></svg><span data-i18n="dash.palkhiStatus">Palkhi Status</span></h2>
+              <div id="palkhiStatus"></div>
+            </section>
+          </div>
+        </div>
+
         <div class="dash-grid">
-          <section class="panel panel--palkhi">
-            <h2 class="panel__title"><svg class="panel__icon" viewBox="0 0 220 120"><use href="#w-palkhi"/></svg><span data-i18n="dash.palkhiStatus">Palkhi Status</span></h2>
-            <div id="palkhiStatus"></div>
-          </section>
-
-          <section class="panel panel--domains">
-            <h2 class="panel__title" data-i18n="dash.domainReadiness">Domain Readiness</h2>
-            <div class="domain-grid" id="domainGrid"></div>
-          </section>
-
           <section class="panel panel--map">
             <div class="panel__title-row">
               <h2 class="panel__title" data-i18n="dash.routeMap">Route Map — Live Tracking</h2>
@@ -273,7 +305,16 @@
 
         <div class="palkhi-mini" id="palkhiMini"></div>
 
-        <div class="chip-row" id="liveOpsFilters"></div>
+        <section class="mcard" id="liveOpsCoverage"></section>
+
+        <div class="liveops-bar">
+          <div class="chip-row" id="liveOpsFilters"></div>
+          <div class="liveops-sort" id="liveOpsSort"></div>
+        </div>
+        <div class="liveops-meta">
+          <div class="liveops-bar__count" id="liveOpsCount"></div>
+          <div class="loc-key" id="liveOpsKey"></div>
+        </div>
 
         <div class="loc-grid" id="locGrid"></div>
       </div>
@@ -288,6 +329,8 @@
           <p class="lede" data-i18n="records.lede">Your report becomes shared operational state the moment you submit it.</p>
         </header>
 
+        <section class="mcard" id="recordsCard"></section>
+
         <form class="report-form" id="reportForm"></form>
       </div>
     </section>
@@ -300,6 +343,13 @@
           <h1 class="dsp dsp--ink page__title" data-i18n="medical.h1">Camps &amp; patients.</h1>
           <p class="lede" data-i18n="medical.lede">Tap a camp to see its full status — load, beds, ambulances and medicine stock together.</p>
         </header>
+
+        <div class="dash-hero">
+          <div class="dial-card dial-card--med" id="medDial"></div>
+          <div class="dash-hero__side">
+            <section class="mcard" id="medCapacity"></section>
+          </div>
+        </div>
 
         <section class="panel">
           <h2 class="panel__title" data-i18n="medical.campStatus">Camp Status</h2>
@@ -329,6 +379,10 @@
           </div>
           <div class="patient-search">
             <input id="patientSearch" type="search" data-i18n-placeholder="medical.searchPlaceholder" placeholder="Search by name, ID, camp, or condition…" />
+          </div>
+          <div class="patient-toolbar">
+            <div class="chip-row" id="patientFilters"></div>
+            <div class="patient-toolbar__count" id="patientCount"></div>
           </div>
           <div class="patient-list" id="patientList"></div>
         </section>
@@ -371,9 +425,15 @@
             <div class="brief__conf" id="intelConf"></div>
           </div>
 
+          <section class="mcard intel-dist" id="intelDist"></section>
+
           <section class="panel panel--intel-locations">
-            <h2 class="panel__title" data-i18n="intel.locationsAtRisk">Locations at Risk</h2>
+            <div class="panel__title-row">
+              <h2 class="panel__title" data-i18n="intel.locationsAtRisk">Locations at Risk</h2>
+              <div class="chip-row intel-filters" id="intelFilters"></div>
+            </div>
             <div class="intel-loc-list" id="intelLocList"></div>
+            <button type="button" class="intel-more" id="intelMoreBtn" hidden></button>
           </section>
 
           <article class="doc doc--full" id="intelDoc"></article>
@@ -382,6 +442,16 @@
     </section>
 
   </main>
+</div>
+
+<div class="drawer" id="locDrawer" hidden role="dialog" aria-modal="true" aria-labelledby="locDrawerTitle">
+  <div class="drawer__overlay" id="locDrawerOverlay"></div>
+  <div class="drawer__panel">
+    <button type="button" class="drawer__close" id="locDrawerClose" aria-label="Close">&times;</button>
+    <span class="drawer__eyebrow" data-i18n="drawer.eyebrow">Location detail</span>
+    <h3 class="drawer__title" id="locDrawerTitle"></h3>
+    <div id="locDrawerBody"></div>
+  </div>
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -402,6 +472,8 @@
 <script src="assets/js/i18n.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="assets/js/motion.js"></script>
 <script src="assets/js/app.js"></script>
 </body>
 </html>

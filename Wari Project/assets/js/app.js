@@ -15,11 +15,40 @@
   var HAS_GSAP = typeof window.gsap !== 'undefined';
   var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  function revealIn(nodes) {
-    if (!nodes || !nodes.length) return;
-    if (!HAS_GSAP || REDUCED) return;
-    gsap.fromTo(nodes, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: .6, stagger: .05, ease: 'power2.out', clearProps: 'transform' });
+  /* The motion vocabulary lives in assets/js/motion.js. This stub keeps
+     every call site working — unanimated — if that file fails to load. */
+  var M = window.WCIMotion || (function () {
+    var noop = function () {};
+    return {
+      on: false,
+      countUp: function (el, to, o) { o = o || {}; if (el) el.textContent = (o.prefix || '') + to.toFixed(o.decimals || 0) + (o.suffix || ''); },
+      countFraction: function (el, a, b) { if (el) el.textContent = a + ' / ' + b; },
+      bars: function (n) { Array.prototype.forEach.call(n || [], function (x) { x.style.width = (x.dataset.w || 0) + '%'; }); },
+      expand: function (el, open) { if (el) el.style.display = open ? 'block' : 'none'; },
+      stagger: noop, revealPage: noop, ring: noop, arc: noop, drawPath: noop, pulse: noop,
+      tilt: noop, lift: noop, magnetic: noop, pop: noop, flipIn: noop,
+      scrollReveal: noop, killScrollTriggers: noop, initCursor: noop
+    };
+  })();
+
+  /* Everything interpolated into innerHTML goes through here. Report
+     details, patient names and model headlines are all operator-typed
+     text: unescaped, a stray angle bracket silently breaks the row and
+     markup pasted into a report would execute. */
+  function esc(v) {
+    if (v == null) return '';
+    return String(v)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
+
+  function pctOf(a, b) { return b > 0 ? Math.round((a / b) * 100) : 0; }
+
+  /* The signed-in role, needed by cards that re-render when live data
+     lands rather than only at first paint. */
+  var currentRole = null;
+
+  function revealIn(nodes) { M.stagger(nodes); }
 
   /* ══════════════ ROLES ══════════════ */
   var ROLES = [
@@ -52,22 +81,33 @@
   function statusWord(s) { return t('status.' + s); }
 
   /* ══════════════ MOCK DATA — LOCATIONS ══════════════ */
+  /* Halt coordinates for the Sant Dnyaneshwar Palkhi route, Alandi to
+     Pandharpur. Approximate town centres — enough to place a halt on
+     satellite imagery, not survey data.
+
+     Order is the walking order, which is also what routeProgress() and
+     the "Route order" sort read. Barad sat between Wakhari and
+     Pandharpur here, twelve halts adrift of where it actually falls
+     (between Phaltan and Natepute); the stylised route hid it because
+     markers were spaced evenly along a decorative curve rather than
+     drawn at real positions. On a map it doubled the line back on
+     itself, so it is restored to its place below. */
   var LOCATIONS = [
-    { id: 'alandi',    en: 'Alandi',        mr: 'आळंदी',      dom: { police: 'ok',   medical: 'ok',   municipal: 'ok',   sanitation: 'ok' } },
-    { id: 'pune',      en: 'Pune',          mr: 'पुणे',        dom: { police: 'ok',   medical: 'ok',   municipal: 'ok',   sanitation: 'warn' } },
-    { id: 'saswad',    en: 'Saswad',        mr: 'सासवड',      dom: { police: 'ok',   medical: 'ok',   municipal: 'ok',   sanitation: 'ok' } },
-    { id: 'jejuri',    en: 'Jejuri',        mr: 'जेजुरी',      dom: { police: 'warn', medical: 'crit', municipal: 'ok',   sanitation: 'warn' } },
-    { id: 'walhe',     en: 'Walhe',         mr: 'वाल्हे',      dom: { police: 'ok',   medical: 'ok',   municipal: 'warn', sanitation: 'ok' } },
-    { id: 'lonand',    en: 'Lonand',        mr: 'लोणंद',      dom: { police: 'warn', medical: 'warn', municipal: 'warn', sanitation: 'ok' } },
-    { id: 'taradgaon', en: 'Taradgaon',     mr: 'तरडगाव',     dom: { police: 'ok',   medical: 'ok',   municipal: 'ok',   sanitation: 'ok' } },
-    { id: 'phaltan',   en: 'Phaltan',       mr: 'फलटण',       dom: { police: 'ok',   medical: 'warn', municipal: 'ok',   sanitation: 'ok' } },
-    { id: 'natepute',  en: 'Natepute',      mr: 'नातेपुते',    dom: { police: 'crit', medical: 'ok',   municipal: 'ok',   sanitation: 'ok' } },
-    { id: 'malshiras', en: 'Malshiras',     mr: 'माळशिरस',    dom: { police: 'ok',   medical: 'ok',   municipal: 'ok',   sanitation: 'warn' } },
-    { id: 'velapur',   en: 'Velapur',       mr: 'वेळापूर',     dom: { police: 'ok',   medical: 'ok',   municipal: 'ok',   sanitation: 'ok' } },
-    { id: 'bhandishegaon', en: 'Bhandishegaon', mr: 'भंडीशेगाव', dom: { police: 'ok', medical: 'ok',   municipal: 'ok',   sanitation: 'ok' } },
-    { id: 'wakhari',   en: 'Wakhari',       mr: 'वाखरी',      dom: { police: 'ok',   medical: 'warn', municipal: 'ok',   sanitation: 'ok' } },
-    { id: 'barad',     en: 'Barad',         mr: 'बरड',        dom: { police: 'ok',   medical: 'ok',   municipal: 'ok',   sanitation: 'ok' } },
-    { id: 'pandharpur',en: 'Pandharpur',    mr: 'पंढरपूर',     dom: { police: 'ok',   medical: 'ok',   municipal: 'ok',   sanitation: 'ok' } }
+    { id: 'alandi',    en: 'Alandi',        mr: 'आळंदी',      lat: 18.6773, lng: 73.8987, dom: { police: 'ok',   medical: 'ok',   municipal: 'ok',   sanitation: 'ok' } },
+    { id: 'pune',      en: 'Pune',          mr: 'पुणे',        lat: 18.5204, lng: 73.8567, dom: { police: 'ok',   medical: 'ok',   municipal: 'ok',   sanitation: 'warn' } },
+    { id: 'saswad',    en: 'Saswad',        mr: 'सासवड',      lat: 18.3468, lng: 74.0323, dom: { police: 'ok',   medical: 'ok',   municipal: 'ok',   sanitation: 'ok' } },
+    { id: 'jejuri',    en: 'Jejuri',        mr: 'जेजुरी',      lat: 18.2772, lng: 74.1600, dom: { police: 'warn', medical: 'crit', municipal: 'ok',   sanitation: 'warn' } },
+    { id: 'walhe',     en: 'Walhe',         mr: 'वाल्हे',      lat: 18.1300, lng: 74.1400, dom: { police: 'ok',   medical: 'ok',   municipal: 'warn', sanitation: 'ok' } },
+    { id: 'lonand',    en: 'Lonand',        mr: 'लोणंद',      lat: 18.0167, lng: 74.2000, dom: { police: 'warn', medical: 'warn', municipal: 'warn', sanitation: 'ok' } },
+    { id: 'taradgaon', en: 'Taradgaon',     mr: 'तरडगाव',     lat: 17.9600, lng: 74.3300, dom: { police: 'ok',   medical: 'ok',   municipal: 'ok',   sanitation: 'ok' } },
+    { id: 'phaltan',   en: 'Phaltan',       mr: 'फलटण',       lat: 17.9912, lng: 74.4318, dom: { police: 'ok',   medical: 'warn', municipal: 'ok',   sanitation: 'ok' } },
+    { id: 'barad',     en: 'Barad',         mr: 'बरड',        lat: 17.9000, lng: 74.6167, dom: { police: 'ok',   medical: 'ok',   municipal: 'ok',   sanitation: 'ok' } },
+    { id: 'natepute',  en: 'Natepute',      mr: 'नातेपुते',    lat: 17.9333, lng: 74.9500, dom: { police: 'crit', medical: 'ok',   municipal: 'ok',   sanitation: 'ok' } },
+    { id: 'malshiras', en: 'Malshiras',     mr: 'माळशिरस',    lat: 17.8556, lng: 74.9167, dom: { police: 'ok',   medical: 'ok',   municipal: 'ok',   sanitation: 'warn' } },
+    { id: 'velapur',   en: 'Velapur',       mr: 'वेळापूर',     lat: 17.9167, lng: 75.1100, dom: { police: 'ok',   medical: 'ok',   municipal: 'ok',   sanitation: 'ok' } },
+    { id: 'bhandishegaon', en: 'Bhandishegaon', mr: 'भंडीशेगाव', lat: 17.7400, lng: 75.2400, dom: { police: 'ok', medical: 'ok',   municipal: 'ok',   sanitation: 'ok' } },
+    { id: 'wakhari',   en: 'Wakhari',       mr: 'वाखरी',      lat: 17.6600, lng: 75.2850, dom: { police: 'ok',   medical: 'warn', municipal: 'ok',   sanitation: 'ok' } },
+    { id: 'pandharpur',en: 'Pandharpur',    mr: 'पंढरपूर',     lat: 17.6790, lng: 75.3233, dom: { police: 'ok',   medical: 'ok',   municipal: 'ok',   sanitation: 'ok' } }
   ];
   var PALKHI = { locId: 'lonand', delayMin: 22 };
 
@@ -134,13 +174,13 @@
   var feedItems = [];
   var NEW_MS = 45000;
 
+  /* Was hard-coded English, so the Marathi board still read
+     "12 min ago" in an otherwise fully translated feed. */
   function timeAgo(ts) {
     var mins = Math.max(0, Math.round((Date.now() - ts) / 60000));
-    if (mins < 1) return 'just now';
-    if (mins === 1) return '1 min ago';
-    if (mins < 60) return mins + ' min ago';
-    var h = Math.floor(mins / 60);
-    return h + 'h ' + (mins % 60) + 'm ago';
+    if (mins < 1) return t('time.now');
+    if (mins < 60) return mins + ' ' + t('time.min');
+    return Math.floor(mins / 60) + ' ' + t('time.hr');
   }
 
   function feedNode(item) {
@@ -155,16 +195,16 @@
     li.innerHTML =
       '<i class="fitem__sev"></i>' +
       '<div class="fitem__main">' +
-        '<h4>' + headline + (isNew ? '<span class="fitem__new">New</span>' : '') + '</h4>' +
+        '<h4>' + esc(headline) + (isNew ? '<span class="fitem__new">New</span>' : '') + '</h4>' +
         '<div class="fitem__meta">' +
-          '<span class="tag ' + (CAT_TAG[item.cat] || '') + '">' + t('chip.' + item.cat) + '</span>' +
-          '<span class="fitem__loc">' + item.loc + '<span>' + item.mr + '</span></span>' +
-          '<span>' + item.d + '</span>' +
+          '<span class="tag ' + (CAT_TAG[item.cat] || '') + '">' + esc(t('chip.' + item.cat)) + '</span>' +
+          '<span class="fitem__loc">' + esc(item.loc) + '<span>' + esc(item.mr) + '</span></span>' +
+          '<span>' + esc(item.d) + '</span>' +
         '</div>' +
       '</div>' +
       '<div class="fitem__side">' +
-        '<span class="fitem__time">' + timeAgo(item.ts) + '</span>' +
-        '<span class="fstat ' + (ST_CLASS[item.st] || '') + '">' + t('fstat.' + item.st) + '</span>' +
+        '<span class="fitem__time">' + esc(timeAgo(item.ts)) + '</span>' +
+        '<span class="fstat ' + (ST_CLASS[item.st] || '') + '">' + esc(t('fstat.' + item.st)) + '</span>' +
       '</div>';
     return li;
   }
@@ -177,7 +217,11 @@
     if (!sorted.length) {
       list.innerHTML = '<li class="feed-empty">' + t('feed.empty') + '</li>';
     } else {
-      sorted.slice(0, 12).forEach(function (item) { list.appendChild(feedNode(item)); });
+      sorted.slice(0, 12).forEach(function (item) {
+        var node = feedNode(item);
+        list.appendChild(node);
+        if (Date.now() - item.ts < 1200) M.flipIn(node);
+      });
     }
     var updated = $('#feedUpdated');
     if (updated) updated.textContent = sorted.length ? (t('feed.updated') + ' ' + timeAgo(sorted[0].ts)) : '';
@@ -233,6 +277,29 @@
      invents scores or copy — it only renders what the model actually returned. */
   var BACKEND_URL = window.WCI_BACKEND_URL || 'http://127.0.0.1:5050';
   var RISK_STATUS_KEY = { NORMAL: 'gauge.low', ELEVATED: 'gauge.mod', HIGH: 'gauge.high', CRITICAL: 'gauge.crit' };
+  /* Green / amber / orange / red, the same bands the distribution card counts. */
+  var RISK_BAND = {
+    NORMAL: { cls: 'ok', key: 'gauge.low' },
+    ELEVATED: { cls: 'warn', key: 'gauge.mod' },
+    HIGH: { cls: 'high', key: 'gauge.high' },
+    CRITICAL: { cls: 'crit', key: 'gauge.crit' }
+  };
+  var BAND_ORDER = ['CRITICAL', 'HIGH', 'ELEVATED', 'NORMAL'];
+  var intelBand = 'all';
+  var intelShowAll = false;
+
+  function escapeRe(x) { return String(x).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+  /* Every headline arrives as "Lonand — CRITICAL: Dindi / crowd pressure
+     62", but the row already shows both the name and the band. Strip the
+     prefix so the line carries only what actually differs. */
+  function trimHeadline(l) {
+    var h = String(l.headline || '').trim();
+    var name = l.name || l.id || '';
+    if (name) h = h.replace(new RegExp('^' + escapeRe(name) + '\\s*[\u2014\u2013-]\\s*'), '');
+    h = h.replace(/^(NORMAL|ELEVATED|HIGH|CRITICAL)\s*[:\u2014\u2013-]?\s*/i, '');
+    return h.trim() || t('situation.' + l.situation_class);
+  }
   var RISK_STATUS_CLASS = { NORMAL: '', ELEVATED: 'is-mod', HIGH: 'is-high', CRITICAL: 'is-crit' };
   var lastIntelSummary = null;
 
@@ -253,74 +320,260 @@
       });
   }
 
+  /* Red / orange / amber / green bands, each carrying its own count so
+     the filter row doubles as a summary of where the risk sits. */
+  function renderIntelFilters() {
+    var el = $('#intelFilters');
+    if (!el || !lastIntelSummary) return;
+    var all = lastIntelSummary.locations_ranked;
+    var counts = {};
+    all.forEach(function (l) { counts[l.status] = (counts[l.status] || 0) + 1; });
+
+    var opts = [{ id: 'all', label: t('patient.all'), cls: '', n: all.length }].concat(
+      BAND_ORDER.map(function (b) {
+        return { id: b, label: t(RISK_BAND[b].key), cls: RISK_BAND[b].cls, n: counts[b] || 0 };
+      }));
+
+    el.innerHTML = opts.map(function (o) {
+      var on = intelBand === o.id;
+      return '<button type="button" class="chip chip--band' + (on ? ' is-on' : '') + '"' +
+        ' data-band="' + o.id + '" aria-pressed="' + on + '"' + (o.n ? '' : ' disabled') + '>' +
+        (o.cls ? '<i class="band-dot band-dot--' + o.cls + '"></i>' : '') +
+        esc(o.label) + '<span class="chip__n">' + o.n + '</span></button>';
+    }).join('');
+
+    el.onclick = function (e) {
+      var b = e.target.closest('.chip');
+      if (!b || b.disabled) return;
+      intelBand = b.getAttribute('data-band');
+      M.pop(b);
+      renderIntelFilters();
+      renderIntelLocations();
+    };
+  }
+
+  /* The panel is "Locations at Risk", but eleven of fifteen are normal
+     on a calm day. The calm ones stay folded behind the toggle instead
+     of filling the page with rows that all read the same. */
+  function renderIntelLocations() {
+    var list = $('#intelLocList');
+    if (!list || !lastIntelSummary) return;
+    var all = lastIntelSummary.locations_ranked;
+    var rows = intelBand === 'all' ? all.slice() : all.filter(function (l) { return l.status === intelBand; });
+
+    var risky = rows.filter(function (l) { return l.status !== 'NORMAL'; });
+    var canCollapse = intelBand === 'all' && risky.length > 0 && risky.length < rows.length;
+    var shown = (canCollapse && !intelShowAll) ? risky : rows;
+
+    if (!shown.length) {
+      list.innerHTML = '<div class="loc-empty">' + esc(t('intel.noBand')) + '</div>';
+    } else {
+      list.innerHTML = shown.map(function (l) {
+        var band = RISK_BAND[l.status] || RISK_BAND.NORMAL;
+        var doms = l.domains || {};
+        var badges = Object.keys(doms).map(function (k) {
+          return '<span class="loc-dom is-active">' + sDot(doms[k]) + esc(t('chip.' + k)) + '</span>';
+        }).join('');
+        return '<button type="button" class="intel-loc-item intel-loc-item--' + esc(l.status) + '"' +
+          ' data-loc="' + esc(l.id) + '" aria-expanded="false"' +
+          ' aria-label="' + esc((l.name || l.id) + ' — ' + t(band.key) + ' ' + l.risk_score) + '">' +
+          '<span class="intel-loc-row">' +
+            '<span class="intel-loc-item__rank">' + (all.indexOf(l) + 1) + '</span>' +
+            '<span class="intel-loc-item__main">' +
+              '<span class="intel-loc-item__name">' + esc(l.name || l.id) + '</span>' +
+              '<span class="intel-loc-item__headline">' + esc(trimHeadline(l)) + '</span>' +
+            '</span>' +
+            '<span class="intel-loc-item__band"><i class="band-dot band-dot--' + band.cls + '"></i>' +
+              esc(t(band.key)) + '</span>' +
+            '<span class="intel-loc-item__score">' + esc(l.risk_score) + '</span>' +
+            '<span class="intel-loc-item__chev" aria-hidden="true">▾</span>' +
+          '</span>' +
+          '<span class="intel-loc-detail">' +
+            '<span class="intel-loc-detail__sit">' + esc(t('situation.' + l.situation_class)) + '</span>' +
+            (badges ? '<span class="intel-loc-detail__doms">' + badges + '</span>' : '') +
+          '</span>' +
+        '</button>';
+      }).join('');
+    }
+
+    var more = $('#intelMoreBtn');
+    if (more) {
+      more.hidden = !canCollapse;
+      more.textContent = intelShowAll
+        ? t('intel.showLess')
+        : t('intel.showAll') + ' · ' + rows.length;
+      more.onclick = function () { intelShowAll = !intelShowAll; renderIntelLocations(); };
+    }
+
+    list.onclick = function (e) {
+      var item = e.target.closest('.intel-loc-item');
+      if (!item) return;
+      var open = !item.classList.contains('is-open');
+      item.classList.toggle('is-open', open);
+      item.setAttribute('aria-expanded', String(open));
+      M.expand($('.intel-loc-detail', item), open);
+    };
+
+    M.stagger($$('.intel-loc-item', list), { y: 12, stagger: 0.035, duration: 0.45 });
+  }
+
   function renderIntelFromModel(data) {
     lastIntelSummary = data;
     setIntelStatus(null);
 
+    /* The arc had no transition on stroke-dashoffset, so a refreshed
+       score snapped to its new value. It now sweeps, and the number
+       counts with it. */
     var CIRC = 2 * Math.PI * 98;
     var arc = $('#intelArc'), num = $('#intelNum'), state = $('#intelState');
-    if (arc) arc.style.strokeDashoffset = CIRC * (1 - data.risk_score / 100);
-    if (num) num.textContent = Math.round(data.risk_score);
+    M.arc(arc, data.risk_score, CIRC);
+    M.countUp(num, Math.round(data.risk_score), { duration: 1.4 });
     var gauge = $('#intelGauge');
     if (gauge) gauge.className = 'gauge' + (RISK_STATUS_CLASS[data.status] ? ' ' + RISK_STATUS_CLASS[data.status] : '');
     if (state) state.textContent = t(RISK_STATUS_KEY[data.status] || 'gauge.low');
 
     var freshMin = Math.round(data.data_freshness.current_age_minutes);
     var conf = $('#intelConf');
-    if (conf) conf.innerHTML =
-      '<div><span>' + t('brief.freshness') + '</span><b>' + t('freshness.' + data.data_freshness.grade) + ' · ' + freshMin + ' min</b></div>' +
-      '<div><span>' + t('brief.confidence') + '</span><b>' + t('confidence.' + data.confidence.grade) + '</b></div>' +
-      '<div><span>' + t('brief.locations') + '</span><b>' + data.locations_ranked.length + '</b></div>';
-
-    var locList = $('#intelLocList');
-    if (locList) locList.innerHTML = data.locations_ranked.map(function (l, i) {
-      return '<div class="intel-loc-item intel-loc-item--' + l.status + '">' +
-        '<span class="intel-loc-item__rank">' + (i + 1) + '</span>' +
-        '<span class="intel-loc-item__main"><span class="intel-loc-item__name">' + (l.name || l.id) + '</span>' +
-        '<div class="intel-loc-item__headline">' + l.headline + '</div></span>' +
-        '<span class="intel-loc-item__class">' + t('situation.' + l.situation_class) + '</span>' +
-        '<span class="intel-loc-item__score">' + l.risk_score + '</span>' +
-      '</div>';
-    }).join('');
-
-    function tagged(label, locName) { return label + (locName ? ' <span class="intel-tag">— ' + locName + '</span>' : ''); }
-    function block(headingKey, hClass, items, emptyKey) {
-      var body = items.length ? '<ul>' + items.join('') + '</ul>' : '<p class="panel__hint">' + t(emptyKey) + '</p>';
-      return '<section class="doc__blk"><h4 class="doc__h' + (hClass ? ' ' + hClass : '') + '">' + t(headingKey) + '</h4>' + body + '</section>';
+    if (conf) {
+      conf.innerHTML =
+        '<div><span>' + esc(t('brief.freshness')) + '</span><b>' + esc(t('freshness.' + data.data_freshness.grade)) + ' · ' + freshMin + ' min</b></div>' +
+        '<div><span>' + esc(t('brief.confidence')) + '</span><b>' + esc(t('confidence.' + data.confidence.grade)) + '</b></div>' +
+        '<div><span>' + esc(t('brief.locations')) + '</span><b data-conf-n>0</b></div>';
+      M.countUp($('[data-conf-n]', conf), data.locations_ranked.length, { duration: 0.8 });
+      M.stagger($$('div', conf), { y: 12, stagger: 0.07 });
     }
 
-    var keyFactorItems = data.key_factors.map(function (f) { return '<li>' + f + '</li>'; });
-    var gapItems = data.resource_gaps.map(function (g) { return '<li>' + tagged(t('domain.' + g.domain) + ' — ' + g.detail, g.location_name) + '</li>'; });
-    var emergingItems = data.emerging_risks.map(function (e) { return '<li>' + tagged(e.title + ' — ' + e.rationale, e.location_name) + '</li>'; });
+    /* How the ranked locations are spread across the four risk bands. */
+    var dist = { NORMAL: 0, ELEVATED: 0, HIGH: 0, CRITICAL: 0 };
+    data.locations_ranked.forEach(function (l) { dist[l.status] = (dist[l.status] || 0) + 1; });
+    var nLoc = data.locations_ranked.length;
+    renderMCard($('#intelDist'), {
+      title: t('intel.distribution'),
+      icon: 'i-pulse',
+      figure: { value: nLoc, unit: t('liveops.locations') },
+      segments: [
+        { cls: 'ok', w: pctOf(dist.NORMAL, nLoc), label: t('gauge.low'), n: dist.NORMAL },
+        { cls: 'warn', w: pctOf(dist.ELEVATED, nLoc), label: t('gauge.mod'), n: dist.ELEVATED },
+        { cls: 'high', w: pctOf(dist.HIGH, nLoc), label: t('gauge.high'), n: dist.HIGH },
+        { cls: 'crit', w: pctOf(dist.CRITICAL, nLoc), label: t('gauge.crit'), n: dist.CRITICAL }
+      ]
+    });
+
+    renderIntelFilters();
+    renderIntelLocations();
+
+    function tagged(label, locName) {
+      return label + (locName ? ' <span class="intel-tag">— ' + esc(locName) + '</span>' : '');
+    }
+    /* Each section is a disclosure carrying its own count, so the brief
+       opens as a short contents page rather than four long lists. */
+    function block(id, headingKey, hClass, items, emptyKey, open) {
+      var body = items.length
+        ? '<ul>' + items.join('') + '</ul>'
+        : '<p class="panel__hint">' + esc(t(emptyKey)) + '</p>';
+      return '<section class="doc__blk" data-blk="' + id + '">' +
+        '<button type="button" class="doc__toggle" aria-expanded="' + (open ? 'true' : 'false') +
+          '" aria-controls="docblk-' + id + '">' +
+          '<span class="doc__h' + (hClass ? ' ' + hClass : '') + '">' + esc(t(headingKey)) + '</span>' +
+          '<span class="doc__count">' + items.length + '</span>' +
+          '<span class="doc__chev" aria-hidden="true">▾</span>' +
+        '</button>' +
+        '<div class="doc__body" id="docblk-' + id + '"' + (open ? '' : ' style="display:none"') + '>' +
+          body +
+        '</div>' +
+      '</section>';
+    }
+
+    var keyFactorItems = data.key_factors.map(function (f) { return '<li>' + esc(f) + '</li>'; });
+    var gapItems = data.resource_gaps.map(function (g) {
+      return '<li>' + tagged(esc(t('domain.' + g.domain)) + ' — ' + esc(g.detail), g.location_name) + '</li>';
+    });
+    var emergingItems = data.emerging_risks.map(function (e) {
+      return '<li>' + tagged(esc(e.title) + ' — ' + esc(e.rationale), e.location_name) + '</li>';
+    });
     var actionItems = data.priority_actions.map(function (a) {
-      return '<li>' + tagged(a.action + ' — ' + a.why, a.location_name) + ' <span class="intel-tag">(' + a.authority + ')</span></li>';
+      return '<li>' + tagged(esc(a.action) + ' — ' + esc(a.why), a.location_name) +
+        ' <span class="intel-tag">(' + esc(a.authority) + ')</span></li>';
     });
 
     var doc = $('#intelDoc');
-    if (doc) doc.innerHTML =
-      '<div class="doc__orn"></div>' +
-      '<header class="doc__head"><span>' + t('doc.status') + '</span><b>' + t(RISK_STATUS_KEY[data.status] || 'gauge.low') + '</b></header>' +
-      block('intel.keyFactors', '', keyFactorItems, 'intel.allCalm') +
-      block('doc.resourceGaps', '', gapItems, 'intel.noGaps') +
-      block('doc.emerging', '', emergingItems, 'intel.noEmerging') +
-      block('doc.attention', 'doc__h--act', actionItems, 'intel.noActions') +
-      '<footer class="doc__foot"><span>' + t('intel.modelVersion') + ' ' + data.model_version + ' · ' + t('intel.asOf') + ' ' + new Date(data.analyzed_at).toLocaleTimeString() + '</span><span>' + t('doc.sim') + '</span></footer>';
+    if (doc) {
+      doc.classList.remove('is-generating');
+      doc.innerHTML =
+        '<div class="doc__orn"></div>' +
+        '<header class="doc__head">' +
+          '<span class="ai-badge">' + iconSvg('i-spark', 'ai-badge__icon') +
+            '<span>' + esc(t('intel.aiBadge')) + '</span></span>' +
+          '<b>' + esc(t(RISK_STATUS_KEY[data.status] || 'gauge.low')) + '</b>' +
+        '</header>' +
+        '<p class="ai-note">' + esc(t('intel.aiNote')) + '</p>' +
+        block('factors', 'intel.keyFactors', '', keyFactorItems, 'intel.allCalm', true) +
+        block('gaps', 'doc.resourceGaps', '', gapItems, 'intel.noGaps', false) +
+        block('emerging', 'doc.emerging', '', emergingItems, 'intel.noEmerging', false) +
+        block('actions', 'doc.attention', 'doc__h--act', actionItems, 'intel.noActions', true) +
+        '<footer class="doc__foot"><span>' + esc(t('intel.modelVersion')) + ' ' + esc(data.model_version) + ' · ' +
+          esc(t('intel.asOf')) + ' ' + esc(new Date(data.analyzed_at).toLocaleTimeString()) + '</span><span>' +
+          esc(t('doc.sim')) + '</span></footer>';
 
-    revealIn($$('.doc__blk', doc));
-    if (locList) revealIn($$('.intel-loc-item', locList));
+      doc.onclick = function (e) {
+        var btn = e.target.closest('.doc__toggle');
+        if (!btn) return;
+        var blk = btn.closest('.doc__blk');
+        var open = btn.getAttribute('aria-expanded') !== 'true';
+        btn.setAttribute('aria-expanded', String(open));
+        blk.classList.toggle('is-open', open);
+        M.expand($('.doc__body', blk), open);
+      };
+      $$('.doc__blk', doc).forEach(function (blk) {
+        if ($('.doc__toggle', blk).getAttribute('aria-expanded') === 'true') blk.classList.add('is-open');
+      });
+    }
+
+    M.stagger($$('.doc__blk', doc), { y: 14, stagger: 0.06 });
+    /* Items arrive one after another, so a regenerated brief reads as
+       having just been written rather than simply swapped in. */
+    M.stagger($$('.doc__body li', doc), { y: 8, stagger: 0.025, delay: 0.2, duration: 0.4 });
     updateWariStatusStat();
     refreshLiveStatuses();
+  }
+
+  /* The brief is written by the model, so a refresh should look like it
+     is being written: the document is replaced by a shimmer, then the
+     sections arrive. */
+  function setIntelGenerating(on) {
+    var doc = $('#intelDoc'), badge = $('#intelLiveBadge');
+    if (badge) badge.classList.toggle('is-generating', on);
+    if (!doc || !on) return;
+    doc.classList.add('is-generating');
+    doc.innerHTML =
+      '<div class="doc__orn"></div>' +
+      '<header class="doc__head">' +
+        '<span class="ai-badge is-live">' + iconSvg('i-spark', 'ai-badge__icon') +
+          '<span>' + esc(t('intel.generating')) + '<i class="ai-dots"><i></i><i></i><i></i></i></span></span>' +
+      '</header>' +
+      '<div class="ai-skeleton"><span></span><span></span><span></span><span></span><span></span></div>';
   }
 
   function loadIntel(refresh) {
     var btn = $('#intelRefreshBtn');
     if (btn) { btn.disabled = true; btn.textContent = t('intel.refreshing'); }
     if (!lastIntelSummary) setIntelStatus(t('intel.loading'));
+    if (refresh) setIntelGenerating(true);
+    var started = Date.now();
     return fetchIntel(refresh)
+      .then(function (data) {
+        /* Hold the shimmer briefly on a manual refresh so the analysis
+           visibly regenerates instead of flickering past. */
+        if (!refresh) return data;
+        var wait = Math.max(0, 650 - (Date.now() - started));
+        return new Promise(function (res) { setTimeout(function () { res(data); }, wait); });
+      })
       .then(renderIntelFromModel)
       .catch(function (err) {
         console.warn('[Wari] intel backend unavailable:', err.message);
+        setIntelGenerating(false);
         if (!lastIntelSummary) setIntelStatus(t('intel.offline'), true);
+        else if (lastIntelSummary) renderIntelFromModel(lastIntelSummary);
       })
       .then(function () {
         if (btn) { btn.disabled = false; btn.textContent = t('intel.refresh'); }
@@ -330,8 +583,9 @@
   function updateWariStatusStat() {
     var cell = $('#statWariStatus');
     if (!cell || !lastIntelSummary) return;
-    cell.querySelector('.stat-strip__n').textContent = lastIntelSummary.risk_score;
-    cell.querySelector('.stat-strip__label').textContent = t('stat.wariStatus') + ' — ' + t(RISK_STATUS_KEY[lastIntelSummary.status] || 'gauge.low');
+    M.countUp(cell.querySelector('.stat-strip__n'), lastIntelSummary.risk_score, { duration: 0.9 });
+    cell.querySelector('.stat-strip__label').textContent =
+      t('stat.wariStatus') + ' — ' + t(RISK_STATUS_KEY[lastIntelSummary.status] || 'gauge.low');
   }
 
   /* ══════════════ REPORT FORM (Records) ══════════════ */
@@ -372,7 +626,38 @@
   }
   var SEV_MAP = { 'opt.low': 'info', 'opt.medium': 'info', 'opt.high': 'high', 'opt.critical': 'critical' };
 
+  /* Context before filing: where this authority's own domain stands
+     across the route right now. Falls back to the whole-route rollup
+     for roles that map to no single domain (Dindi). */
+  function renderRecordsCard(role) {
+    var el = $('#recordsCard');
+    if (!el || !role) return;
+    var dom = DOMAINS.filter(function (d) { return d.id === role.id; })[0];
+    var states = dom
+      ? LOCATIONS.map(function (l) { return domainStatus(l.id, dom.id); })
+      : LOCATIONS.map(locWorstStatus);
+    var c = tally(states);
+
+    renderMCard(el, {
+      title: dom ? t('chip.' + dom.id) + ' — ' + t('liveops.coverage') : t('liveops.coverage'),
+      icon: dom ? dom.icon : 'i-pulse',
+      figure: { value: c.ok, unit: t('dial.clear') },
+      segments: [
+        { cls: 'ok', w: pctOf(c.ok, c.total), label: statusWord('ok'), n: c.ok },
+        { cls: 'warn', w: pctOf(c.warn, c.total), label: statusWord('warn'), n: c.warn },
+        { cls: 'crit', w: pctOf(c.crit, c.total), label: statusWord('crit'), n: c.crit }
+      ],
+      cta: {
+        text: t('dcard.ctaText'),
+        btn: t('ui.moreDetails'),
+        onClick: function () { showPage('live-ops'); }
+      }
+    });
+  }
+
   function renderRecords(role) {
+    renderRecordsCard(role);
+
     var form = $('#reportForm');
     if (!form) return;
     var fields = reportFields()[role.id] || [];
@@ -427,7 +712,156 @@
     });
   }
 
-  /* ══════════════ DASHBOARD ══════════════ */
+  /* ============== CARD ARCHETYPE 1 - RADIAL DOT DIAL ==============
+     Two concentric rings of dots on oxblood. The outer ring is the
+     route; the inner ring is one dot per domain check behind it, so
+     the card is a dot-plot of real state rather than decoration. Dots
+     light in order from twelve o-clock, so it reads as a dial filling. */
+  var DIAL_GEO = { size: 400, cx: 200, cy: 200, rOuter: 168, rInner: 134, dOuter: 7.4, dInner: 5.6 };
+  var DIAL_COLOR = { gold: '#C9A227', ok: '#5F8F54', warn: '#C98A16', crit: '#E2361B' };
+
+  function dialRing(states, radius, r, palette) {
+    var G = DIAL_GEO, out = [], n = states.length;
+    for (var i = 0; i < n; i++) {
+      var a = (i / n) * 2 * Math.PI - Math.PI / 2;   /* start at the top */
+      var x = (G.cx + radius * Math.cos(a)).toFixed(2);
+      var y = (G.cy + radius * Math.sin(a)).toFixed(2);
+      var st = states[i];
+      var dim = st === 'dim';
+      out.push('<circle class="dial-card__dot' + (dim ? ' dial-card__dot--dim' : '') + '"' +
+        ' cx="' + x + '" cy="' + y + '" r="' + r + '" fill="' + (palette[dim ? 'gold' : st] || palette.gold) + '"/>');
+    }
+    return out.join('');
+  }
+
+  function dialMetric(m) {
+    return '<div class="dial-card__metric">' +
+      '<div class="dial-card__metric-top">' +
+        '<i class="dial-card__tick' + (m.flag ? ' dial-card__tick--flag' : '') + '"></i>' +
+        '<span class="dial-card__metric-lab">' + esc(m.lab) + '</span>' +
+      '</div>' +
+      '<b class="dial-card__metric-n" data-metric-to="' + m.value + '">0</b>' +
+      (m.sub ? '<span class="dial-card__metric-sub' + (m.flag ? ' dial-card__metric-sub--flag' : '') + '">' + esc(m.sub) + '</span>' : '') +
+    '</div>';
+  }
+
+  function renderDial(el, cfg) {
+    if (!el) return;
+    var G = DIAL_GEO;
+    var outer = dialRing(cfg.outer, G.rOuter, G.dOuter, DIAL_COLOR);
+    var inner = dialRing(cfg.inner, G.rInner, G.dInner, DIAL_COLOR);
+
+    el.innerHTML =
+      '<div class="dial-card__head">' +
+        '<span class="dial-card__label">' + esc(cfg.label) + '</span>' +
+        (cfg.tag ? '<span class="dial-card__tag">' + esc(cfg.tag) + '</span>' : '') +
+      '</div>' +
+      '<div class="dial-card__stage">' +
+        '<svg class="dial-card__svg" viewBox="0 0 ' + G.size + ' ' + G.size + '" aria-hidden="true">' +
+          '<g data-ring="outer">' + outer + '</g>' +
+          '<g data-ring="inner">' + inner + '</g>' +
+        '</svg>' +
+        '<div class="dial-card__fade"></div>' +
+        '<div class="dial-card__center">' +
+          '<span class="dial-card__center-lab">' + esc(cfg.center.lab) + '</span>' +
+          '<b class="dial-card__center-n" data-dial-n>0</b>' +
+          (cfg.center.sub ? '<span class="dial-card__center-sub">' + esc(cfg.center.sub) + '</span>' : '') +
+        '</div>' +
+      '</div>' +
+      '<div class="dial-card__foot">' +
+        '<div class="dial-card__metrics">' + (cfg.metrics || []).map(dialMetric).join('') + '</div>' +
+        (cfg.btn ? '<button type="button" class="dial-card__btn" data-dial-btn>' +
+          '<span>' + esc(cfg.btn.label) + '</span><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-arrow"/></svg></button>' : '') +
+      '</div>';
+
+    /* The two rings fill one after the other, then the readout lands. */
+    M.ring($$('[data-ring="outer"] circle', el), { each: 0.012 });
+    M.ring($$('[data-ring="inner"] circle', el), { each: 0.008, delay: 0.22 });
+    M.countUp($('[data-dial-n]', el), cfg.center.value, {
+      suffix: cfg.center.suffix || '', delay: 0.35, duration: 1.2
+    });
+    $$('[data-metric-to]', el).forEach(function (n, i) {
+      M.countUp(n, parseFloat(n.getAttribute('data-metric-to')) || 0, { delay: 0.5 + i * 0.1, duration: 0.9 });
+    });
+
+    var btn = $('[data-dial-btn]', el);
+    if (btn && cfg.btn && cfg.btn.onClick) {
+      btn.addEventListener('click', cfg.btn.onClick);
+      M.magnetic(btn, 0.18);
+    }
+    M.tilt(el, 3);
+  }
+
+  /* ============== CARD ARCHETYPE 2 - FIGURE + SHARE BAR ==============
+     One animated headline figure, a stacked share bar with a counted
+     legend, an authority stack drawn from the Warli role glyphs, and
+     an optional call to action. */
+  function iconSvg(id, cls) {
+    var vb = id.indexOf('i-') === 0 ? '0 0 24 24' : '0 0 120 100';
+    return '<svg' + (cls ? ' class="' + cls + '"' : '') + ' viewBox="' + vb + '" aria-hidden="true"><use href="#' + id + '"/></svg>';
+  }
+
+  function renderMCard(el, cfg) {
+    if (!el) return;
+    var segments = cfg.segments || [];
+    var bar = segments.map(function (sg) {
+      return '<span class="mcard__seg mcard__seg--' + sg.cls + '" data-w="' + sg.w + '"></span>';
+    }).join('');
+    var legend = segments.filter(function (sg) { return sg.label; }).map(function (sg) {
+      return '<span><i class="mcard__key mcard__key--' + sg.cls + '"></i>' + esc(sg.label) +
+        (sg.n == null ? '' : ' <b>' + sg.n + '</b>') + '</span>';
+    }).join('');
+
+    var stack = '';
+    if (cfg.stack && cfg.stack.items && cfg.stack.items.length) {
+      stack = '<div class="mcard__legend" style="margin-top:1.1rem"><span>' + esc(cfg.stack.label) + '</span></div>' +
+        '<div class="mcard__stack">' + cfg.stack.items.map(function (it) {
+          return '<span class="mcard__av' + (it.cls ? ' mcard__av--' + it.cls : '') + '" title="' + esc(it.title) + '">' +
+            iconSvg(it.icon) + '</span>';
+        }).join('') + '</div>';
+    }
+
+    var cta = '';
+    if (cfg.cta) {
+      cta = '<div class="mcard__cta">' +
+        '<div class="mcard__cta-txt">' +
+          '<span class="mcard__cta-puck">' + iconSvg(cfg.cta.icon || 'i-bolt') + '</span>' +
+          '<p>' + esc(cfg.cta.text) + '</p>' +
+        '</div>' +
+        '<button type="button" class="btn btn--sm" data-mcard-cta><span>' + esc(cfg.cta.btn) + '</span></button>' +
+      '</div>';
+    }
+
+    el.innerHTML =
+      '<div class="card-head">' +
+        '<span class="card-head__title">' + (cfg.icon ? iconSvg(cfg.icon, 'card-head__icon') : '') + esc(cfg.title) + '</span>' +
+        (cfg.action ? '<button type="button" class="card-head__btn" data-mcard-action title="' + esc(cfg.action.label) + '" aria-label="' + esc(cfg.action.label) + '">' +
+          iconSvg(cfg.action.icon || 'i-filter') + '</button>' : '') +
+      '</div>' +
+      '<div class="mcard__figure">' +
+        '<b class="mcard__n" data-mcard-n>0</b>' +
+        (cfg.figure.unit ? '<span class="mcard__unit">' + esc(cfg.figure.unit) + '</span>' : '') +
+      '</div>' +
+      '<div class="mcard__bar">' + bar + '</div>' +
+      '<div class="mcard__legend">' + legend + '</div>' +
+      stack + cta;
+
+    M.countUp($('[data-mcard-n]', el), cfg.figure.value, {
+      decimals: cfg.figure.decimals || 0, suffix: cfg.figure.suffix || '', duration: 1.2
+    });
+    M.bars($$('.mcard__seg', el));
+    M.stagger($$('.mcard__av', el), { y: 10, stagger: 0.05, delay: 0.5 });
+
+    var action = $('[data-mcard-action]', el);
+    if (action && cfg.action && cfg.action.onClick) action.addEventListener('click', cfg.action.onClick);
+    var ctaBtn = $('[data-mcard-cta]', el);
+    if (ctaBtn && cfg.cta && cfg.cta.onClick) {
+      ctaBtn.addEventListener('click', cfg.cta.onClick);
+      M.magnetic(ctaBtn, 0.22);
+    }
+  }
+
+  /* ============== DASHBOARD ============== */
   var DOMAINS = [
     { id: 'police', icon: 'g-police' },
     { id: 'medical', icon: 'g-medical' },
@@ -455,23 +889,44 @@
     return LOCATIONS.reduce(function (acc, loc) { return worst(acc, domainStatus(loc.id, domId)); }, 'ok');
   }
 
-  /* Re-render everything driven by domain status once live data lands or
-     changes (called from renderIntelFromModel, i.e. after every report). */
-  function refreshLiveStatuses() {
-    if ($('#domainGrid')) {
-      $('#domainGrid').innerHTML = DOMAINS.map(function (d) {
-        var s = domainOverall(d.id);
-        return '<div class="domain-cell"><svg viewBox="0 0 120 100"><use href="#' + d.icon + '"/></svg>' +
-          '<span class="domain-cell__name">' + t('chip.' + d.id) + '</span>' + sBadge(s, statusWord(s)) + '</div>';
-      }).join('');
-    }
-    $$('.loc-card[data-loc]').forEach(function (card) {
-      var locId = card.dataset.loc;
-      $$('.loc-dom', card).forEach(function (badge) {
-        var domId = badge.dataset.dom;
-        badge.innerHTML = sDot(domainStatus(locId, domId)) + t('chip.' + domId);
-      });
+  /* One entry per location x domain. The inner dial ring, the share
+     bars and the Live Ops coverage card are all views onto this. */
+  function checkStates() {
+    var out = [];
+    LOCATIONS.forEach(function (loc) {
+      DOMAINS.forEach(function (d) { out.push(domainStatus(loc.id, d.id)); });
     });
+    return out;
+  }
+
+  function tally(states) {
+    var c = { ok: 0, warn: 0, crit: 0, total: states.length };
+    states.forEach(function (st) { c[st] = (c[st] || 0) + 1; });
+    return c;
+  }
+
+  function locTally() {
+    return tally(LOCATIONS.map(locWorstStatus));
+  }
+
+  function routeProgress() {
+    var i = LOCATIONS.map(function (l) { return l.id; }).indexOf(PALKHI.locId);
+    return i < 0 ? 0 : i / Math.max(1, LOCATIONS.length - 1);
+  }
+
+  /* Re-render everything driven by domain status once live data lands or
+     changes (called from renderIntelFromModel, i.e. after every report).
+     Re-runs without the entrance stagger so a background refresh never
+     re-animates a board the operator is already reading. */
+  function refreshLiveStatuses() {
+    renderDashDial();
+    renderDomainCard(currentRole);
+    renderCoverageCard();
+    renderLocGrid(false);
+    renderMedCards();
+    renderRecordsCard(currentRole);
+
+    refreshMapMarkers();
     $$('.ops-map__stop[data-loc]').forEach(function (g) {
       var loc = LOCATIONS.filter(function (l) { return l.id === g.dataset.loc; })[0];
       if (!loc) return;
@@ -481,51 +936,262 @@
     });
   }
 
+  /* ── the dashboard's focal dial ─────────────────────────────────
+     Outer ring: how much of the route is behind the Palkhi.
+     Inner ring: one dot per location x domain check, in its status. */
+  function renderDashDial() {
+    var el = $('#dashDial');
+    if (!el) return;
+
+    var progress = routeProgress();
+    var OUTER = 48;
+    var lit = Math.round(OUTER * progress);
+    var outer = [];
+    for (var i = 0; i < OUTER; i++) outer.push(i < lit ? 'gold' : 'dim');
+
+    var checks = checkStates();
+    var c = tally(checks);
+    var locs = locTally();
+    var flagged = locs.warn + locs.crit;
+
+    renderDial(el, {
+      label: t('dial.label'),
+      tag: Math.round(progress * 100) + '% ' + t('dial.outer'),
+      outer: outer,
+      inner: checks,
+      center: {
+        lab: t('dial.center'),
+        value: pctOf(c.ok, c.total),
+        suffix: '%',
+        sub: statusWord(c.crit ? 'crit' : c.warn ? 'warn' : 'ok')
+      },
+      metrics: [
+        { lab: t('dial.clear'), value: locs.ok, sub: pctOf(locs.ok, locs.total) + '%' },
+        { lab: t('dial.flagged'), value: flagged, sub: pctOf(flagged, locs.total) + '%', flag: true }
+      ],
+      btn: { label: t('dial.more'), onClick: function () { showPage('live-ops'); } }
+    });
+  }
+
+  /* ── domain readiness: figure + share bar + authority stack ────── */
+  function renderDomainCard(role) {
+    var el = $('#dashDomains');
+    if (!el) return;
+    var c = tally(checkStates());
+    var toRecords = !!(role && role.pages.indexOf('records') !== -1);
+
+    renderMCard(el, {
+      title: t('dash.domainReadiness'),
+      icon: 'i-pulse',
+      figure: { value: c.ok, unit: t('dcard.checks') },
+      segments: [
+        { cls: 'ok', w: pctOf(c.ok, c.total), label: statusWord('ok'), n: c.ok },
+        { cls: 'warn', w: pctOf(c.warn, c.total), label: statusWord('warn'), n: c.warn },
+        { cls: 'crit', w: pctOf(c.crit, c.total), label: statusWord('crit'), n: c.crit }
+      ],
+      stack: {
+        label: t('dcard.authorities'),
+        items: ROLES.map(function (r) {
+          var dom = DOMAINS.filter(function (d) { return d.id === r.id; })[0];
+          var st = dom ? domainOverall(dom.id) : null;
+          return { icon: r.icon, cls: (st && st !== 'ok') ? st : '', title: roleName(r) };
+        })
+      },
+      cta: {
+        text: t('dcard.ctaText'),
+        btn: toRecords ? t('dcard.ctaBtn') : t('ui.moreDetails'),
+        onClick: function () { showPage(toRecords ? 'records' : 'live-ops'); }
+      }
+    });
+  }
+
   function renderDashboard(role) {
     $('#dashRoleName').textContent = roleName(role);
 
+    /* Figures are split into a number and its unit so each one can
+       count up without losing the "/ 21", "km" or "+" beside it. */
     $('#statStrip').innerHTML = [
-      { n: '11 / 21', label: t('stat.daysOnFoot') },
-      { n: '138 km', label: t('stat.kmSoFar') },
-      { n: '512+', label: t('stat.dindisMotion') },
-      { n: '15', label: t('stat.trackedLoc') },
-      { n: '—', label: t('stat.wariStatus'), id: 'statWariStatus' }
-    ].map(function (s) { return '<div class="stat-strip__cell"' + (s.id ? ' id="' + s.id + '"' : '') + '><b class="stat-strip__n">' + s.n + '</b><span class="stat-strip__label">' + s.label + '</span></div>'; }).join('');
+      { n: 11, sfx: ' / 21', label: t('stat.daysOnFoot') },
+      { n: 138, sfx: ' km', label: t('stat.kmSoFar') },
+      { n: 512, sfx: '+', label: t('stat.dindisMotion') },
+      { n: LOCATIONS.length, sfx: '', label: t('stat.trackedLoc') },
+      { n: null, sfx: '', label: t('stat.wariStatus'), id: 'statWariStatus' }
+    ].map(function (st) {
+      var num = st.n == null
+        ? '<b class="stat-strip__n">--</b>'
+        : '<b class="stat-strip__n" data-count="' + st.n + '" data-suffix="' + st.sfx + '">0</b>';
+      return '<div class="stat-strip__cell"' + (st.id ? ' id="' + st.id + '"' : '') + '>' +
+        num + '<span class="stat-strip__label">' + esc(st.label) + '</span></div>';
+    }).join('');
+    $$('#statStrip [data-count]').forEach(function (n, i) {
+      M.countUp(n, parseFloat(n.getAttribute('data-count')) || 0, {
+        suffix: n.getAttribute('data-suffix') || '', delay: i * 0.07
+      });
+    });
     updateWariStatusStat();
 
     var loc = LOCATIONS.filter(function (l) { return l.id === PALKHI.locId; })[0];
     $('#palkhiStatus').innerHTML =
-      '<div class="palkhi-row"><span>' + t('dash.currentlyNear') + '</span><b>' + loc.en + ' <span style="font-family:var(--f-mr);color:var(--vermillion);font-size:1rem;">' + loc.mr + '</span></b></div>' +
-      '<div class="palkhi-row"><span>' + t('dash.schedule') + '</span><b>' + PALKHI.delayMin + ' ' + t('dash.minBehind') + '</b></div>';
+      '<div class="palkhi-row"><span>' + esc(t('dash.currentlyNear')) + '</span>' +
+        '<b>' + esc(loc.en) + ' <span class="palkhi-row__mr">' + esc(loc.mr) + '</span></b></div>' +
+      '<div class="palkhi-row"><span>' + esc(t('dash.schedule')) + '</span>' +
+        '<b><span data-palkhi-delay>0</span> ' + esc(t('dash.minBehind')) + '</b></div>';
+    M.countUp($('[data-palkhi-delay]', $('#palkhiStatus')), PALKHI.delayMin, { delay: 0.3, duration: 0.9 });
 
-    $('#domainGrid').innerHTML = DOMAINS.map(function (d) {
-      var s = domainOverall(d.id);
-      return '<div class="domain-cell"><svg viewBox="0 0 120 100"><use href="#' + d.icon + '"/></svg>' +
-        '<span class="domain-cell__name">' + t('chip.' + d.id) + '</span>' + sBadge(s, statusWord(s)) + '</div>';
-    }).join('');
-
+    renderDashDial();
+    renderDomainCard(role);
     renderFeed();
-    revealIn($$('.panel'));
   }
 
   /* ══════════════ LIVE OPS ══════════════ */
   var liveOpsActive = { police: true, medical: true, municipal: true, sanitation: true };
+  var liveOpsSort = 'route';
+
+  function activeDomains() {
+    return DOMAINS.filter(function (d) { return liveOpsActive[d.id]; });
+  }
+
+  /* A location's status *through the current filter* — turning a domain
+     off now removes it from the rollup too, instead of only hiding its
+     badge while it still coloured the card. */
+  function locLensStatus(loc) {
+    return activeDomains().reduce(function (acc, d) { return worst(acc, domainStatus(loc.id, d.id)); }, 'ok');
+  }
+
+  function renderCoverageCard() {
+    var el = $('#liveOpsCoverage');
+    if (!el) return;
+    var c = locTally();
+    var palkhi = LOCATIONS.filter(function (l) { return l.id === PALKHI.locId; })[0];
+
+    renderMCard(el, {
+      title: t('liveops.coverage'),
+      icon: 'i-pulse',
+      figure: { value: c.total, unit: t('liveops.locations') },
+      segments: [
+        { cls: 'ok', w: pctOf(c.ok, c.total), label: statusWord('ok'), n: c.ok },
+        { cls: 'warn', w: pctOf(c.warn, c.total), label: statusWord('warn'), n: c.warn },
+        { cls: 'crit', w: pctOf(c.crit, c.total), label: statusWord('crit'), n: c.crit }
+      ],
+      cta: {
+        icon: 'i-clock',
+        text: t('liveops.palkhi') + ' ' + (palkhi ? palkhi.en : '') + ' — ' + PALKHI.delayMin + ' min ' + t('liveops.behind'),
+        btn: t('ui.moreDetails'),
+        onClick: function () { openLocDrawer(PALKHI.locId); }
+      }
+    });
+  }
+
+  function updateLiveOpsCount(shown, flagged) {
+    var el = $('#liveOpsCount');
+    if (!el) return;
+    el.innerHTML = esc(t('liveops.showing')) + ' <b>' + shown + '</b> ' + esc(t('liveops.locations')) +
+      ' &middot; <b>' + flagged + '</b> ' + esc(t('dial.flagged'));
+  }
+
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+
+  /* The domain names are stated once, here, instead of on all fifteen
+     cards — the cards then only need to carry colour. */
+  function renderLocKey() {
+    var el = $('#liveOpsKey');
+    if (!el) return;
+    el.innerHTML = activeDomains().map(function (d) {
+      return '<span class="loc-key__item"><i class="loc-key__tick"></i>' + esc(t('chip.' + d.id)) + '</span>';
+    }).join('');
+  }
+
+  function renderLocGrid(animate) {
+    var grid = $('#locGrid');
+    if (!grid) return;
+    var doms = activeDomains();
+    renderLocKey();
+
+    if (!doms.length) {
+      grid.innerHTML = '<div class="loc-empty">' + esc(t('liveops.noMatch')) + '</div>';
+      updateLiveOpsCount(0, 0);
+      return;
+    }
+
+    var rank = { crit: 0, warn: 1, ok: 2 };
+    var rows = LOCATIONS.map(function (l, i) { return { loc: l, i: i, st: locLensStatus(l) }; });
+    if (liveOpsSort === 'risk') {
+      rows.sort(function (a, b) { return (rank[a.st] - rank[b.st]) || (a.i - b.i); });
+    }
+
+    grid.innerHTML = rows.map(function (r) {
+      var l = r.loc;
+
+      /* One unlabelled tick per domain, in the key's order. Sixty
+         repeated words became sixty bars of colour. */
+      var ticks = doms.map(function (d) {
+        var st = domainStatus(l.id, d.id);
+        return '<i class="loc-tick loc-tick--' + st + '" title="' +
+          esc(t('chip.' + d.id) + ' — ' + statusWord(st)) + '"></i>';
+      }).join('');
+
+      /* A domain is named only where it is actually flagged, so the
+         words on screen are all exceptions worth reading. */
+      var flagged = doms.filter(function (d) { return domainStatus(l.id, d.id) !== 'ok'; });
+      var note = flagged.length
+        ? '<span class="loc-card__note">' + flagged.map(function (d) {
+            return '<span class="loc-card__flag">' + sDot(domainStatus(l.id, d.id)) +
+              esc(t('chip.' + d.id)) + '</span>';
+          }).join('') + '</span>'
+        : '';
+
+      return '<button type="button" class="loc-card' + (r.st === 'ok' ? '' : ' loc-card--' + r.st) + '"' +
+        ' data-loc="' + esc(l.id) + '" aria-label="' + esc(l.en + ' — ' + statusWord(r.st)) + '">' +
+        '<span class="loc-card__top">' +
+          '<span class="loc-card__no">' + pad2(r.i + 1) + '</span>' +
+          '<span class="loc-card__mr">' + esc(l.mr) + '</span>' +
+        '</span>' +
+        '<span class="loc-card__name">' + esc(l.en) + '</span>' +
+        (l.id === PALKHI.locId
+          ? '<span class="loc-card__palkhi"><i></i>' + esc(t('drawer.palkhiHere')) + '</span>'
+          : '') +
+        '<span class="loc-card__ticks">' + ticks + '</span>' +
+        note +
+        '<span class="loc-card__foot">' +
+          '<span class="loc-card__state">' + esc(statusWord(r.st)) + '</span>' +
+          '<span class="loc-card__go" aria-hidden="true">→</span>' +
+        '</span>' +
+      '</button>';
+    }).join('');
+
+    updateLiveOpsCount(rows.length, rows.filter(function (r) { return r.st !== 'ok'; }).length);
+
+    var cards = $$('.loc-card', grid);
+    if (animate) M.stagger(cards, { y: 14, stagger: 0.03 });
+    cards.forEach(function (c) { M.lift(c, { y: -3, scale: 1.012 }); });
+  }
 
   function renderLiveOps() {
     var loc = LOCATIONS.filter(function (l) { return l.id === PALKHI.locId; })[0];
-    $('#palkhiMini').innerHTML = t('liveops.palkhi') + ' <b>' + loc.en + '</b> <span style="font-family:var(--f-mr);color:var(--vermillion);">' + loc.mr + '</span> — <b>' + PALKHI.delayMin + ' min</b> ' + t('liveops.behind');
+    $('#palkhiMini').innerHTML =
+      '<svg class="panel__icon" viewBox="0 0 220 120" aria-hidden="true"><use href="#w-palkhi"/></svg>' +
+      '<span>' + esc(t('liveops.palkhi')) + '</span> <b>' + esc(loc.en) + '</b> ' +
+      '<span class="palkhi-row__mr">' + esc(loc.mr) + '</span> — ' +
+      '<b><span data-palkhi-delay>0</span> min</b> ' + esc(t('liveops.behind'));
+    M.countUp($('[data-palkhi-delay]', $('#palkhiMini')), PALKHI.delayMin, { delay: 0.2, duration: 0.9 });
 
+    renderCoverageCard();
+
+    /* Each chip carries how many locations it is currently flagging, so
+       the filter row doubles as a where-to-look summary. */
     $('#liveOpsFilters').innerHTML = DOMAINS.map(function (d) {
-      return '<button class="chip is-on" data-dom="' + d.id + '">' + t('chip.' + d.id) + '</button>';
+      var flagged = LOCATIONS.filter(function (l) { return domainStatus(l.id, d.id) !== 'ok'; }).length;
+      return '<button type="button" class="chip' + (liveOpsActive[d.id] ? ' is-on' : '') + '"' +
+        ' data-dom="' + d.id + '" aria-pressed="' + !!liveOpsActive[d.id] + '">' + esc(t('chip.' + d.id)) +
+        (flagged ? '<span class="chip__n">' + flagged + '</span>' : '') + '</button>';
     }).join('');
 
-    $('#locGrid').innerHTML = LOCATIONS.map(function (l) {
-      var doms = DOMAINS.map(function (d) {
-        var s = domainStatus(l.id, d.id);
-        return '<span class="loc-dom is-active" data-dom="' + d.id + '">' + sDot(s) + t('chip.' + d.id) + '</span>';
-      }).join('');
-      return '<article class="loc-card" data-loc="' + l.id + '"><div class="loc-card__head"><span class="loc-card__name">' + l.en + '</span><span class="loc-card__mr">' + l.mr + '</span></div>' +
-        '<div class="loc-card__doms">' + doms + '</div></article>';
+    $('#liveOpsSort').innerHTML = [
+      { id: 'route', label: t('liveops.sortRoute') },
+      { id: 'risk', label: t('liveops.sortRisk') }
+    ].map(function (o) {
+      return '<button type="button" class="chip' + (liveOpsSort === o.id ? ' is-on' : '') + '"' +
+        ' data-sort="' + o.id + '" aria-pressed="' + (liveOpsSort === o.id) + '">' + esc(o.label) + '</button>';
     }).join('');
 
     $('#liveOpsFilters').onclick = function (e) {
@@ -534,53 +1200,188 @@
       var dom = btn.dataset.dom;
       liveOpsActive[dom] = !liveOpsActive[dom];
       btn.classList.toggle('is-on', liveOpsActive[dom]);
-      $$('.loc-dom[data-dom="' + dom + '"]').forEach(function (n) { n.style.display = liveOpsActive[dom] ? '' : 'none'; });
+      btn.setAttribute('aria-pressed', String(!!liveOpsActive[dom]));
+      M.pop(btn);
+      renderLocGrid(true);
     };
 
-    revealIn($$('.loc-card'));
+    $('#liveOpsSort').onclick = function (e) {
+      var btn = e.target.closest('.chip');
+      if (!btn) return;
+      liveOpsSort = btn.getAttribute('data-sort');
+      $$('.chip', $('#liveOpsSort')).forEach(function (b) {
+        var on = b.getAttribute('data-sort') === liveOpsSort;
+        b.classList.toggle('is-on', on);
+        b.setAttribute('aria-pressed', String(on));
+      });
+      renderLocGrid(true);
+    };
+
+    $('#locGrid').onclick = function (e) {
+      var card = e.target.closest('.loc-card');
+      if (card) openLocDrawer(card.getAttribute('data-loc'));
+    };
+
+    renderLocGrid(true);
+  }
+
+  /* ══════════════ LOCATION DRAWER ══════════════
+     A halt card was a dead tile before — every location now opens its
+     full picture: route position, domain rollup and the camps on it. */
+  var drawerReturnFocus = null;
+
+  function animateDrawer(open) {
+    var drawer = $('#locDrawer');
+    if (!drawer) return;
+    var overlay = $('.drawer__overlay', drawer), panel = $('.drawer__panel', drawer);
+
+    if (!M.on || typeof window.gsap === 'undefined') {
+      overlay.style.opacity = open ? '1' : '0';
+      panel.style.transform = open ? 'translateX(0)' : 'translateX(100%)';
+      if (!open) { drawer.hidden = true; document.body.classList.remove('is-locked'); }
+      return;
+    }
+    if (open) {
+      gsap.to(overlay, { opacity: 1, duration: 0.3, overwrite: 'auto' });
+      gsap.fromTo(panel, { xPercent: 100 }, { xPercent: 0, duration: 0.55, ease: 'power3.out', overwrite: 'auto' });
+      M.stagger($$('.drawer__blk', drawer), { y: 16, delay: 0.18, stagger: 0.07 });
+    } else {
+      gsap.to(overlay, { opacity: 0, duration: 0.25, overwrite: 'auto' });
+      gsap.to(panel, {
+        xPercent: 100, duration: 0.4, ease: 'power3.in', overwrite: 'auto',
+        onComplete: function () { drawer.hidden = true; document.body.classList.remove('is-locked'); }
+      });
+    }
+  }
+
+  function openLocDrawer(locId) {
+    var loc = LOCATIONS.filter(function (l) { return l.id === locId; })[0];
+    var drawer = $('#locDrawer');
+    if (!loc || !drawer) return;
+    drawerReturnFocus = document.activeElement;
+
+    $('#locDrawerTitle').innerHTML = esc(loc.en) + '<span class="drawer__mr">' + esc(loc.mr) + '</span>';
+
+    var doms = DOMAINS.map(function (d) {
+      var st = domainStatus(loc.id, d.id);
+      return '<div class="drawer__row"><span class="drawer__row-name">' + iconSvg(d.icon) +
+        esc(t('chip.' + d.id)) + '</span>' + sBadge(st, statusWord(st)) + '</div>';
+    }).join('');
+
+    var camps = CAMPS.filter(function (c) { return c.id.split('-')[0] === loc.id; });
+    var campHtml = camps.length
+      ? camps.map(function (c) {
+          return '<div class="drawer__row"><span class="drawer__row-name">' + esc(c.en) + '</span>' +
+            sBadge(campOverall(c), pctOf(c.patients, c.capacity) + '%') + '</div>';
+        }).join('')
+      : '<p class="drawer__note">' + esc(t('drawer.noCamps')) + '</p>';
+
+    var idx = LOCATIONS.map(function (l) { return l.id; }).indexOf(loc.id);
+    var pos = pctOf(idx, LOCATIONS.length - 1);
+
+    $('#locDrawerBody').innerHTML =
+      (loc.id === PALKHI.locId
+        ? '<span class="loc-card__palkhi" style="margin-top:.9rem"><i></i>' + esc(t('drawer.palkhiHere')) + '</span>'
+        : '') +
+      '<div class="drawer__blk"><h4 class="drawer__h">' + esc(t('drawer.position')) + '</h4>' +
+        '<div class="drawer__pos"><span>' + (idx + 1) + ' / ' + LOCATIONS.length + '</span>' +
+        '<span class="drawer__pos-track"><span class="drawer__pos-fill" data-w="' + pos + '"></span></span>' +
+        '<span>' + pos + '%</span></div></div>' +
+      '<div class="drawer__blk"><h4 class="drawer__h">' + esc(t('drawer.domains')) + '</h4>' + doms + '</div>' +
+      '<div class="drawer__blk"><h4 class="drawer__h">' + esc(t('drawer.camps')) + '</h4>' + campHtml + '</div>';
+
+    focusMapOn(loc.id);
+    drawer.hidden = false;
+    document.body.classList.add('is-locked');
+    M.bars($$('.drawer__pos-fill', drawer));
+    animateDrawer(true);
+    var close = $('#locDrawerClose');
+    if (close) close.focus();
+  }
+
+  function closeLocDrawer() {
+    var drawer = $('#locDrawer');
+    if (!drawer || drawer.hidden) return;
+    animateDrawer(false);
+    if (drawerReturnFocus && drawerReturnFocus.focus) drawerReturnFocus.focus();
   }
 
   /* ══════════════ LIVE TRACKING MAP (Dashboard + Live Ops) ══════════════
-     A stylised route path — the same visual language as the landing
-     page's Route section — with hoverable markers per halt (worst
-     domain status) and, on the full map, a marker per medical camp. */
+     Satellite imagery of the real Palkhi route (Esri World Imagery,
+     through Leaflet): the walked legs drawn in gold with a pulse
+     running along them, the legs still ahead dashed, and one live
+     status marker per halt.
+
+     If Leaflet or its tiles cannot load, buildRouteSVG below draws the
+     original stylised route instead — the board still reads correctly
+     on a dead connection, which on a route like this one matters. */
+  var ESRI_IMAGERY = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+  var ESRI_PLACES = 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}';
+  var ESRI_CREDIT = 'Imagery &copy; Esri, Maxar, Earthstar Geographics';
   var ROUTE_PATH_D = 'M60 96 C 150 60, 210 150, 288 154 S 420 226, 486 200 S 596 108, 668 138 S 780 250, 852 244 S 972 178, 1042 220 S 1120 300, 1146 330';
   var mapsBuilt = {};
+  var mapObjs = {};          /* opts.id -> { map, markers, camps } */
 
   function locWorstStatus(loc) {
     return DOMAINS.reduce(function (acc, d) { return worst(acc, domainStatus(loc.id, d.id)); }, 'ok');
   }
 
+  function legendHtml(opts) {
+    return '<div class="ops-map__legend">' +
+      '<span><i class="dot dot--ok"></i>' + esc(t('route.legendOk')) + '</span>' +
+      '<span><i class="dot dot--warn"></i>' + esc(t('route.legendWarn')) + '</span>' +
+      '<span><i class="dot dot--crit"></i>' + esc(t('route.legendCrit')) + '</span>' +
+      (opts.showCamps ? '<span>✚ ' + esc(t('liveops.camps')) + '</span>' : '') +
+      (opts.satellite ? '<span class="ops-map__legend-src">' + esc(t('map.source')) + '</span>' : '') +
+    '</div>';
+  }
+
+  /* Tooltip bodies, shared by the satellite markers and the SVG fallback. */
+  function locTipHtml(loc) {
+    var rows = DOMAINS.map(function (d) {
+      var st = domainStatus(loc.id, d.id);
+      return '<span class="ops-map__tip-row">' + sDot(st) + esc(t('chip.' + d.id)) + ' — ' + esc(statusWord(st)) + '</span>';
+    }).join('');
+    return '<b>' + esc(loc.en) + '</b><span class="ops-map__tip-mr">' + esc(loc.mr) + '</span>' + rows +
+      (loc.id === PALKHI.locId
+        ? '<span class="ops-map__tip-palkhi">' + esc(t('drawer.palkhiHere')) + '</span>'
+        : '');
+  }
+
+  function campTipHtml(camp) {
+    var loadPct = pctOf(camp.patients, camp.capacity);
+    var loadS = loadStatus(loadPct), icuS = ratioStatus(camp.icuAvail, camp.icuTotal), ambS = ratioStatus(camp.ambAvail, camp.ambTotal);
+    return '<b>' + esc(camp.en) + '</b><span class="ops-map__tip-mr">' + esc(camp.mr) + '</span>' +
+      '<span class="ops-map__tip-row">' + sDot(loadS) + esc(t('metric.campLoad')) + ' — ' + loadPct + '%</span>' +
+      '<span class="ops-map__tip-row">' + sDot(icuS) + esc(t('metric.icuFree')) + ' — ' + camp.icuAvail + '/' + camp.icuTotal + '</span>' +
+      '<span class="ops-map__tip-row">' + sDot(ambS) + esc(t('metric.ambReady')) + ' — ' + camp.ambAvail + '/' + camp.ambTotal + '</span>';
+  }
+
+  /* Clamped to the map's own box: markers at either end of the route
+     used to push the card past the panel edge, where it was clipped. */
   function positionTip(tip, container, targetEl) {
     var cRect = container.getBoundingClientRect();
     var tRect = targetEl.getBoundingClientRect();
-    tip.style.left = (tRect.left + tRect.width / 2 - cRect.left) + 'px';
+    var x = tRect.left + tRect.width / 2 - cRect.left;
+    var half = (tip.offsetWidth || 220) / 2;
+    tip.style.left = Math.max(half + 6, Math.min(cRect.width - half - 6, x)) + 'px';
     tip.style.top = (tRect.top - cRect.top) + 'px';
   }
 
   function showLocTip(tip, container, el, loc) {
-    var doms = DOMAINS.map(function (d) {
-      var s = domainStatus(loc.id, d.id);
-      return '<div class="ops-map__tip-row">' + sDot(s) + t('chip.' + d.id) + ' — ' + statusWord(s) + '</div>';
-    }).join('');
-    tip.innerHTML = '<b>' + loc.en + '</b><span class="ops-map__tip-mr">' + loc.mr + '</span>' + doms;
+    tip.innerHTML = locTipHtml(loc);
     positionTip(tip, container, el);
     tip.classList.add('is-on');
   }
 
   function showCampTip(tip, container, el, camp) {
-    var loadPct = Math.round((camp.patients / camp.capacity) * 100);
-    var loadS = loadStatus(loadPct), icuS = ratioStatus(camp.icuAvail, camp.icuTotal), ambS = ratioStatus(camp.ambAvail, camp.ambTotal);
-    tip.innerHTML = '<b>' + camp.en + '</b><span class="ops-map__tip-mr">' + camp.mr + '</span>' +
-      '<div class="ops-map__tip-row">' + sDot(loadS) + t('metric.campLoad') + ' — ' + loadPct + '%</div>' +
-      '<div class="ops-map__tip-row">' + sDot(icuS) + t('metric.icuFree') + ' — ' + camp.icuAvail + '/' + camp.icuTotal + '</div>' +
-      '<div class="ops-map__tip-row">' + sDot(ambS) + t('metric.ambReady') + ' — ' + camp.ambAvail + '/' + camp.ambTotal + '</div>';
+    tip.innerHTML = campTipHtml(camp);
     positionTip(tip, container, el);
     tip.classList.add('is-on');
   }
 
-  function buildOpsMap(container, opts) {
-    if (!container || mapsBuilt[opts.id]) return;
+  /* ── fallback: the original stylised route ────────────────────── */
+  function buildRouteSVG(container, opts) {
     var NS = 'http://www.w3.org/2000/svg';
 
     container.innerHTML =
@@ -593,14 +1394,6 @@
       '</svg>' +
       '<div class="ops-map__tip" id="opsTip-' + opts.id + '"></div>';
 
-    container.insertAdjacentHTML('afterend',
-      '<div class="ops-map__legend">' +
-        '<span><i class="dot dot--ok"></i>' + t('route.legendOk') + '</span>' +
-        '<span><i class="dot dot--warn"></i>' + t('route.legendWarn') + '</span>' +
-        '<span><i class="dot dot--crit"></i>' + t('route.legendCrit') + '</span>' +
-        (opts.showCamps ? '<span>✚ ' + t('liveops.camps') + '</span>' : '') +
-      '</div>');
-
     var path = $('#opsPath-' + opts.id, container);
     var stopsG = $('#opsStops-' + opts.id, container);
     var campsG = opts.showCamps ? $('#opsCamps-' + opts.id, container) : null;
@@ -609,8 +1402,17 @@
 
     var len = 0;
     try { len = path.getTotalLength(); } catch (e) {}
-    if (!len) return;
+    /* Bail before anything is appended. The legend used to be inserted
+       first while `mapsBuilt` was only set after this check, so a build
+       attempted with a zero-length path left one legend behind and
+       appended another on every later visit to the page. */
+    if (!len) { container.innerHTML = ''; return; }
     mapsBuilt[opts.id] = true;
+
+    container.insertAdjacentHTML('afterend', legendHtml(opts));
+
+    /* A marker was mouse-only before: reachable and readable by keyboard now. */
+    container.addEventListener('mouseleave', function () { tip.classList.remove('is-on'); });
 
     var pts = [];
     LOCATIONS.forEach(function (loc, i) {
@@ -628,8 +1430,17 @@
       g.appendChild(c);
       stopsG.appendChild(g);
 
+      g.setAttribute('tabindex', '0');
+      g.setAttribute('role', 'button');
+      g.setAttribute('aria-label', loc.en);
       g.addEventListener('mouseenter', function () { showLocTip(tip, container, g, loc); });
       g.addEventListener('mouseleave', function () { tip.classList.remove('is-on'); });
+      g.addEventListener('focus', function () { showLocTip(tip, container, g, loc); });
+      g.addEventListener('blur', function () { tip.classList.remove('is-on'); });
+      g.addEventListener('click', function () { openLocDrawer(loc.id); });
+      g.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLocDrawer(loc.id); }
+      });
     });
 
     if (opts.showCamps && campsG) {
@@ -646,63 +1457,418 @@
         g.setAttribute('transform', 'translate(' + match.pt.x.toFixed(1) + ',' + (match.pt.y - offset).toFixed(1) + ')');
         g.innerHTML = '<circle r="9" fill="#F5F0E6" opacity=".95"/><path d="M-4 0h8M0 -4v8" stroke="#E2361B" stroke-width="2.4" stroke-linecap="round"/>';
         campsG.appendChild(g);
+        g.setAttribute('tabindex', '0');
+        g.setAttribute('role', 'button');
+        g.setAttribute('aria-label', camp.en);
         g.addEventListener('mouseenter', function () { showCampTip(tip, container, g, camp); });
         g.addEventListener('mouseleave', function () { tip.classList.remove('is-on'); });
+        g.addEventListener('focus', function () { showCampTip(tip, container, g, camp); });
+        g.addEventListener('blur', function () { tip.classList.remove('is-on'); });
       });
     }
 
     var palkhiPt = pts.filter(function (p) { return p.loc.id === PALKHI.locId; })[0];
     if (palkhiPt) palkhiMarker.setAttribute('transform', 'translate(' + palkhiPt.pt.x.toFixed(1) + ',' + palkhiPt.pt.y.toFixed(1) + ')');
 
-    if (HAS_GSAP && !REDUCED) {
-      gsap.to($('.routemap__pulse', container), { scale: 1.7, opacity: 0, transformOrigin: '50% 50%', duration: 1.8, repeat: -1, ease: 'power2.out' });
+    /* The route draws itself, then the halts and camps arrive along it. */
+    if (M.on) {
+      M.drawPath(path);
+      gsap.fromTo($$('.ops-map__stop', container), { opacity: 0 },
+        { opacity: 1, duration: 0.4, stagger: 0.035, delay: 0.5 });
+      if (campsG) {
+        gsap.fromTo($$('.ops-map__camp', container), { opacity: 0 },
+          { opacity: 1, duration: 0.4, stagger: 0.06, delay: 1 });
+      }
+      gsap.fromTo(palkhiMarker, { opacity: 0 }, { opacity: 1, duration: 0.5, delay: 1.25 });
     }
+    M.pulse($('.routemap__pulse', container));
+  }
+
+  /* ── satellite: icons ─────────────────────────────────────────── */
+  function haltIcon(status, isPalkhi) {
+    if (isPalkhi) {
+      /* Carries its own status ring too: the halt the Palkhi is standing
+         at is still a halt, and its state must not disappear. */
+      return L.divIcon({
+        className: 'opsmk-wrap',
+        html: '<span class="opspk opspk--' + status + '">' +
+                '<span class="opspk__ring"></span><span class="opspk__ring opspk__ring--2"></span>' +
+                '<svg class="opspk__icon" viewBox="0 0 220 120" aria-hidden="true"><use href="#w-palkhi"/></svg>' +
+              '</span>',
+        iconSize: [46, 46], iconAnchor: [23, 23]
+      });
+    }
+    return L.divIcon({
+      className: 'opsmk-wrap',
+      html: '<span class="opsmk opsmk--' + status + '">' +
+              '<span class="opsmk__ring"></span><span class="opsmk__core"></span>' +
+            '</span>',
+      iconSize: [24, 24], iconAnchor: [12, 12]
+    });
+  }
+
+  function campMapIcon(status) {
+    return L.divIcon({
+      className: 'opsmk-wrap',
+      html: '<span class="opscamp opscamp--' + status + '"><i></i></span>',
+      iconSize: [20, 20], iconAnchor: [10, 10]
+    });
+  }
+
+  function routeLatLngs() {
+    return LOCATIONS.map(function (l) { return [l.lat, l.lng]; });
+  }
+
+  /* Position a fraction along a multi-segment line — drives the pulse
+     that travels the walked route. */
+  function pointAlong(coords, tt) {
+    if (!coords.length) return [0, 0];
+    if (coords.length < 2) return coords[0];
+    var segs = [], total = 0, i;
+    for (i = 1; i < coords.length; i++) {
+      var dy = coords[i][0] - coords[i - 1][0], dx = coords[i][1] - coords[i - 1][1];
+      var len = Math.sqrt(dx * dx + dy * dy);
+      segs.push(len); total += len;
+    }
+    var target = total * Math.max(0, Math.min(1, tt)), acc = 0;
+    for (i = 0; i < segs.length; i++) {
+      if (acc + segs[i] >= target) {
+        var k = segs[i] ? (target - acc) / segs[i] : 0;
+        return [coords[i][0] + (coords[i + 1][0] - coords[i][0]) * k,
+                coords[i][1] + (coords[i + 1][1] - coords[i][1]) * k];
+      }
+      acc += segs[i];
+    }
+    return coords[coords.length - 1];
+  }
+
+  function buildSatMap(container, opts) {
+    var coords = routeLatLngs();
+    var idx = LOCATIONS.map(function (l) { return l.id; }).indexOf(PALKHI.locId);
+    if (idx < 0) idx = 0;
+
+    container.classList.add('ops-map--sat');
+    container.innerHTML = '';
+
+    var map = L.map(container, {
+      zoomControl: true,
+      attributionControl: true,
+      zoomSnap: 0.25,
+      /* Never swallow the page's scroll: the wheel only zooms once the
+         operator has actually clicked into the map. */
+      scrollWheelZoom: false
+    });
+
+    L.tileLayer(ESRI_IMAGERY, { maxZoom: 18, attribution: ESRI_CREDIT }).addTo(map);
+    L.tileLayer(ESRI_PLACES, { maxZoom: 18, opacity: 0.85 }).addTo(map);
+
+    var bounds = L.latLngBounds(coords);
+    map.fitBounds(bounds, { padding: [34, 34] });
+
+    map.on('click focus', function () { map.scrollWheelZoom.enable(); });
+    container.addEventListener('mouseleave', function () { map.scrollWheelZoom.disable(); });
+
+    var done = coords.slice(0, idx + 1);
+    var todo = coords.slice(idx);
+
+    if (todo.length > 1) {
+      L.polyline(todo, { color: '#F5F0E6', weight: 2.5, opacity: 0.45, dashArray: '5 9', interactive: false }).addTo(map);
+    }
+    L.polyline(done, { color: '#C9A227', weight: 11, opacity: 0.16, interactive: false }).addTo(map);
+    var line = L.polyline(done, { color: '#C9A227', weight: 3.6, opacity: 0.95, interactive: false, className: 'route-live' }).addTo(map);
+    M.drawPath(line.getElement());
+
+    /* A pulse running the walked legs, so the line reads as movement. */
+    if (M.on && done.length > 1) {
+      var comet = L.circleMarker(done[0], {
+        radius: 5, weight: 0, color: '#E2361B', fillColor: '#E2361B',
+        fillOpacity: 1, interactive: false, className: 'route-comet'
+      }).addTo(map);
+      var prog = { p: 0 };
+      gsap.to(prog, {
+        p: 1, duration: 7, repeat: -1, ease: 'none', delay: 1.1,
+        onUpdate: function () { comet.setLatLng(pointAlong(done, prog.p)); }
+      });
+    }
+
+    var markers = {};
+    LOCATIONS.forEach(function (loc) {
+      var isPalkhi = loc.id === PALKHI.locId;
+      var m = L.marker([loc.lat, loc.lng], {
+        icon: haltIcon(locWorstStatus(loc), isPalkhi),
+        title: loc.en, alt: loc.en, keyboard: true, riseOnHover: true,
+        zIndexOffset: isPalkhi ? 1000 : 0
+      }).addTo(map);
+      m.bindTooltip(locTipHtml(loc), { direction: 'top', className: 'ops-tip', offset: [0, -14], opacity: 1 });
+      m.on('click', function () { openLocDrawer(loc.id); });
+      markers[loc.id] = m;
+    });
+
+    var camps = [];
+    if (opts.showCamps) {
+      var seen = {};
+      CAMPS.forEach(function (camp) {
+        var loc = LOCATIONS.filter(function (l) { return l.id === camp.id.split('-')[0]; })[0];
+        if (!loc) return;
+        var n = seen[loc.id] || 0; seen[loc.id] = n + 1;
+        var cm = L.marker([loc.lat + 0.035 + n * 0.022, loc.lng - 0.035 - n * 0.008], {
+          icon: campMapIcon(campOverall(camp)), title: camp.en, alt: camp.en, keyboard: true, riseOnHover: true
+        }).addTo(map);
+        cm.bindTooltip(campTipHtml(camp), { direction: 'top', className: 'ops-tip', offset: [0, -12], opacity: 1 });
+        camps.push({ camp: camp, marker: cm });
+      });
+    }
+
+    mapObjs[opts.id] = { map: map, markers: markers, camps: camps };
+
+    /* Halts drop in once the route has finished drawing itself. The
+       inner span is animated, never the icon element itself: Leaflet
+       positions each marker with a transform on that element, and the
+       tween's y/clearProps would overwrite it and strand the marker. */
+    M.stagger(LOCATIONS.map(function (l) {
+      var el = markers[l.id].getElement();
+      return el && el.firstElementChild;
+    }).filter(Boolean), { y: -14, stagger: 0.045, delay: 0.65, duration: 0.5 });
+
+    container.insertAdjacentHTML('afterend', legendHtml({ showCamps: opts.showCamps, satellite: true }));
+
+    /* The container only has its true size once the page is on screen. */
+    requestAnimationFrame(function () {
+      map.invalidateSize();
+      map.fitBounds(bounds, { padding: [34, 34] });
+    });
+  }
+
+  function buildOpsMap(container, opts) {
+    if (!container || mapsBuilt[opts.id]) return;
+    mapsBuilt[opts.id] = true;
+
+    if (typeof window.L !== 'undefined') {
+      try { buildSatMap(container, opts); return; }
+      catch (e) {
+        console.warn('[Wari] satellite map unavailable, using the stylised route:', e.message);
+        delete mapObjs[opts.id];
+        container.classList.remove('ops-map--sat');
+        container.innerHTML = '';
+        var stale = container.nextElementSibling;
+        if (stale && stale.classList.contains('ops-map__legend')) stale.remove();
+      }
+    }
+    mapsBuilt[opts.id] = false;   /* buildRouteSVG sets it once it knows it can draw */
+    buildRouteSVG(container, opts);
+  }
+
+  /* Live status re-colours the markers in place rather than rebuilding
+     the map, so pan and zoom survive an incoming report. */
+  function refreshMapMarkers() {
+    Object.keys(mapObjs).forEach(function (id) {
+      var o = mapObjs[id];
+      if (!o) return;
+      LOCATIONS.forEach(function (loc) {
+        var m = o.markers[loc.id];
+        if (!m) return;
+        m.setIcon(haltIcon(locWorstStatus(loc), loc.id === PALKHI.locId));
+        m.setTooltipContent(locTipHtml(loc));
+      });
+      (o.camps || []).forEach(function (c) {
+        c.marker.setIcon(campMapIcon(campOverall(c.camp)));
+        c.marker.setTooltipContent(campTipHtml(c.camp));
+      });
+    });
+  }
+
+  /* A Leaflet map measured while its page was display:none comes back
+     zero-sized, so re-measure whenever one becomes visible. */
+  function invalidateMaps() {
+    Object.keys(mapObjs).forEach(function (id) {
+      var o = mapObjs[id];
+      if (!o || !o.map) return;
+      var el = o.map.getContainer();
+      if (el.offsetParent !== null) o.map.invalidateSize();
+    });
+  }
+
+  function focusMapOn(locId) {
+    var loc = LOCATIONS.filter(function (l) { return l.id === locId; })[0];
+    if (!loc) return;
+    Object.keys(mapObjs).forEach(function (id) {
+      var o = mapObjs[id];
+      if (!o || !o.map || o.map.getContainer().offsetParent === null) return;
+      o.map.panTo([loc.lat, loc.lng], { animate: M.on, duration: 0.6 });
+      var m = o.markers[locId];
+      if (m) m.openTooltip();
+    });
   }
 
   /* ══════════════ MEDICAL ══════════════ */
+  /* Network capacity as a dial (outer ring = beds in use, inner ring =
+     one dot per medicine line in stock status) plus a camp share card. */
+  function renderMedCards() {
+    var dial = $('#medDial'), cap = $('#medCapacity');
+    if (!dial && !cap) return;
+
+    var totals = CAMPS.reduce(function (a, c) {
+      a.capacity += c.capacity; a.patients += c.patients;
+      a.icuTotal += c.icuTotal; a.icuAvail += c.icuAvail;
+      a.ambTotal += c.ambTotal; a.ambAvail += c.ambAvail;
+      return a;
+    }, { capacity: 0, patients: 0, icuTotal: 0, icuAvail: 0, ambTotal: 0, ambAvail: 0 });
+    var pct = pctOf(totals.patients, totals.capacity);
+    var loadS = loadStatus(pct);
+
+    if (dial) {
+      var OUTER = 48, lit = Math.round(OUTER * pct / 100);
+      var litColor = loadS === 'ok' ? 'gold' : loadS;
+      var outer = [];
+      for (var i = 0; i < OUTER; i++) outer.push(i < lit ? litColor : 'dim');
+
+      var meds = [];
+      CAMPS.forEach(function (c) {
+        Object.keys(c.meds).forEach(function (k) {
+          meds.push(stockStatus(c.meds[k].stock, c.meds[k].par));
+        });
+      });
+
+      renderDial(dial, {
+        label: t('medical.capacity'),
+        tag: CAMPS.length + ' ' + t('medical.campsOnline'),
+        outer: outer,
+        inner: meds,
+        center: { lab: t('medical.occupancy'), value: pct, suffix: '%', sub: statusWord(loadS) },
+        metrics: [
+          { lab: t('metric.icuFree'), value: totals.icuAvail, sub: '/ ' + totals.icuTotal,
+            flag: ratioStatus(totals.icuAvail, totals.icuTotal) === 'crit' },
+          { lab: t('metric.ambReady'), value: totals.ambAvail, sub: '/ ' + totals.ambTotal,
+            flag: ratioStatus(totals.ambAvail, totals.ambTotal) === 'crit' }
+        ],
+        btn: {
+          label: t('medical.allCamps'),
+          onClick: function () {
+            var el = $('#campList');
+            if (el) el.scrollIntoView({ behavior: M.on ? 'smooth' : 'auto', block: 'start' });
+          }
+        }
+      });
+    }
+
+    if (cap) {
+      var byStatus = tally(CAMPS.map(campOverall));
+      renderMCard(cap, {
+        title: t('medical.campStatus'),
+        icon: 'g-medical',
+        figure: { value: totals.patients, unit: t('medical.bedsUsed') },
+        segments: [
+          { cls: 'ok', w: pctOf(byStatus.ok, byStatus.total), label: statusWord('ok'), n: byStatus.ok },
+          { cls: 'warn', w: pctOf(byStatus.warn, byStatus.total), label: statusWord('warn'), n: byStatus.warn },
+          { cls: 'crit', w: pctOf(byStatus.crit, byStatus.total), label: statusWord('crit'), n: byStatus.crit }
+        ],
+        stack: {
+          label: t('medical.campsOnline'),
+          items: CAMPS.map(function (c) {
+            var st = campOverall(c);
+            return { icon: 'g-medical', cls: st !== 'ok' ? st : '', title: c.en };
+          })
+        }
+      });
+    }
+  }
+
   function renderMedical(role) {
+    renderMedCards();
+
     var list = $('#campList');
     if (!list) return;
     list.innerHTML = CAMPS.map(function (c) {
       var overall = campOverall(c);
-      var loadPct = Math.round((c.patients / c.capacity) * 100);
+      var loadPct = pctOf(c.patients, c.capacity);
       var loadS = loadStatus(loadPct), icuS = ratioStatus(c.icuAvail, c.icuTotal), ambS = ratioStatus(c.ambAvail, c.ambTotal);
+      var bodyId = 'campBody-' + c.id;
 
       var meds = Object.keys(c.meds).map(function (k) {
-        var m = c.meds[k], s = stockStatus(m.stock, m.par);
-        return '<div class="med-item"><span class="med-item__name">' + sDot(s) + t(MED_KEY_LABEL[k]) + '</span><span class="med-item__qty">' + m.stock + ' / ' + m.par + ' ' + m.unit + '</span></div>';
+        var m = c.meds[k], st = stockStatus(m.stock, m.par);
+        return '<div class="med-item">' +
+          '<div class="med-item__top">' +
+            '<span class="med-item__name">' + sDot(st) + esc(t(MED_KEY_LABEL[k])) + '</span>' +
+            '<span class="med-item__qty">' + m.stock + ' / ' + m.par + ' ' + esc(m.unit) + '</span>' +
+          '</div>' +
+          '<span class="meter"><span class="meter__fill meter__fill--' + st + '" data-w="' +
+            Math.min(100, pctOf(m.stock, m.par)) + '"></span></span>' +
+        '</div>';
       }).join('');
 
-      return '<div class="camp-card" data-camp="' + c.id + '">' +
-        '<button type="button" class="camp-card__head">' +
-          '<span class="camp-card__name">' + c.en + '<span>' + c.mr + '</span></span>' +
+      return '<div class="camp-card" data-camp="' + esc(c.id) + '">' +
+        '<button type="button" class="camp-card__head" aria-expanded="false" aria-controls="' + bodyId + '">' +
+          '<span class="camp-card__name">' + esc(c.en) + '<span>' + esc(c.mr) + '</span></span>' +
+          '<span class="camp-card__load">' +
+            '<span class="camp-card__load-track"><span class="camp-card__load-fill meter__fill--' + loadS + '" data-w="' + loadPct + '"></span></span>' +
+            loadPct + '%</span>' +
           sBadge(overall, statusWord(overall)) +
-          '<span class="camp-card__chevron">▾</span>' +
+          '<span class="camp-card__chevron" aria-hidden="true">▾</span>' +
         '</button>' +
-        '<div class="camp-card__body">' +
+        '<div class="camp-card__body" id="' + bodyId + '">' +
           '<div class="metric-grid">' +
-            '<div class="metric"><div class="metric__label">' + sDot(loadS) + t('metric.campLoad') + '</div><div class="metric__value">' + loadPct + '%</div><div class="metric__sub">' + t('metric.campLoadSub') + '</div></div>' +
-            '<div class="metric"><div class="metric__label">' + t('metric.patientsTreated') + '</div><div class="metric__value">' + c.patients + ' / ' + c.capacity + '</div><div class="metric__sub">' + t('metric.patientsSub') + '</div></div>' +
-            '<div class="metric"><div class="metric__label">' + sDot(icuS) + t('metric.icuFree') + '</div><div class="metric__value">' + c.icuAvail + ' / ' + c.icuTotal + '</div><div class="metric__sub">' + t('metric.icuSub') + '</div></div>' +
-            '<div class="metric"><div class="metric__label">' + sDot(ambS) + t('metric.ambReady') + '</div><div class="metric__value">' + c.ambAvail + ' / ' + c.ambTotal + '</div><div class="metric__sub">' + t('metric.ambSub') + '</div></div>' +
+            '<div class="metric"><div class="metric__label">' + sDot(loadS) + esc(t('metric.campLoad')) + '</div><div class="metric__value">' + loadPct + '%</div><div class="metric__sub">' + esc(t('metric.campLoadSub')) + '</div></div>' +
+            '<div class="metric"><div class="metric__label">' + esc(t('metric.patientsTreated')) + '</div><div class="metric__value">' + c.patients + ' / ' + c.capacity + '</div><div class="metric__sub">' + esc(t('metric.patientsSub')) + '</div></div>' +
+            '<div class="metric"><div class="metric__label">' + sDot(icuS) + esc(t('metric.icuFree')) + '</div><div class="metric__value">' + c.icuAvail + ' / ' + c.icuTotal + '</div><div class="metric__sub">' + esc(t('metric.icuSub')) + '</div></div>' +
+            '<div class="metric"><div class="metric__label">' + sDot(ambS) + esc(t('metric.ambReady')) + '</div><div class="metric__value">' + c.ambAvail + ' / ' + c.ambTotal + '</div><div class="metric__sub">' + esc(t('metric.ambSub')) + '</div></div>' +
           '</div>' +
-          '<div class="med-stock"><h4>' + t('medical.medStock') + '</h4><div class="med-stock__grid">' + meds + '</div></div>' +
+          '<div class="med-stock"><h4>' + esc(t('medical.medStock')) + '</h4><div class="med-stock__grid">' + meds + '</div></div>' +
         '</div>' +
       '</div>';
     }).join('');
 
+    /* The head bar's load meters can fill straight away; the ones inside
+       a body wait until that body is actually opened. */
+    M.bars($$('.camp-card__load-fill', list));
+
     list.onclick = function (e) {
       var head = e.target.closest('.camp-card__head');
       if (!head) return;
-      head.closest('.camp-card').classList.toggle('is-open');
+      var card = head.closest('.camp-card');
+      var body = $('.camp-card__body', card);
+      var open = !card.classList.contains('is-open');
+      card.classList.toggle('is-open', open);
+      head.setAttribute('aria-expanded', String(open));
+      M.expand(body, open, function () {
+        if (open) M.bars($$('.meter__fill', body));
+      });
     };
 
     initPatientRegisterForm(role);
+    renderPatientFilters();
     renderPatients('');
     loadPatientsFromBackend();
     var search = $('#patientSearch');
     if (search) search.oninput = function () { renderPatients(search.value); };
-    revealIn($$('.camp-card'));
+  }
+
+  var patientFilter = 'all';
+
+  function renderPatientFilters() {
+    var el = $('#patientFilters');
+    if (!el) return;
+    var opts = [{ id: 'all', label: t('patient.all') }].concat(
+      Object.keys(PSTATUS_LABEL).map(function (k) { return { id: k, label: t(PSTATUS_LABEL[k]) }; }));
+
+    el.innerHTML = opts.map(function (o) {
+      var on = patientFilter === o.id;
+      return '<button type="button" class="chip' + (on ? ' is-on' : '') + '" data-pstatus="' + o.id +
+        '" aria-pressed="' + on + '">' + esc(o.label) + '</button>';
+    }).join('');
+
+    el.onclick = function (e) {
+      var btn = e.target.closest('.chip');
+      if (!btn) return;
+      patientFilter = btn.getAttribute('data-pstatus');
+      $$('.chip', el).forEach(function (b) {
+        var on = b.getAttribute('data-pstatus') === patientFilter;
+        b.classList.toggle('is-on', on);
+        b.setAttribute('aria-pressed', String(on));
+      });
+      M.pop(btn);
+      var search = $('#patientSearch');
+      renderPatients(search ? search.value : '');
+    };
   }
 
   function renderPatients(query) {
@@ -710,17 +1876,34 @@
     if (!list) return;
     var q = (query || '').trim().toLowerCase();
     var filtered = patientsCache.filter(function (p) {
+      if (patientFilter !== 'all' && p.status !== patientFilter) return false;
       if (!q) return true;
       return (p.name + ' ' + p.id + ' ' + p.camp + ' ' + p.condition).toLowerCase().indexOf(q) !== -1;
     });
-    if (!filtered.length) { list.innerHTML = '<div class="patient-empty">' + t('patient.noMatch') + ' “' + query + '”.</div>'; return; }
+
+    var count = $('#patientCount');
+    if (count) {
+      count.innerHTML = esc(t('patient.showing')) + ' <b>' + filtered.length + '</b> / ' + patientsCache.length;
+    }
+
+    if (!filtered.length) {
+      list.innerHTML = '<div class="patient-empty">' + esc(t('patient.noMatch')) + ' “' + esc(query) + '”.</div>';
+      return;
+    }
+
+    /* Status moved out of the meta line into a pill of its own: the row
+       grid declares four columns and only three were ever filled, which
+       left a dangling gap at the end of every row. */
     list.innerHTML = filtered.map(function (p) {
       return '<div class="patient-row">' +
-        '<span class="patient-row__id">' + p.id + '</span>' +
-        '<span><span class="patient-row__name">' + p.name + '</span><div class="patient-row__meta">' + p.age + ' ' + t('medical.yrs') + ' · ' + p.condition + ' · ' + patientStatusLabel(p.status) + '</div></span>' +
-        '<span class="patient-row__camp">' + p.camp + '</span>' +
+        '<span class="patient-row__id">' + esc(p.id) + '</span>' +
+        '<span><span class="patient-row__name">' + esc(p.name) + '</span>' +
+          '<div class="patient-row__meta">' + esc(p.age) + ' ' + esc(t('medical.yrs')) + ' · ' + esc(p.condition) + '</div></span>' +
+        '<span class="patient-row__camp">' + esc(p.camp) + '</span>' +
+        '<span class="pill pill--' + esc(p.status) + '">' + esc(patientStatusLabel(p.status)) + '</span>' +
       '</div>';
     }).join('');
+    M.stagger($$('.patient-row', list), { y: 10, stagger: 0.02, duration: 0.4 });
   }
 
   /* Backend is the source of truth for the patient roster — see
@@ -836,16 +2019,40 @@
 
   /* ══════════════ APP SHELL / ROUTER ══════════════ */
   function showPage(pageId) {
-    $$('.page').forEach(function (p) { p.classList.toggle('is-active', p.dataset.page === pageId); });
-    $$('.app__tab').forEach(function (tab) { tab.classList.toggle('is-on', tab.dataset.page === pageId); });
+    var page = null;
+    $$('.page').forEach(function (p) {
+      var on = p.dataset.page === pageId;
+      p.classList.toggle('is-active', on);
+      if (on) page = p;
+    });
+    $$('.app__tab').forEach(function (tab) {
+      var on = tab.dataset.page === pageId;
+      tab.classList.toggle('is-on', on);
+      tab.setAttribute('aria-current', on ? 'page' : 'false');
+    });
 
+    /* The map can only be measured once its page is on screen — build
+       it after the class toggle above, never before. */
     if (pageId === 'dashboard') buildOpsMap($('#opsMapMini'), { id: 'mini', showCamps: false });
     if (pageId === 'live-ops') buildOpsMap($('#opsMapFull'), { id: 'full', showCamps: true });
+
+    /* The entrance now runs per page, against the page being shown. It
+       used to run once over every .panel in the document — including the
+       hidden ones — so only the first tab ever animated and every other
+       page arrived flat. */
+    if (page) {
+      invalidateMaps();
+      M.revealPage(page);
+      M.scrollReveal($$('.camp-card, .loc-card', page).slice(12));
+      if (typeof ScrollTrigger !== 'undefined') ScrollTrigger.refresh();
+    }
+    window.scrollTo({ top: 0, behavior: M.on ? 'smooth' : 'auto' });
   }
 
   function initApp(roleId) {
     var role = roleById(roleId);
     if (!role) return;
+    currentRole = role;
 
     $('#appRoleLabel').textContent = roleName(role);
     $('#appTabs').innerHTML = role.pages.map(function (p, i) {
@@ -862,7 +2069,11 @@
     if (role.pages.indexOf('medical') !== -1) renderMedical(role);
 
     var refreshBtn = $('#intelRefreshBtn');
-    if (refreshBtn) refreshBtn.onclick = function () { loadIntel(true); };
+    if (refreshBtn) {
+      refreshBtn.onclick = function () { loadIntel(true); };
+      M.magnetic(refreshBtn, 0.2);
+    }
+    M.magnetic($('#logoutBtn'), 0.2);
     loadIntel(false); // feeds the dashboard's Wari-status stat for every role; Intel tab only exists for the supervisor
     loadFeedFromBackend(); // real submitted-report history, not just this tab's in-memory pushes
 
@@ -924,11 +2135,22 @@
 
     $('#logoutBtn').addEventListener('click', logout);
 
+    M.initCursor();
+
     var histClose = $('#patientHistoryModalClose'), histOverlay = $('#patientHistoryModalOverlay'), histOk = $('#patientHistoryModalOk');
     if (histClose) histClose.addEventListener('click', hidePatientHistoryModal);
     if (histOverlay) histOverlay.addEventListener('click', hidePatientHistoryModal);
     if (histOk) histOk.addEventListener('click', hidePatientHistoryModal);
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') hidePatientHistoryModal(); });
+
+    var drawerClose = $('#locDrawerClose'), drawerOverlay = $('#locDrawerOverlay');
+    if (drawerClose) drawerClose.addEventListener('click', closeLocDrawer);
+    if (drawerOverlay) drawerOverlay.addEventListener('click', closeLocDrawer);
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      hidePatientHistoryModal();
+      closeLocDrawer();
+    });
 
     var session = null;
     try { session = JSON.parse(localStorage.getItem('wci_session') || 'null'); } catch (e) {}

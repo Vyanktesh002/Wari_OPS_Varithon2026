@@ -1,0 +1,191 @@
+/* ═══════════════════════════════════════════════════════════════════
+   WARI COMMAND INTELLIGENCE — Supervisor Intel
+   The ranked locations become a filtered, collapsible list, and the
+   brief becomes a set of disclosures under a header that says plainly
+   the analysis was written by the model rather than by a person.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─── band dots + filter chips ──────────────────────────────────── */
+.band-dot{
+  width:8px; height:8px; border-radius:50%; flex:none; display:inline-block;
+}
+.band-dot--ok{ background:var(--ok); }
+.band-dot--warn{ background:var(--warn); }
+.band-dot--high{ background:#E8761B; }
+.band-dot--crit{ background:var(--vermillion); }
+
+.intel-filters{ margin-bottom:0; gap:.4rem; }
+.chip--band{ display:inline-flex; align-items:center; gap:.4rem; }
+.chip--band[disabled]{ opacity:.32; cursor:default; }
+.chip--band[disabled]:hover{ border-color:var(--rule); color:var(--ink-50); }
+.chip--band.is-on .chip__n{ opacity:.75; }
+
+/* ─── ranked location rows ──────────────────────────────────────── */
+.intel-loc-list{ gap:.45rem; }
+
+.intel-loc-item{
+  padding:.72rem .95rem;
+  border-radius:14px;
+  transition:border-color .25s, background .25s, box-shadow .25s;
+}
+.intel-loc-item:hover{
+  border-color:rgba(201,162,39,.55);
+  background:var(--ivory);
+  box-shadow:0 8px 22px rgba(58,11,11,.07);
+}
+
+/* rank · name+line · band · score · chevron */
+.intel-loc-row{
+  display:grid;
+  grid-template-columns:1.7rem minmax(0,1fr) auto auto 1rem;
+  align-items:center; gap:.85rem;
+}
+.intel-loc-item__rank{
+  font-family:var(--f-dsp); font-size:1.05rem; color:var(--ink-30);
+  text-align:center; font-variant-numeric:tabular-nums;
+}
+.intel-loc-item__name{ font-weight:700; font-size:.88rem; letter-spacing:.01em; }
+.intel-loc-item__headline{
+  display:block; font-size:.73rem; color:var(--ink-50); margin-top:.1rem;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.intel-loc-item__band{
+  display:inline-flex; align-items:center; gap:.4rem;
+  font-size:.6rem; letter-spacing:.12em; text-transform:uppercase; font-weight:700;
+  color:var(--ink-50); white-space:nowrap;
+}
+.intel-loc-item__score{
+  font-family:var(--f-dsp); font-size:1.35rem; min-width:2.1em; text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+.intel-loc-item__chev{
+  color:var(--ink-30); font-size:.72rem; text-align:center;
+  transition:transform .3s var(--e-out);
+}
+.intel-loc-item.is-open .intel-loc-item__chev{ transform:rotate(180deg); }
+
+/* the row's own colour comes from its band */
+.intel-loc-item--CRITICAL{ border-color:rgba(226,54,27,.3); }
+.intel-loc-item--CRITICAL .intel-loc-item__band{ color:var(--vermillion); }
+.intel-loc-item--HIGH .intel-loc-item__band{ color:#E8761B; }
+.intel-loc-item--ELEVATED .intel-loc-item__band{ color:var(--warn); }
+.intel-loc-item--NORMAL .intel-loc-item__band{ color:var(--ok); }
+
+.intel-loc-detail{
+  display:none; overflow:hidden;
+  margin-top:.7rem; padding-top:.7rem; border-top:1px solid var(--rule);
+}
+.intel-loc-detail__sit{
+  display:block; font-size:.62rem; letter-spacing:.16em; text-transform:uppercase;
+  font-weight:700; color:var(--ink-30); margin-bottom:.55rem;
+}
+.intel-loc-detail__doms{ display:flex; flex-wrap:wrap; gap:.45rem; }
+
+.intel-more{
+  width:100%; margin-top:.7rem; padding:.7rem 1rem;
+  border:1px dashed var(--rule); border-radius:12px;
+  font-size:.64rem; letter-spacing:.14em; text-transform:uppercase; font-weight:700;
+  color:var(--ink-50); background:var(--paper);
+  transition:border-color .25s, color .25s, background .25s;
+}
+.intel-more:hover{ border-color:var(--vermillion); color:var(--vermillion); background:var(--ivory); }
+.intel-more[hidden]{ display:none !important; }
+
+@media (max-width:680px){
+  .intel-loc-row{ grid-template-columns:1.4rem minmax(0,1fr) auto .9rem; }
+  .intel-loc-item__band{ display:none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   THE MODEL-WRITTEN BRIEF
+   ═══════════════════════════════════════════════════════════════════ */
+.ai-badge{
+  display:inline-flex; align-items:center; gap:.45rem;
+  font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; font-weight:700;
+  color:var(--vermillion);
+  background:linear-gradient(100deg, rgba(226,54,27,.1), rgba(201,162,39,.16), rgba(226,54,27,.1));
+  background-size:220% 100%;
+  border:1px solid rgba(201,162,39,.45); border-radius:999px;
+  padding:.34rem .7rem;
+  animation:aiSheen 6s linear infinite;
+}
+@keyframes aiSheen{ from{ background-position:0% 0; } to{ background-position:220% 0; } }
+.ai-badge__icon{ width:13px; height:13px; color:var(--gold); flex:none; }
+.ai-badge.is-live{ color:var(--gold); border-color:rgba(201,162,39,.7); animation-duration:1.6s; }
+.ai-badge.is-live .ai-badge__icon{ animation:aiSpin 2.4s linear infinite; }
+@keyframes aiSpin{ to{ transform:rotate(360deg); } }
+
+/* the "…" that ticks while the model is running */
+.ai-dots{ display:inline-flex; gap:2px; margin-left:.3rem; }
+.ai-dots i{
+  width:3px; height:3px; border-radius:50%; background:currentColor;
+  animation:aiDot 1.1s ease-in-out infinite;
+}
+.ai-dots i:nth-child(2){ animation-delay:.15s; }
+.ai-dots i:nth-child(3){ animation-delay:.3s; }
+@keyframes aiDot{ 0%,100%{ opacity:.25; transform:translateY(0); } 50%{ opacity:1; transform:translateY(-2px); } }
+
+.ai-note{
+  font-size:.72rem; line-height:1.55; color:var(--ink-50);
+  margin:-.5rem 0 1.3rem; max-width:62ch;
+}
+
+/* the shimmer shown while the brief regenerates */
+.ai-skeleton{ display:flex; flex-direction:column; gap:.7rem; padding:.4rem 0 1rem; }
+.ai-skeleton span{
+  height:11px; border-radius:6px;
+  background:linear-gradient(90deg, var(--paper-2) 0%, rgba(201,162,39,.22) 50%, var(--paper-2) 100%);
+  background-size:220% 100%;
+  animation:aiShimmer 1.4s linear infinite;
+}
+.ai-skeleton span:nth-child(1){ width:82%; }
+.ai-skeleton span:nth-child(2){ width:94%; }
+.ai-skeleton span:nth-child(3){ width:71%; }
+.ai-skeleton span:nth-child(4){ width:88%; }
+.ai-skeleton span:nth-child(5){ width:59%; }
+@keyframes aiShimmer{ from{ background-position:220% 0; } to{ background-position:0% 0; } }
+
+/* the LIVE MODEL badge in the page header, while generating */
+.intel-live-badge.is-generating{
+  color:var(--gold); border-color:rgba(201,162,39,.6);
+}
+.intel-live-badge.is-generating::before{ background:var(--gold); }
+
+/* ─── brief sections as disclosures ─────────────────────────────── */
+.doc__blk{ border-top:1px solid var(--rule); margin-bottom:0 !important; }
+.doc__blk:first-of-type{ border-top:0; }
+
+.doc__toggle{
+  display:flex; align-items:center; gap:.7rem; width:100%;
+  padding:.95rem 0; text-align:left;
+}
+.doc__toggle .doc__h{ margin-bottom:0; flex:1; transition:color .25s; }
+.doc__toggle:hover .doc__h{ color:var(--vermillion); }
+.doc__count{
+  font-size:.6rem; font-weight:700; letter-spacing:.06em;
+  min-width:1.5rem; height:1.5rem; padding-inline:.4rem;
+  display:inline-grid; place-items:center; border-radius:999px;
+  background:var(--paper-2); color:var(--ink-50);
+  font-variant-numeric:tabular-nums;
+}
+.doc__blk.is-open .doc__count{ background:var(--oxblood); color:var(--ivory); }
+.doc__chev{ color:var(--ink-30); font-size:.75rem; transition:transform .3s var(--e-out); }
+.doc__blk.is-open .doc__chev{ transform:rotate(180deg); }
+.doc__body{ overflow:hidden; padding-bottom:.9rem; }
+.doc__body ul{ display:flex; flex-direction:column; gap:.5rem; }
+.doc__body li{
+  font-size:.82rem; line-height:1.55; color:var(--ink-70);
+  padding-left:1rem; position:relative;
+}
+.doc__body li::before{
+  content:''; position:absolute; left:0; top:.62em;
+  width:5px; height:5px; border-radius:50%; background:var(--gold);
+}
+/* The action list is the one to act on, so its bullets carry the
+   accent. (Scoped to the bullets: a bare sibling selector here also
+   caught the section's count badge and chevron and filled them red.) */
+.doc__blk:last-of-type .doc__body li::before{ background:var(--vermillion); }
+
+@media (prefers-reduced-motion:reduce){
+  .ai-badge, .ai-badge__icon, .ai-dots i, .ai-skeleton span{ animation:none; }
+}

@@ -274,7 +274,46 @@
       'confidence.high': 'High', 'confidence.medium': 'Medium', 'confidence.low': 'Low',
       'situation.stable': 'Stable', 'situation.stable_high_pressure': 'Stable — high pressure',
       'situation.rapidly_worsening': 'Rapidly worsening', 'situation.improving': 'Improving',
-      'situation.newly_critical': 'Newly critical', 'situation.resolved': 'Resolved'
+      'situation.newly_critical': 'Newly critical', 'situation.resolved': 'Resolved',
+
+      /* ── v2 command-centre UI ── */
+      'ui.moreDetails': 'More details', 'ui.close': 'Close', 'ui.filter': 'Filter',
+      'ui.clearFilters': 'Reset filters', 'ui.expand': 'Expand', 'ui.collapse': 'Collapse',
+      'time.now': 'just now', 'time.min': 'min ago', 'time.hr': 'h ago',
+
+      'dial.label': 'Route Readiness', 'dial.center': 'READINESS',
+      'dial.clear': 'Clear', 'dial.flagged': 'Flagged',
+      'dial.outer': 'Route covered', 'dial.inner': 'Domain checks',
+      'dial.more': 'Open live operations',
+
+      'dcard.checks': 'checks green', 'dcard.authorities': 'Authorities on the board',
+      'dcard.online': 'online', 'dcard.ctaText': 'Every authority reports into one shared board.',
+      'dcard.ctaBtn': 'File an update',
+
+      'liveops.coverage': 'Route Coverage', 'liveops.showing': 'Showing',
+      'liveops.noMatch': 'No locations match these filters.',
+      'liveops.sortRisk': 'By risk', 'liveops.sortRoute': 'Route order',
+
+      'drawer.eyebrow': 'Location detail', 'drawer.domains': 'Domain status',
+      'drawer.camps': 'Medical camps here', 'drawer.noCamps': 'No medical camp at this location.',
+      'drawer.palkhiHere': 'Palkhi is here now', 'drawer.position': 'Route position',
+
+      'medical.capacity': 'Network Capacity', 'medical.occupancy': 'OCCUPANCY',
+      'medical.bedsUsed': 'Beds in use', 'medical.stockLevel': 'Stock level',
+      'medical.allCamps': 'All camps', 'medical.campsOnline': 'camps reporting',
+
+      'patient.all': 'All', 'patient.showing': 'Showing',
+
+      'intel.distribution': 'Risk distribution', 'intel.detail': 'Detail', 'intel.domains': 'Domains',
+
+      'map.source': 'Satellite imagery: Esri', 'map.zoomHint': 'Click the map to zoom',
+
+      'intel.aiBadge': 'AI Analysis',
+      'intel.aiNote': 'Written by the Wari model from live operational data, not by hand. Re-generated on every report.',
+      'intel.generating': 'Generating analysis',
+      'intel.showAll': 'Show all locations', 'intel.showLess': 'Show only at risk',
+      'intel.noBand': 'No locations in this band.',
+      'intel.atRisk': 'at risk'
     },
     mr: {
       'a11y.skip': 'मुख्य मजकुराकडे जा',
@@ -540,7 +579,46 @@
       'confidence.high': 'उच्च', 'confidence.medium': 'मध्यम', 'confidence.low': 'कमी',
       'situation.stable': 'स्थिर', 'situation.stable_high_pressure': 'स्थिर — उच्च दाब',
       'situation.rapidly_worsening': 'वेगाने बिघडत आहे', 'situation.improving': 'सुधारत आहे',
-      'situation.newly_critical': 'नव्याने गंभीर', 'situation.resolved': 'निकाली'
+      'situation.newly_critical': 'नव्याने गंभीर', 'situation.resolved': 'निकाली',
+
+      /* ── v2 command-centre UI ── */
+      'ui.moreDetails': 'अधिक तपशील', 'ui.close': 'बंद करा', 'ui.filter': 'गाळणी',
+      'ui.clearFilters': 'गाळण्या रद्द करा', 'ui.expand': 'उघडा', 'ui.collapse': 'बंद करा',
+      'time.now': 'आत्ताच', 'time.min': 'मिनिटांपूर्वी', 'time.hr': 'तासांपूर्वी',
+
+      'dial.label': 'मार्ग सज्जता', 'dial.center': 'सज्जता',
+      'dial.clear': 'सुरळीत', 'dial.flagged': 'निदर्शित',
+      'dial.outer': 'पूर्ण झालेला मार्ग', 'dial.inner': 'विभागनिहाय तपासण्या',
+      'dial.more': 'लाइव्ह ऑपरेशन्स उघडा',
+
+      'dcard.checks': 'तपासण्या सुरळीत', 'dcard.authorities': 'फलकावरील प्राधिकरणे',
+      'dcard.online': 'सक्रिय', 'dcard.ctaText': 'प्रत्येक प्राधिकरण एकाच सामायिक फलकावर नोंद करते.',
+      'dcard.ctaBtn': 'नोंद करा',
+
+      'liveops.coverage': 'मार्ग व्याप्ती', 'liveops.showing': 'दाखवत आहे',
+      'liveops.noMatch': 'या गाळण्यांशी जुळणारे कोणतेही स्थळ नाही.',
+      'liveops.sortRisk': 'जोखमीनुसार', 'liveops.sortRoute': 'मार्गक्रमानुसार',
+
+      'drawer.eyebrow': 'स्थळ तपशील', 'drawer.domains': 'विभागनिहाय स्थिती',
+      'drawer.camps': 'येथील वैद्यकीय शिबिरे', 'drawer.noCamps': 'या स्थळी वैद्यकीय शिबिर नाही.',
+      'drawer.palkhiHere': 'पालखी सध्या येथेच आहे', 'drawer.position': 'मार्गातील स्थान',
+
+      'medical.capacity': 'एकूण क्षमता', 'medical.occupancy': 'वापर',
+      'medical.bedsUsed': 'वापरातील खाटा', 'medical.stockLevel': 'साठा पातळी',
+      'medical.allCamps': 'सर्व शिबिरे', 'medical.campsOnline': 'शिबिरे नोंदवत आहेत',
+
+      'patient.all': 'सर्व', 'patient.showing': 'दाखवत आहे',
+
+      'intel.distribution': 'जोखीम वितरण', 'intel.detail': 'तपशील', 'intel.domains': 'विभाग',
+
+      'map.source': 'उपग्रह प्रतिमा: Esri', 'map.zoomHint': 'झूमसाठी नकाशावर क्लिक करा',
+
+      'intel.aiBadge': 'AI विश्लेषण',
+      'intel.aiNote': 'हे विश्लेषण वारी प्रतिमानाने थेट कार्यचित्रातून तयार केले आहे, हाताने लिहिलेले नाही. प्रत्येक नोंदीनंतर पुन्हा तयार होते.',
+      'intel.generating': 'विश्लेषण तयार होत आहे',
+      'intel.showAll': 'सर्व स्थळे दाखवा', 'intel.showLess': 'फक्त जोखमीची दाखवा',
+      'intel.noBand': 'या पातळीत कोणतेही स्थळ नाही.',
+      'intel.atRisk': 'जोखमीत'
     }
   };
 

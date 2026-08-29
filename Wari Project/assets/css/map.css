@@ -1,0 +1,179 @@
+/* ═══════════════════════════════════════════════════════════════════
+   WARI COMMAND INTELLIGENCE — Satellite tracking map
+   Leaflet, skinned to the board: Esri imagery pulled a little toward
+   the ivory/oxblood palette, the walked route in gold leaf, and halt
+   markers that pulse when their status is anything but clear.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─── container ─────────────────────────────────────────────────── */
+.ops-map--sat{
+  background:var(--oxblood-d);
+  overflow:hidden;
+  /* Leaflet stacks its controls at z-index 1000, which would ride over
+     the sticky app nav (200). Isolating keeps that stack local. */
+  isolation:isolate;
+}
+.ops-map--sat .leaflet-container{
+  width:100%; height:100%;
+  background:var(--oxblood-d);
+  font-family:var(--f-ui);
+  border-radius:14px;
+  outline:none;
+}
+
+/* Imagery, nudged toward the board's palette without losing detail. */
+.ops-map--sat .leaflet-tile-pane{
+  filter:saturate(.82) contrast(1.06) brightness(.9);
+}
+
+/* Framing that sits above the imagery but below the route, the markers
+   and the controls — Leaflet's panes are 200 / 400 / 600, controls 1000. */
+.ops-map--sat::after{
+  content:''; position:absolute; inset:0; z-index:350;
+  pointer-events:none; border-radius:14px;
+  background:radial-gradient(125% 100% at 50% 45%, transparent 52%, rgba(36,5,5,.5) 100%);
+  box-shadow:inset 0 0 0 1px rgba(201,162,39,.32);
+}
+
+/* ─── route lines ───────────────────────────────────────────────── */
+.route-live{ filter:drop-shadow(0 0 7px rgba(201,162,39,.6)); }
+.route-comet{ filter:drop-shadow(0 0 9px rgba(226,54,27,.95)); }
+
+/* ─── halt markers ──────────────────────────────────────────────── */
+.opsmk-wrap{ background:none; border:0; }
+.opsmk-wrap:focus{ outline:none; }
+
+.opsmk{ position:relative; display:block; width:24px; height:24px; }
+.opsmk__core{
+  position:absolute; inset:7px; border-radius:50%;
+  background:var(--gold);
+  box-shadow:0 0 0 2px rgba(36,5,5,.9), 0 2px 7px rgba(0,0,0,.55);
+  transition:transform .28s var(--e-out);
+}
+.opsmk__ring{
+  position:absolute; inset:1px; border-radius:50%;
+  border:2px solid var(--gold); opacity:.6;
+  transform-origin:50% 50%;
+}
+.opsmk--warn .opsmk__core{ background:var(--warn); }
+.opsmk--warn .opsmk__ring{ border-color:var(--warn); }
+.opsmk--crit .opsmk__core{ background:var(--vermillion); }
+.opsmk--crit .opsmk__ring{ border-color:var(--vermillion); }
+
+/* Only the halts that need attention pulse, so the eye finds them
+   without having to read a single label. */
+.opsmk--warn .opsmk__ring,
+.opsmk--crit .opsmk__ring{ animation:mkPulse 2.2s ease-out infinite; }
+.opsmk--crit .opsmk__ring{ animation-duration:1.6s; }
+@keyframes mkPulse{
+  0%{ transform:scale(.55); opacity:.85; }
+  70%{ transform:scale(1.85); opacity:0; }
+  100%{ transform:scale(1.85); opacity:0; }
+}
+
+.opsmk-wrap:hover .opsmk__core{ transform:scale(1.5); }
+.opsmk-wrap:focus-visible .opsmk__core{
+  transform:scale(1.5);
+  box-shadow:0 0 0 3px var(--gold), 0 2px 7px rgba(0,0,0,.55);
+}
+
+/* ─── the Palkhi itself ─────────────────────────────────────────── */
+.opspk{ position:relative; display:block; width:46px; height:46px; }
+.opspk::before{
+  content:''; position:absolute; inset:12px; border-radius:50%;
+  background:var(--ivory); box-shadow:0 3px 10px rgba(0,0,0,.6);
+}
+.opspk__icon{
+  position:absolute; left:50%; top:50%; width:26px; height:17px;
+  transform:translate(-50%,-50%); color:var(--vermillion);
+  overflow:visible; z-index:2;
+}
+/* the disc carries the halt's own status, the rings carry the Palkhi */
+.opspk--ok::before{ box-shadow:0 0 0 2.5px var(--gold), 0 3px 10px rgba(0,0,0,.6); }
+.opspk--warn::before{ box-shadow:0 0 0 2.5px var(--warn), 0 3px 10px rgba(0,0,0,.6); }
+.opspk--crit::before{ box-shadow:0 0 0 2.5px var(--vermillion), 0 3px 10px rgba(0,0,0,.6); }
+.opspk__ring{
+  position:absolute; inset:10px; border-radius:50%;
+  border:2px solid var(--vermillion); transform-origin:50% 50%;
+  animation:pkPulse 2.6s ease-out infinite;
+}
+.opspk__ring--2{ animation-delay:1.3s; }
+@keyframes pkPulse{
+  0%{ transform:scale(.55); opacity:.9; }
+  80%{ transform:scale(2.1); opacity:0; }
+  100%{ transform:scale(2.1); opacity:0; }
+}
+.opsmk-wrap:hover .opspk__icon{ transform:translate(-50%,-50%) scale(1.15); }
+.opspk__icon{ transition:transform .28s var(--e-out); }
+
+/* ─── medical camp markers ──────────────────────────────────────── */
+.opscamp{
+  position:relative; display:block; width:20px; height:20px; border-radius:50%;
+  background:var(--ivory); box-shadow:0 2px 7px rgba(0,0,0,.55);
+  transition:transform .25s var(--e-out);
+}
+.opscamp i{ position:absolute; inset:0; }
+.opscamp i::before,
+.opscamp i::after{ content:''; position:absolute; background:var(--vermillion); border-radius:1px; }
+.opscamp i::before{ left:50%; top:5px; bottom:5px; width:2.6px; transform:translateX(-50%); }
+.opscamp i::after{ top:50%; left:5px; right:5px; height:2.6px; transform:translateY(-50%); }
+.opscamp--warn{ box-shadow:0 0 0 2px var(--warn), 0 2px 7px rgba(0,0,0,.55); }
+.opscamp--crit{ box-shadow:0 0 0 2px var(--vermillion), 0 2px 7px rgba(0,0,0,.55); }
+.opsmk-wrap:hover .opscamp{ transform:scale(1.25); }
+
+/* ─── tooltips (same card as the SVG map's) ─────────────────────── */
+.leaflet-tooltip.ops-tip{
+  background:var(--ivory); color:var(--ink);
+  border:0; border-radius:12px; padding:.75rem .9rem;
+  box-shadow:0 22px 44px rgba(0,0,0,.45);
+  font-family:var(--f-ui); font-size:.7rem; line-height:1.5;
+  min-width:190px; max-width:250px; white-space:normal;
+}
+.leaflet-tooltip.ops-tip::before{ border-top-color:var(--ivory); }
+.ops-tip b{
+  display:block; font-family:var(--f-dsp); font-size:1.05rem;
+  line-height:1.1; margin-bottom:.2rem; color:var(--ink);
+}
+.ops-tip .ops-map__tip-mr{
+  display:block; font-family:var(--f-mr); color:var(--vermillion);
+  font-size:.8rem; margin-bottom:.4rem;
+}
+.ops-tip .ops-map__tip-row{
+  display:flex; align-items:center; gap:.4rem;
+  padding-block:.16rem; color:var(--ink-70);
+}
+.ops-map__tip-palkhi{
+  display:inline-flex; align-items:center; margin-top:.45rem;
+  font-size:.56rem; letter-spacing:.1em; text-transform:uppercase; font-weight:700;
+  color:var(--vermillion); background:rgba(226,54,27,.12);
+  padding:.2rem .5rem; border-radius:999px;
+}
+
+/* ─── controls ──────────────────────────────────────────────────── */
+.ops-map--sat .leaflet-control-zoom{
+  border:0; box-shadow:0 6px 18px rgba(0,0,0,.45); overflow:hidden; border-radius:10px;
+}
+.ops-map--sat .leaflet-control-zoom a{
+  background:rgba(36,5,5,.9); color:var(--ivory);
+  border-bottom:1px solid rgba(201,162,39,.28);
+  font-weight:600; transition:background .2s, color .2s;
+}
+.ops-map--sat .leaflet-control-zoom a:last-child{ border-bottom:0; }
+.ops-map--sat .leaflet-control-zoom a:hover{ background:var(--vermillion); color:var(--ivory); }
+.ops-map--sat .leaflet-control-attribution{
+  background:rgba(36,5,5,.74); color:var(--iv-45);
+  font-size:.56rem; letter-spacing:.04em; padding:.15rem .45rem;
+  border-radius:8px 0 0 0;
+}
+.ops-map--sat .leaflet-control-attribution a{ color:var(--gold); }
+
+.ops-map__legend-src{ color:var(--ink-30); font-style:italic; }
+
+/* ─── reduced motion ────────────────────────────────────────────── */
+@media (prefers-reduced-motion:reduce){
+  .opsmk__ring,
+  .opspk__ring{ animation:none; opacity:.45; }
+  .opsmk__core,
+  .opscamp,
+  .opspk__icon{ transition:none; }
+}
