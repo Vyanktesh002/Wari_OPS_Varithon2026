@@ -1,0 +1,131 @@
+{
+  "model_version": "1.0.0",
+  "status_bands": {
+    "NORMAL": [0, 24],
+    "ELEVATED": [25, 49],
+    "HIGH": [50, 74],
+    "CRITICAL": [75, 100]
+  },
+  "domain_weights": {
+    "medical": 0.22,
+    "traffic": 0.16,
+    "dindi": 0.14,
+    "palkhi": 0.14,
+    "weather": 0.10,
+    "municipal": 0.10,
+    "halt": 0.08,
+    "sanitation": 0.06
+  },
+  "risk_mix": {
+    "weighted_average": 0.7,
+    "max_domain": 0.3
+  },
+  "palkhi": {
+    "delay_curve": [[0, 0], [10, 18], [20, 40], [40, 70], [90, 100]]
+  },
+  "dindi": {
+    "concentration_weight": 0.6,
+    "delay_curve": [[0, 0], [15, 20], [30, 45], [60, 80], [120, 100]],
+    "issue_points": 12
+  },
+  "medical": {
+    "load_weight": 0.4,
+    "ambulance_weight": 0.3,
+    "medicine_weight": 0.2,
+    "referral_weight": 0.1,
+    "referral_scale": 20,
+    "high_load_pct": 80,
+    "low_medicine_pct": 30,
+    "critical_medicine_pct": 15
+  },
+  "traffic": {
+    "block_bonus": 35,
+    "incident_points": 10,
+    "high_congestion": 70
+  },
+  "municipal": {
+    "water_weight": 0.4,
+    "shelter_weight": 0.35,
+    "electricity_weight": 0.25,
+    "low_water_readiness": 40,
+    "high_shelter_occupancy": 90
+  },
+  "sanitation": {
+    "low_readiness": 40
+  },
+  "weather": {
+    "rain_curve": [[0, 0], [2, 15], [8, 40], [20, 70], [40, 100]],
+    "hazard_bonus": 25
+  },
+  "halt": {
+    "unready_below": 50
+  },
+  "incidents": {
+    "severity_points": {
+      "low": 1,
+      "medium": 4,
+      "high": 8,
+      "critical": 15
+    },
+    "cap": 25
+  },
+  "correlation": {
+    "crowd_medical_crowd": 70,
+    "crowd_medical_load": 75,
+    "crowd_medical_boost": 10,
+    "weather_movement_rain_pressure": 40,
+    "weather_movement_traffic": 55,
+    "weather_movement_delay": 15,
+    "weather_movement_boost": 12,
+    "medical_access_ambulance_pressure": 50,
+    "medical_access_traffic": 60,
+    "medical_access_boost": 10,
+    "halt_arrival_readiness": 50,
+    "halt_arrival_delay_max": 25,
+    "halt_arrival_boost": 8,
+    "public_health_crowd": 65,
+    "public_health_water": 45,
+    "public_health_sanitation": 45,
+    "public_health_boost": 10,
+    "multi_domain_min_high": 3,
+    "multi_domain_boost": 15,
+    "boost_cap": 25
+  },
+  "gaps": {
+    "ambulance_shortfall_min": 1,
+    "medicine_low_pct": 30,
+    "camp_load_pct": 85,
+    "shelter_occupancy_pct": 90,
+    "water_readiness": 40,
+    "sanitation_readiness": 40
+  },
+  "trends": {
+    "meaningful_delta": 6,
+    "strong_delta": 15
+  },
+  "rate": {
+    "rapid_per_hour": 12,
+    "improving_per_hour": -8
+  },
+  "freshness": {
+    "fresh_minutes": 15,
+    "aging_minutes": 45,
+    "stale_minutes": 120
+  },
+  "confidence": {
+    "base": 0.92,
+    "aging_penalty": 0.12,
+    "stale_penalty": 0.28,
+    "short_history_penalty": 0.1,
+    "no_history_penalty": 0.18,
+    "missing_domain_penalty": 0.06,
+    "floor": 0.35
+  },
+  "suppression": {
+    "risk_delta_max": 3,
+    "require_same_situation_class": true
+  },
+  "priority": {
+    "max_actions": 5
+  }
+}
