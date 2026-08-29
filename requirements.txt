@@ -1,0 +1,19 @@
+# Dependencies for the Vercel serverless function (api/index.py).
+# Vercel installs from the repository root, so this file covers BOTH the
+# Flask backend and the model package it calls in-process.
+#
+# fastapi/uvicorn are deliberately absent: they only wrap the model as an
+# HTTP service (model_service/main.py), which Vercel does not run. The
+# model logic itself needs nothing but pydantic.
+#
+# Local development is unaffected — keep using backend/requirements.txt
+# and model_service/requirements.txt.
+
+flask>=3.0.0
+requests>=2.31.0
+pydantic>=2.5.0
+
+# Postgres driver. store.py uses it only when a database URL is present in
+# the environment (POSTGRES_URL / DATABASE_URL / WCI_DATABASE_URL) and
+# falls back to SQLite otherwise, so this is unused locally.
+psycopg[binary]>=3.1

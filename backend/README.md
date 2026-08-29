@@ -74,7 +74,93 @@ on port 5510, set `window.WCI_BACKEND_URL` (see `assets/js/app.js`) before
 - CORS is enabled for all origins (`backend/app.py`, manual headers, no
   `flask-cors` dependency) so the static frontend can call it regardless
   of which port serves the HTML.
-## Deploying
+
+## Deploying to Vercel
+
+Everything ships as one Vercel project. `vercel.json` serves
+`Wari Project/` as the static site and rewrites `/api/*` to a single
+Python function (`api/index.py`) that runs this Flask app. The model
+package is called **in-process** rather than over HTTP, so there is no
+second service to deploy.
+
+**Import the repo into Vercel and deploy — no settings to change.**
+Framework Preset "Other", no build command, Root Directory left at the
+repository root. `vercel.json` supplies the rest.
+
+Nothing needs configuring afterwards: the frontend and the API share one
+origin, so `config.js` resolves to the deployment's own URL and CORS is
+never exercised. The six demo accounts are seeded on first boot.
+
+Environment variables:
+
+| Env var | Effect |
+|---|---|
+| `POSTGRES_URL` | **Set this.** Injected automatically by Vercel's Postgres integration; without it data is not durable — see below. |
+| `WCI_DB_PATH` | SQLite fallback path, used only when no database URL is set. Defaults to `/tmp/wci.db`. |
+| `WCI_ALLOWED_ORIGIN` | Only needed if something on another domain calls this API. |
+| `OPENAI_API_KEY` | Enables LLM phrasing in the model's summaries; omitted, deterministic phrasing is used. |
+
+### Making data durable (required)
+
+Vercel functions get a read-only filesystem apart from `/tmp`, and `/tmp`
+belongs to one instance and is discarded when it goes cold. A SQLite
+*file* therefore cannot survive there. Attach a Postgres database and the
+problem goes away — `store.py` speaks both, and picks Postgres
+automatically whenever a connection URL is present.
+
+1. In your Vercel project: **Storage → Create Database → Postgres**, and
+   connect it to the project. Vercel injects `POSTGRES_URL` for you.
+2. Redeploy.
+
+That is the whole change — no code edit, no schema to run by hand. On
+first boot the tables are created and `seed.py` loads the 15 locations,
+the patients and the six accounts. From then on every registration,
+report and session is permanent.
+
+`GET /api/health` reports which backend is live:
+
+```json
+{"status":"ok","model_service":"ok","database":"postgres"}
+```
+
+`"database":"sqlite"` there means no database URL was found and data is
+still ephemeral.
+
+**Verify it before you rely on it.** `verify_db.py` exercises every read
+and write against whichever database is configured and cleans up after
+itself, so it is safe to point at the live one:
+
+```
+WCI_DATABASE_URL="postgres://user:pass@host/db?sslmode=require" python verify_db.py
+```
+
+Recognised URL variables, in order: `WCI_DATABASE_URL`, `POSTGRES_URL`,
+`DATABASE_URL`. Prefer Vercel's `POSTGRES_URL` — it is the *pooled*
+endpoint, which matters on serverless, where many short-lived instances
+would otherwise exhaust the connection limit. `store.py` also reconnects
+once and retries if it wakes to a connection the provider has idled out.
+
+Without a database URL nothing changes locally: `python app.py` still
+uses `wci.db` exactly as before.
+
+### Running the model in-process
+
+`MODEL_SERVICE_URL=inprocess` makes `model_client.py` import the model
+package and call `analyze()` directly instead of over HTTP. `api/index.py`
+sets this automatically.
+
+This exists because Vercel's Hobby plan caps a request at 10 seconds, and
+`/api/intel` analyses all 15 locations — one serverless function calling
+another over the network would pay a cold start per location and never
+finish. In-process the same request takes **~0.25s**, and returns results
+byte-identical to the HTTP path (the model is a pure function with no I/O
+of its own).
+
+Local development is unaffected: with `MODEL_SERVICE_URL` unset it still
+defaults to `http://127.0.0.1:8001`, and the two services run separately
+exactly as before.
+
+## Deploying to a host with a persistent disk
 
 Three pieces: the static frontend (`Wari Project/`), this Flask backend,
 and the FastAPI model service (`model_service/`). The frontend can go on

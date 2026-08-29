@@ -93,7 +93,13 @@ def _handle_preflight():
 # ── health ───────────────────────────────────────────────────────────────
 @app.get("/api/health")
 def health():
-    return jsonify({"status": "ok", "model_service": "ok" if model_client.health() else "unreachable"})
+    return jsonify({
+        "status": "ok",
+        "model_service": "ok" if model_client.health() else "unreachable",
+        # "postgres" means data is durable; "sqlite" means it lives in a
+        # local file (and on a serverless host, only until the next cold start).
+        "database": store.dialect(),
+    })
 
 
 @app.get("/api/locations")
