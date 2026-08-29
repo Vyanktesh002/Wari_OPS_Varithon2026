@@ -306,6 +306,22 @@
           <div class="camp-list" id="campList"></div>
         </section>
 
+        <section class="panel" id="patientRegisterPanel" hidden>
+          <div class="panel__title-row">
+            <h2 class="panel__title" data-i18n="medical.registerPatient">Register Patient</h2>
+            <span class="panel__hint" data-i18n="medical.registerHint">Registering by name checks for prior visits automatically.</span>
+          </div>
+          <form class="patient-register-form" id="patientRegisterForm">
+            <label class="field"><span data-i18n="field.patientName">Patient name</span><input id="pr-name" type="text" required /></label>
+            <label class="field"><span data-i18n="field.age">Age</span><input id="pr-age" type="number" min="0" max="120" /></label>
+            <label class="field"><span data-i18n="field.camp">Camp</span><select id="pr-camp"></select></label>
+            <label class="field"><span data-i18n="field.condition">Condition / ailment</span><input id="pr-condition" type="text" /></label>
+            <label class="field"><span data-i18n="field.status">Status</span><select id="pr-status"></select></label>
+            <label class="field patient-register-form__notes"><span data-i18n="field.notes">Notes (optional)</span><textarea id="pr-notes"></textarea></label>
+            <button type="submit" class="btn btn--lg patient-register-form__submit" data-i18n="medical.registerSubmit">Register patient</button>
+          </form>
+        </section>
+
         <section class="panel">
           <div class="panel__title-row">
             <h2 class="panel__title" data-i18n="medical.patientRecords">Patient Records</h2>
@@ -321,29 +337,47 @@
 
     <!-- INTEL -->
     <section class="page" id="page-intel" data-page="intel">
+      <div class="warli-watermark warli-watermark--sun" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#w-sun"/></svg></div>
       <div class="wrap page__wrap">
         <header class="page__head">
-          <span class="sec__label" data-i18n="intel.label">Supervisor Intelligence</span>
-          <h1 class="dsp dsp--ink page__title" data-i18n="intel.h1">The whole day, on one page.</h1>
-          <p class="lede" data-i18n="intel.lede">Placeholder shell — wired to synthetic data until the risk-scoring model ships. Layout will not change when live scoring is connected.</p>
-        </header>
-
-        <div class="intel-top">
-          <div class="gauge" id="intelGauge">
-            <svg viewBox="0 0 240 240" class="gauge__svg">
-              <circle class="gauge__bg" cx="120" cy="120" r="98"/>
-              <circle class="gauge__fg" id="intelArc" cx="120" cy="120" r="98"/>
-            </svg>
-            <div class="gauge__mid">
-              <span class="gauge__lab" data-i18n="gauge.label">WARI STATUS</span>
-              <b class="gauge__n" id="intelNum">0</b>
-              <span class="gauge__state" id="intelState">—</span>
+          <div class="page__head-row">
+            <div>
+              <span class="sec__label" data-i18n="intel.label">Supervisor Intelligence</span>
+              <h1 class="dsp dsp--ink page__title" data-i18n="intel.h1">The whole day, on one page.</h1>
+              <p class="lede" data-i18n="intel.lede">Live, deterministic risk scoring from the Wari model service — one call per location, merged into a single supervisor picture.</p>
+            </div>
+            <div class="intel-headctl">
+              <span class="s-badge intel-live-badge" id="intelLiveBadge" data-i18n="intel.live">LIVE MODEL</span>
+              <button type="button" class="app__logout intel-refresh" id="intelRefreshBtn" data-i18n="intel.refresh">Refresh analysis</button>
             </div>
           </div>
-          <div class="brief__conf" id="intelConf"></div>
-        </div>
+        </header>
 
-        <article class="doc doc--full" id="intelDoc"></article>
+        <div class="intel-status-line" id="intelStatus" hidden></div>
+
+        <div id="intelBody">
+          <div class="intel-top">
+            <div class="gauge" id="intelGauge">
+              <svg viewBox="0 0 240 240" class="gauge__svg">
+                <circle class="gauge__bg" cx="120" cy="120" r="98"/>
+                <circle class="gauge__fg" id="intelArc" cx="120" cy="120" r="98"/>
+              </svg>
+              <div class="gauge__mid">
+                <span class="gauge__lab" data-i18n="gauge.label">WARI STATUS</span>
+                <b class="gauge__n" id="intelNum">0</b>
+                <span class="gauge__state" id="intelState">—</span>
+              </div>
+            </div>
+            <div class="brief__conf" id="intelConf"></div>
+          </div>
+
+          <section class="panel panel--intel-locations">
+            <h2 class="panel__title" data-i18n="intel.locationsAtRisk">Locations at Risk</h2>
+            <div class="intel-loc-list" id="intelLocList"></div>
+          </section>
+
+          <article class="doc doc--full" id="intelDoc"></article>
+        </div>
       </div>
     </section>
 
@@ -351,6 +385,19 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<div class="modal" id="patientHistoryModal" hidden role="dialog" aria-modal="true" aria-labelledby="patientHistoryModalTitle">
+  <div class="modal__overlay" id="patientHistoryModalOverlay"></div>
+  <div class="modal__card">
+    <button type="button" class="modal__close" id="patientHistoryModalClose" aria-label="Close">&times;</button>
+    <svg class="modal__icon" viewBox="0 0 120 100"><use href="#g-medical"/></svg>
+    <span class="modal__eyebrow" data-i18n="medical.priorHistoryTitle">Prior treatment history found</span>
+    <h3 class="modal__title" id="patientHistoryModalTitle"></h3>
+    <p class="modal__lede" data-i18n="medical.priorHistoryNote">A patient with this name has been treated before — review before proceeding:</p>
+    <div class="modal__body" id="patientHistoryModalBody"></div>
+    <button type="button" class="btn btn--lg modal__ack" id="patientHistoryModalOk" data-i18n="medical.priorHistoryAck">Got it, continue</button>
+  </div>
+</div>
 
 <script src="assets/js/i18n.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>

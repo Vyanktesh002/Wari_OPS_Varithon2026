@@ -73,6 +73,12 @@
 
   /* ══════════════ MOCK DATA — MEDICAL CAMPS ══════════════ */
   var MED_KEY_LABEL = { ors: 'med.ors', antipyretics: 'med.antipyretics', analgesics: 'med.analgesics', ivFluids: 'med.ivFluids', antiseptics: 'med.antiseptics' };
+  var PSTATUS_LABEL = { admitted: 'pstatus.admitted', discharged: 'pstatus.discharged', referred: 'pstatus.referred' };
+  function patientStatusLabel(status) { return PSTATUS_LABEL[status] ? t(PSTATUS_LABEL[status]) : status; }
+  function campLabel(campId) {
+    var c = CAMPS.filter(function (x) { return x.id === campId; })[0];
+    return c ? c.en : (campId || '—');
+  }
   var CAMPS = [
     { id: 'jejuri-1', en: 'Jejuri Camp 1', mr: 'जेजुरी शिबिर १', capacity: 80, patients: 42, icuTotal: 6, icuAvail: 4, ambTotal: 3, ambAvail: 3,
       meds: { ors: { stock: 160, par: 200, unit: 'packets' }, antipyretics: { stock: 120, par: 150, unit: 'strips' }, analgesics: { stock: 130, par: 150, unit: 'strips' }, ivFluids: { stock: 80, par: 100, unit: 'bottles' }, antiseptics: { stock: 60, par: 80, unit: 'bottles' } } },
@@ -99,44 +105,33 @@
 
   /* ══════════════ MOCK DATA — PATIENTS ══════════════ */
   var PATIENTS = [
-    { id: 'P-1042', name: 'Ramesh Jadhav',    age: 58, camp: 'Jejuri Camp 3',       condition: 'Heat exhaustion',   status: 'Admitted' },
-    { id: 'P-1043', name: 'Sunita More',      age: 34, camp: 'Jejuri Camp 3',       condition: 'Dehydration',       status: 'Admitted' },
-    { id: 'P-1044', name: 'Anil Kadam',       age: 61, camp: 'Jejuri Camp 2',       condition: 'High blood pressure', status: 'Treated & Discharged' },
-    { id: 'P-1045', name: 'Vaishali Pawar',   age: 27, camp: 'Wakhari Forward Camp',condition: 'Minor foot injury', status: 'Treated & Discharged' },
-    { id: 'P-1046', name: 'Ganesh Shinde',    age: 45, camp: 'Phaltan Camp',        condition: 'Fever',             status: 'Admitted' },
-    { id: 'P-1047', name: 'Kavita Bhosale',   age: 39, camp: 'Jejuri Camp 1',       condition: 'Gastro upset',      status: 'Treated & Discharged' },
-    { id: 'P-1048', name: 'Dattu Salunkhe',   age: 66, camp: 'Jejuri Camp 3',       condition: 'Chest discomfort',  status: 'Referred' },
-    { id: 'P-1049', name: 'Meera Gaikwad',    age: 22, camp: 'Wakhari Forward Camp',condition: 'Blister / abrasion',status: 'Treated & Discharged' },
-    { id: 'P-1050', name: 'Baban Chavan',     age: 71, camp: 'Jejuri Camp 2',       condition: 'Dehydration',       status: 'Admitted' },
-    { id: 'P-1051', name: 'Pratibha Kale',    age: 48, camp: 'Phaltan Camp',        condition: 'Fracture (wrist)',  status: 'Referred' },
-    { id: 'P-1052', name: 'Suresh Deshmukh',  age: 55, camp: 'Jejuri Camp 1',       condition: 'Fever',             status: 'Admitted' },
-    { id: 'P-1053', name: 'Nirmala Jagtap',   age: 63, camp: 'Jejuri Camp 3',       condition: 'Heat exhaustion',   status: 'Admitted' },
-    { id: 'P-1054', name: 'Vitthal Pathare',  age: 40, camp: 'Wakhari Forward Camp',condition: 'Minor injury',      status: 'Treated & Discharged' },
-    { id: 'P-1055', name: 'Sarika Wagh',      age: 31, camp: 'Phaltan Camp',        condition: 'Gastro upset',      status: 'Treated & Discharged' }
+    { id: 'P-1042', name: 'Ramesh Jadhav',    age: 58, camp: 'Jejuri Camp 3',       condition: 'Heat exhaustion',   status: 'admitted' },
+    { id: 'P-1043', name: 'Sunita More',      age: 34, camp: 'Jejuri Camp 3',       condition: 'Dehydration',       status: 'admitted' },
+    { id: 'P-1044', name: 'Anil Kadam',       age: 61, camp: 'Jejuri Camp 2',       condition: 'High blood pressure', status: 'discharged' },
+    { id: 'P-1045', name: 'Vaishali Pawar',   age: 27, camp: 'Wakhari Forward Camp',condition: 'Minor foot injury', status: 'discharged' },
+    { id: 'P-1046', name: 'Ganesh Shinde',    age: 45, camp: 'Phaltan Camp',        condition: 'Fever',             status: 'admitted' },
+    { id: 'P-1047', name: 'Kavita Bhosale',   age: 39, camp: 'Jejuri Camp 1',       condition: 'Gastro upset',      status: 'discharged' },
+    { id: 'P-1048', name: 'Dattu Salunkhe',   age: 66, camp: 'Jejuri Camp 3',       condition: 'Chest discomfort',  status: 'referred' },
+    { id: 'P-1049', name: 'Meera Gaikwad',    age: 22, camp: 'Wakhari Forward Camp',condition: 'Blister / abrasion',status: 'discharged' },
+    { id: 'P-1050', name: 'Baban Chavan',     age: 71, camp: 'Jejuri Camp 2',       condition: 'Dehydration',       status: 'admitted' },
+    { id: 'P-1051', name: 'Pratibha Kale',    age: 48, camp: 'Phaltan Camp',        condition: 'Fracture (wrist)',  status: 'referred' },
+    { id: 'P-1052', name: 'Suresh Deshmukh',  age: 55, camp: 'Jejuri Camp 1',       condition: 'Fever',             status: 'admitted' },
+    { id: 'P-1053', name: 'Nirmala Jagtap',   age: 63, camp: 'Jejuri Camp 3',       condition: 'Heat exhaustion',   status: 'admitted' },
+    { id: 'P-1054', name: 'Vitthal Pathare',  age: 40, camp: 'Wakhari Forward Camp',condition: 'Minor injury',      status: 'discharged' },
+    { id: 'P-1055', name: 'Sarika Wagh',      age: 31, camp: 'Phaltan Camp',        condition: 'Gastro upset',      status: 'discharged' }
   ];
+  /* Instant fallback shown before loadPatientsFromBackend() resolves; the
+     backend (backend/store.py's patients table) is the durable source of
+     truth once the fetch lands, same pattern as the live feed. */
+  var patientsCache = PATIENTS.slice();
 
   /* ══════════════ LIVE FEED ══════════════ */
   var CAT_TAG = { police: 'tag--police', medical: 'tag--med', dindi: 'tag--dindi', municipal: 'tag--muni', sanitation: 'tag--san' };
   var ST_CLASS = { reported: '', ack: 'fstat--ack', progress: 'fstat--progress', resolved: 'fstat--resolved' };
 
-  var feedItems = [
-    { cat: 'medical', sev: 'critical', st: 'reported', loc: 'Jejuri', mr: 'जेजुरी', h: 'Ambulance availability down to 2 vehicles at Camp 3', h_mr: 'शिबिर ३ मध्ये रुग्णवाहिका उपलब्धता २ वाहनांवर घसरली', d: 'Medical Authority', ts: Date.now() - 2 * 60000 },
-    { cat: 'medical', sev: 'high', st: 'progress', loc: 'Jejuri', mr: 'जेजुरी', h: 'Camp 3 load at 88% — presentations rising', h_mr: 'शिबिर ३ चा भार ८८% — रुग्णसंख्या वाढते आहे', d: 'Medical Authority', ts: Date.now() - 10 * 60000 },
-    { cat: 'police', sev: 'high', st: 'ack', loc: 'Lonand', mr: 'लोणंद', h: 'Congestion high on the state highway diversion', h_mr: 'राज्य महामार्ग वळणमार्गावर तीव्र कोंडी', d: 'Police Authority', ts: Date.now() - 25 * 60000 },
-    { cat: 'dindi', sev: 'high', st: 'reported', loc: 'Lonand', mr: 'लोणंद', h: '14 Dindis compressing into the approach road', h_mr: '१४ दिंड्या प्रवेशमार्गावर एकवटत आहेत', d: 'Dindi Coordinator', ts: Date.now() - 38 * 60000 },
-    { cat: 'dindi', sev: 'info', st: 'ack', loc: 'Lonand', mr: 'लोणंद', h: 'Palkhi 22 minutes behind published schedule', h_mr: 'पालखी जाहीर वेळापत्रकापेक्षा २२ मिनिटे मागे', d: 'Dindi Coordinator', ts: Date.now() - 54 * 60000 },
-    { cat: 'municipal', sev: 'info', st: 'progress', loc: 'Lonand', mr: 'लोणंद', h: 'Rainfall increasing — two shelter tents taking water', h_mr: 'पावसाचा जोर वाढतो आहे — दोन निवारा तंबूंत पाणी शिरले', d: 'Municipal Authority', ts: Date.now() - 71 * 60000 },
-    { cat: 'sanitation', sev: 'info', st: 'resolved', loc: 'Walhe', mr: 'वाल्हे', h: 'Mobile toilet block restored to service', h_mr: 'फिरते शौचालय विभाग पुन्हा सुरू', d: 'Nirmal Wari', ts: Date.now() - 88 * 60000 }
-  ];
-  var FEED_POOL = [
-    { cat: 'dindi', sev: 'info', st: 'reported', loc: 'Taradgaon', mr: 'तरडगाव', h: 'Dindi 214 reports headcount 1,180 — on schedule', h_mr: 'दिंडी २१४ ने संख्या १,१८० नोंदवली — वेळापत्रकानुसार', d: 'Dindi Coordinator' },
-    { cat: 'medical', sev: 'high', st: 'reported', loc: 'Wakhari', mr: 'वाखरी', h: 'Three heat-exhaustion cases at the forward camp', h_mr: 'अग्रगामी शिबिरात उष्माघाताची तीन प्रकरणे', d: 'Medical Authority' },
-    { cat: 'sanitation', sev: 'high', st: 'reported', loc: 'Malshiras', mr: 'माळशिरस', h: 'Sanitation block at 90% utilisation', h_mr: 'स्वच्छता विभाग ९०% वापरात', d: 'Nirmal Wari' },
-    { cat: 'police', sev: 'critical', st: 'reported', loc: 'Natepute', mr: 'नातेपुते', h: 'Two-wheeler collision on the approach — lane blocked', h_mr: 'प्रवेशमार्गावर दुचाकी अपघात — मार्गिका अडवली', d: 'Police Authority' },
-    { cat: 'municipal', sev: 'info', st: 'progress', loc: 'Velapur', mr: 'वेळापूर', h: 'Street lighting restored across halt point', h_mr: 'थांबा बिंदूवर रस्ता दिवे पुन्हा सुरू', d: 'Municipal Authority' },
-    { cat: 'medical', sev: 'info', st: 'resolved', loc: 'Barad', mr: 'बरड', h: 'Patient referred to district hospital — record synced', h_mr: 'रुग्णाला जिल्हा रुग्णालयात संदर्भित — नोंद समक्रमित', d: 'Medical Authority' }
-  ];
-  var feedPoolIdx = 0;
+  /* No seed/synthetic items — the feed only ever shows real submitted
+     reports (see pushFeedItem, called from renderRecords' submit handler). */
+  var feedItems = [];
   var NEW_MS = 45000;
 
   function timeAgo(ts) {
@@ -179,9 +174,13 @@
     if (!list) return;
     var sorted = feedItems.slice().sort(function (a, b) { return b.ts - a.ts; });
     list.innerHTML = '';
-    sorted.slice(0, 12).forEach(function (item) { list.appendChild(feedNode(item)); });
+    if (!sorted.length) {
+      list.innerHTML = '<li class="feed-empty">' + t('feed.empty') + '</li>';
+    } else {
+      sorted.slice(0, 12).forEach(function (item) { list.appendChild(feedNode(item)); });
+    }
     var updated = $('#feedUpdated');
-    if (updated) updated.textContent = t('feed.updated') + ' ' + timeAgo(sorted[0] ? sorted[0].ts : Date.now());
+    if (updated) updated.textContent = sorted.length ? (t('feed.updated') + ' ' + timeAgo(sorted[0].ts)) : '';
   }
 
   function pushFeedItem(item) {
@@ -191,61 +190,148 @@
     renderFeed();
   }
 
-  function startFeedSimulation() {
-    setInterval(function () {
-      var base = FEED_POOL[feedPoolIdx % FEED_POOL.length];
-      feedPoolIdx++;
-      pushFeedItem(Object.assign({}, base));
-    }, 14000);
-    setInterval(renderFeed, 30000); // keep "time ago" labels fresh
+  /* The feed is durable server-side (backend/store.py's feed_events table),
+     not just this tab's in-memory feedItems — so a reload, a second tab, or
+     coming back later all show the real submitted history, not an empty
+     list. pushFeedItem() above still gives instant optimistic feedback the
+     moment a report is submitted; this reconciles with the source of truth
+     right after (and on every dashboard load). */
+  function feedEventToItem(evt) {
+    var loc = LOCATIONS.filter(function (l) { return l.id === evt.location_id; })[0];
+    var camp = CAMPS.filter(function (c) { return c.id === evt.camp_id; })[0];
+    var role = roleById(evt.role);
+    var typeLabel = evt.type ? t(evt.type) : '';
+    var headline = typeLabel ? typeLabel + (evt.details ? ' — ' + evt.details : '') : (evt.details || ((role ? roleName(role) : evt.role) + ' update'));
+    return {
+      cat: evt.role, sev: SEV_MAP[evt.severity] || 'info', st: 'reported',
+      loc: loc ? loc.en : (camp ? camp.en : '—'), mr: loc ? loc.mr : (camp ? camp.mr : ''),
+      h: headline, h_mr: headline,
+      d: role ? roleName(role) : evt.role,
+      ts: new Date(evt.ts).getTime()
+    };
   }
 
-  /* ══════════════ INTEL (placeholder shell — data separated from layout) ══════════════ */
-  var INTEL_DATA = {
-    riskScore: 74,
-    stateKey: 'gauge.high',
-    freshnessMin: 2,
-    locationsTracked: 14,
-    criticalNow: ['intel.critical1', 'intel.critical2'],
-    developingRisks: ['intel.dev1', 'intel.dev2'],
-    whatChanged: ['intel.changed1', 'intel.changed2', 'intel.changed3'],
-    resourceGaps: ['intel.gap1', 'intel.gap2', 'intel.gap3'],
-    emergingRisks: ['intel.emerging1', 'intel.emerging2'],
-    priorityActions: ['intel.action1', 'intel.action2', 'intel.action3']
-  };
+  function loadFeedFromBackend() {
+    return fetch(BACKEND_URL + '/api/feed?limit=30', { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('backend responded ' + r.status); return r.json(); })
+      .then(function (events) {
+        feedItems = events.map(feedEventToItem);
+        renderFeed();
+      })
+      .catch(function (err) { console.warn('[Wari] feed backend unavailable:', err.message); });
+  }
 
-  function renderIntel(data) {
+  /* Synthetic FEED_POOL auto-injection is disabled — the feed now only
+     shows real submitted reports. This just keeps "X min ago" labels current. */
+  function startFeedClock() {
+    setInterval(renderFeed, 30000);
+  }
+
+  /* ══════════════ INTEL (live — backed by the Flask backend + model service) ══════════════
+     GET {BACKEND}/api/intel returns an aggregate across every location, built by the
+     backend from real POST /model/analyze calls (see MODEL_INTEGRATION.md). Nothing here
+     invents scores or copy — it only renders what the model actually returned. */
+  var BACKEND_URL = window.WCI_BACKEND_URL || 'http://127.0.0.1:5050';
+  var RISK_STATUS_KEY = { NORMAL: 'gauge.low', ELEVATED: 'gauge.mod', HIGH: 'gauge.high', CRITICAL: 'gauge.crit' };
+  var RISK_STATUS_CLASS = { NORMAL: '', ELEVATED: 'is-mod', HIGH: 'is-high', CRITICAL: 'is-crit' };
+  var lastIntelSummary = null;
+
+  function setIntelStatus(msg, isError) {
+    var el = $('#intelStatus'), body = $('#intelBody');
+    if (!el) return;
+    el.hidden = !msg;
+    el.className = 'intel-status-line' + (isError ? ' is-error' : '');
+    el.textContent = msg || '';
+    if (body) body.style.display = msg ? 'none' : '';
+  }
+
+  function fetchIntel(refresh) {
+    return fetch(BACKEND_URL + '/api/intel' + (refresh ? '?refresh=1' : ''), { cache: 'no-store' })
+      .then(function (r) {
+        if (!r.ok) throw new Error('backend responded ' + r.status);
+        return r.json();
+      });
+  }
+
+  function renderIntelFromModel(data) {
+    lastIntelSummary = data;
+    setIntelStatus(null);
+
     var CIRC = 2 * Math.PI * 98;
     var arc = $('#intelArc'), num = $('#intelNum'), state = $('#intelState');
-    if (arc) arc.style.strokeDashoffset = CIRC * (1 - data.riskScore / 100);
-    if (num) num.textContent = Math.round(data.riskScore);
-    var cls = data.riskScore >= 80 ? 'is-crit' : data.riskScore >= 65 ? 'is-high' : data.riskScore >= 40 ? 'is-mod' : '';
-    var gauge = $('#intelGauge'); if (gauge) gauge.className = 'gauge' + (cls ? ' ' + cls : '');
-    if (state) state.textContent = t(data.stateKey);
+    if (arc) arc.style.strokeDashoffset = CIRC * (1 - data.risk_score / 100);
+    if (num) num.textContent = Math.round(data.risk_score);
+    var gauge = $('#intelGauge');
+    if (gauge) gauge.className = 'gauge' + (RISK_STATUS_CLASS[data.status] ? ' ' + RISK_STATUS_CLASS[data.status] : '');
+    if (state) state.textContent = t(RISK_STATUS_KEY[data.status] || 'gauge.low');
 
+    var freshMin = Math.round(data.data_freshness.current_age_minutes);
     var conf = $('#intelConf');
     if (conf) conf.innerHTML =
-      '<div><span>' + t('brief.freshness') + '</span><b>' + data.freshnessMin + ' min</b></div>' +
-      '<div><span>' + t('brief.confidence') + '</span><b>' + t('brief.confHigh') + '</b></div>' +
-      '<div><span>' + t('brief.locations') + '</span><b>' + data.locationsTracked + '</b></div>';
+      '<div><span>' + t('brief.freshness') + '</span><b>' + t('freshness.' + data.data_freshness.grade) + ' · ' + freshMin + ' min</b></div>' +
+      '<div><span>' + t('brief.confidence') + '</span><b>' + t('confidence.' + data.confidence.grade) + '</b></div>' +
+      '<div><span>' + t('brief.locations') + '</span><b>' + data.locations_ranked.length + '</b></div>';
 
-    function block(headingKey, hClass, keys) {
-      return '<section class="doc__blk"><h4 class="doc__h' + (hClass ? ' ' + hClass : '') + '">' + t(headingKey) + '</h4><ul>' +
-        keys.map(function (k) { return '<li>' + t(k) + '</li>'; }).join('') + '</ul></section>';
+    var locList = $('#intelLocList');
+    if (locList) locList.innerHTML = data.locations_ranked.map(function (l, i) {
+      return '<div class="intel-loc-item intel-loc-item--' + l.status + '">' +
+        '<span class="intel-loc-item__rank">' + (i + 1) + '</span>' +
+        '<span class="intel-loc-item__main"><span class="intel-loc-item__name">' + (l.name || l.id) + '</span>' +
+        '<div class="intel-loc-item__headline">' + l.headline + '</div></span>' +
+        '<span class="intel-loc-item__class">' + t('situation.' + l.situation_class) + '</span>' +
+        '<span class="intel-loc-item__score">' + l.risk_score + '</span>' +
+      '</div>';
+    }).join('');
+
+    function tagged(label, locName) { return label + (locName ? ' <span class="intel-tag">— ' + locName + '</span>' : ''); }
+    function block(headingKey, hClass, items, emptyKey) {
+      var body = items.length ? '<ul>' + items.join('') + '</ul>' : '<p class="panel__hint">' + t(emptyKey) + '</p>';
+      return '<section class="doc__blk"><h4 class="doc__h' + (hClass ? ' ' + hClass : '') + '">' + t(headingKey) + '</h4>' + body + '</section>';
     }
+
+    var keyFactorItems = data.key_factors.map(function (f) { return '<li>' + f + '</li>'; });
+    var gapItems = data.resource_gaps.map(function (g) { return '<li>' + tagged(t('domain.' + g.domain) + ' — ' + g.detail, g.location_name) + '</li>'; });
+    var emergingItems = data.emerging_risks.map(function (e) { return '<li>' + tagged(e.title + ' — ' + e.rationale, e.location_name) + '</li>'; });
+    var actionItems = data.priority_actions.map(function (a) {
+      return '<li>' + tagged(a.action + ' — ' + a.why, a.location_name) + ' <span class="intel-tag">(' + a.authority + ')</span></li>';
+    });
 
     var doc = $('#intelDoc');
     if (doc) doc.innerHTML =
       '<div class="doc__orn"></div>' +
-      '<header class="doc__head"><span>' + t('doc.status') + '</span><b>' + t(data.stateKey) + '</b></header>' +
-      block('doc.critNow', 'doc__h--crit', data.criticalNow) +
-      block('doc.developing', 'doc__h--warn', data.developingRisks) +
-      block('doc.whatChanged', '', data.whatChanged) +
-      block('doc.resourceGaps', '', data.resourceGaps) +
-      block('doc.emerging', '', data.emergingRisks) +
-      block('doc.attention', 'doc__h--act', data.priorityActions) +
-      '<footer class="doc__foot"><span>' + t('intel.issued') + '</span><span>' + t('doc.sim') + '</span></footer>';
+      '<header class="doc__head"><span>' + t('doc.status') + '</span><b>' + t(RISK_STATUS_KEY[data.status] || 'gauge.low') + '</b></header>' +
+      block('intel.keyFactors', '', keyFactorItems, 'intel.allCalm') +
+      block('doc.resourceGaps', '', gapItems, 'intel.noGaps') +
+      block('doc.emerging', '', emergingItems, 'intel.noEmerging') +
+      block('doc.attention', 'doc__h--act', actionItems, 'intel.noActions') +
+      '<footer class="doc__foot"><span>' + t('intel.modelVersion') + ' ' + data.model_version + ' · ' + t('intel.asOf') + ' ' + new Date(data.analyzed_at).toLocaleTimeString() + '</span><span>' + t('doc.sim') + '</span></footer>';
+
     revealIn($$('.doc__blk', doc));
+    if (locList) revealIn($$('.intel-loc-item', locList));
+    updateWariStatusStat();
+    refreshLiveStatuses();
+  }
+
+  function loadIntel(refresh) {
+    var btn = $('#intelRefreshBtn');
+    if (btn) { btn.disabled = true; btn.textContent = t('intel.refreshing'); }
+    if (!lastIntelSummary) setIntelStatus(t('intel.loading'));
+    return fetchIntel(refresh)
+      .then(renderIntelFromModel)
+      .catch(function (err) {
+        console.warn('[Wari] intel backend unavailable:', err.message);
+        if (!lastIntelSummary) setIntelStatus(t('intel.offline'), true);
+      })
+      .then(function () {
+        if (btn) { btn.disabled = false; btn.textContent = t('intel.refresh'); }
+      });
+  }
+
+  function updateWariStatusStat() {
+    var cell = $('#statWariStatus');
+    if (!cell || !lastIntelSummary) return;
+    cell.querySelector('.stat-strip__n').textContent = lastIntelSummary.risk_score;
+    cell.querySelector('.stat-strip__label').textContent = t('stat.wariStatus') + ' — ' + t(RISK_STATUS_KEY[lastIntelSummary.status] || 'gauge.low');
   }
 
   /* ══════════════ REPORT FORM (Records) ══════════════ */
@@ -311,9 +397,34 @@
         loc: loc ? loc.en : (camp ? camp.en : '—'), mr: loc ? loc.mr : (camp ? camp.mr : ''),
         h: headline, h_mr: headline, d: roleName(role)
       });
+      submitReportToBackend(role.id, values);
       toast(t('toast.reportSubmitted'));
       form.reset();
     };
+  }
+
+  /* Forward the report to the Flask backend so it updates the affected
+     location's operational state and re-runs the model. Best-effort —
+     the local feed above already gives instant feedback either way. */
+  function submitReportToBackend(roleId, values) {
+    fetch(BACKEND_URL + '/api/reports', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        role: roleId,
+        location_id: values.location || null,
+        camp_id: values.camp || null,
+        headcount: values.headcount || null,
+        delay: values.delay || null,
+        type: values.type || null,
+        severity: values.severity || null,
+        details: values.details || null
+      })
+    }).then(function (r) {
+      if (r.ok) { loadIntel(true); loadFeedFromBackend(); }
+    }).catch(function (err) {
+      console.warn('[Wari] report backend unavailable:', err.message);
+    });
   }
 
   /* ══════════════ DASHBOARD ══════════════ */
@@ -324,8 +435,50 @@
     { id: 'sanitation', icon: 'g-sanitation' }
   ];
 
+  /* Prefer live per-location domain status from the backend's last analysis
+     (lastIntelSummary, set in renderIntelFromModel) once it's loaded; fall
+     back to the static route mock until then or if the backend is offline. */
+  function liveDomainsFor(locationId) {
+    if (!lastIntelSummary) return null;
+    var entry = lastIntelSummary.locations_ranked.filter(function (l) { return l.id === locationId; })[0];
+    return entry ? entry.domains : null;
+  }
+
+  function domainStatus(locationId, domId) {
+    var live = liveDomainsFor(locationId);
+    if (live && live[domId]) return live[domId];
+    var loc = LOCATIONS.filter(function (l) { return l.id === locationId; })[0];
+    return loc ? loc.dom[domId] : 'ok';
+  }
+
   function domainOverall(domId) {
-    return LOCATIONS.reduce(function (acc, loc) { return worst(acc, loc.dom[domId]); }, 'ok');
+    return LOCATIONS.reduce(function (acc, loc) { return worst(acc, domainStatus(loc.id, domId)); }, 'ok');
+  }
+
+  /* Re-render everything driven by domain status once live data lands or
+     changes (called from renderIntelFromModel, i.e. after every report). */
+  function refreshLiveStatuses() {
+    if ($('#domainGrid')) {
+      $('#domainGrid').innerHTML = DOMAINS.map(function (d) {
+        var s = domainOverall(d.id);
+        return '<div class="domain-cell"><svg viewBox="0 0 120 100"><use href="#' + d.icon + '"/></svg>' +
+          '<span class="domain-cell__name">' + t('chip.' + d.id) + '</span>' + sBadge(s, statusWord(s)) + '</div>';
+      }).join('');
+    }
+    $$('.loc-card[data-loc]').forEach(function (card) {
+      var locId = card.dataset.loc;
+      $$('.loc-dom', card).forEach(function (badge) {
+        var domId = badge.dataset.dom;
+        badge.innerHTML = sDot(domainStatus(locId, domId)) + t('chip.' + domId);
+      });
+    });
+    $$('.ops-map__stop[data-loc]').forEach(function (g) {
+      var loc = LOCATIONS.filter(function (l) { return l.id === g.dataset.loc; })[0];
+      if (!loc) return;
+      var s = locWorstStatus(loc);
+      g.classList.toggle('is-warn', s === 'warn');
+      g.classList.toggle('is-crit', s === 'crit');
+    });
   }
 
   function renderDashboard(role) {
@@ -336,8 +489,9 @@
       { n: '138 km', label: t('stat.kmSoFar') },
       { n: '512+', label: t('stat.dindisMotion') },
       { n: '15', label: t('stat.trackedLoc') },
-      { n: INTEL_DATA.riskScore, label: t('stat.wariStatus') + ' — ' + t(INTEL_DATA.stateKey) }
-    ].map(function (s) { return '<div class="stat-strip__cell"><b class="stat-strip__n">' + s.n + '</b><span class="stat-strip__label">' + s.label + '</span></div>'; }).join('');
+      { n: '—', label: t('stat.wariStatus'), id: 'statWariStatus' }
+    ].map(function (s) { return '<div class="stat-strip__cell"' + (s.id ? ' id="' + s.id + '"' : '') + '><b class="stat-strip__n">' + s.n + '</b><span class="stat-strip__label">' + s.label + '</span></div>'; }).join('');
+    updateWariStatusStat();
 
     var loc = LOCATIONS.filter(function (l) { return l.id === PALKHI.locId; })[0];
     $('#palkhiStatus').innerHTML =
@@ -367,10 +521,10 @@
 
     $('#locGrid').innerHTML = LOCATIONS.map(function (l) {
       var doms = DOMAINS.map(function (d) {
-        var s = l.dom[d.id];
+        var s = domainStatus(l.id, d.id);
         return '<span class="loc-dom is-active" data-dom="' + d.id + '">' + sDot(s) + t('chip.' + d.id) + '</span>';
       }).join('');
-      return '<article class="loc-card"><div class="loc-card__head"><span class="loc-card__name">' + l.en + '</span><span class="loc-card__mr">' + l.mr + '</span></div>' +
+      return '<article class="loc-card" data-loc="' + l.id + '"><div class="loc-card__head"><span class="loc-card__name">' + l.en + '</span><span class="loc-card__mr">' + l.mr + '</span></div>' +
         '<div class="loc-card__doms">' + doms + '</div></article>';
     }).join('');
 
@@ -394,7 +548,7 @@
   var mapsBuilt = {};
 
   function locWorstStatus(loc) {
-    return DOMAINS.reduce(function (acc, d) { return worst(acc, loc.dom[d.id]); }, 'ok');
+    return DOMAINS.reduce(function (acc, d) { return worst(acc, domainStatus(loc.id, d.id)); }, 'ok');
   }
 
   function positionTip(tip, container, targetEl) {
@@ -406,7 +560,7 @@
 
   function showLocTip(tip, container, el, loc) {
     var doms = DOMAINS.map(function (d) {
-      var s = loc.dom[d.id];
+      var s = domainStatus(loc.id, d.id);
       return '<div class="ops-map__tip-row">' + sDot(s) + t('chip.' + d.id) + ' — ' + statusWord(s) + '</div>';
     }).join('');
     tip.innerHTML = '<b>' + loc.en + '</b><span class="ops-map__tip-mr">' + loc.mr + '</span>' + doms;
@@ -467,6 +621,7 @@
       var s = locWorstStatus(loc);
       var g = document.createElementNS(NS, 'g');
       g.setAttribute('class', 'routemap__stop ops-map__stop' + (s === 'warn' ? ' is-warn' : s === 'crit' ? ' is-crit' : ''));
+      g.setAttribute('data-loc', loc.id);
       g.setAttribute('transform', 'translate(' + pt.x.toFixed(1) + ',' + pt.y.toFixed(1) + ')');
       var c = document.createElementNS(NS, 'circle');
       c.setAttribute('r', (i === 0 || i === LOCATIONS.length - 1) ? '8' : '6');
@@ -505,7 +660,7 @@
   }
 
   /* ══════════════ MEDICAL ══════════════ */
-  function renderMedical() {
+  function renderMedical(role) {
     var list = $('#campList');
     if (!list) return;
     list.innerHTML = CAMPS.map(function (c) {
@@ -542,7 +697,9 @@
       head.closest('.camp-card').classList.toggle('is-open');
     };
 
+    initPatientRegisterForm(role);
     renderPatients('');
+    loadPatientsFromBackend();
     var search = $('#patientSearch');
     if (search) search.oninput = function () { renderPatients(search.value); };
     revealIn($$('.camp-card'));
@@ -552,7 +709,7 @@
     var list = $('#patientList');
     if (!list) return;
     var q = (query || '').trim().toLowerCase();
-    var filtered = PATIENTS.filter(function (p) {
+    var filtered = patientsCache.filter(function (p) {
       if (!q) return true;
       return (p.name + ' ' + p.id + ' ' + p.camp + ' ' + p.condition).toLowerCase().indexOf(q) !== -1;
     });
@@ -560,10 +717,110 @@
     list.innerHTML = filtered.map(function (p) {
       return '<div class="patient-row">' +
         '<span class="patient-row__id">' + p.id + '</span>' +
-        '<span><span class="patient-row__name">' + p.name + '</span><div class="patient-row__meta">' + p.age + ' yrs · ' + p.condition + ' · ' + p.status + '</div></span>' +
+        '<span><span class="patient-row__name">' + p.name + '</span><div class="patient-row__meta">' + p.age + ' ' + t('medical.yrs') + ' · ' + p.condition + ' · ' + patientStatusLabel(p.status) + '</div></span>' +
         '<span class="patient-row__camp">' + p.camp + '</span>' +
       '</div>';
     }).join('');
+  }
+
+  /* Backend is the source of truth for the patient roster — see
+     backend/app.py's /api/patients. patientsCache above is only the
+     instant fallback shown before this first resolves. */
+  function backendPatientToRow(p) {
+    return { id: p.id, name: p.name, age: p.age, camp: campLabel(p.camp_id), condition: p.condition || '—', status: p.status };
+  }
+
+  function loadPatientsFromBackend() {
+    return fetch(BACKEND_URL + '/api/patients', { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('backend responded ' + r.status); return r.json(); })
+      .then(function (rows) {
+        patientsCache = rows.map(backendPatientToRow);
+        var search = $('#patientSearch');
+        renderPatients(search ? search.value : '');
+      })
+      .catch(function (err) { console.warn('[Wari] patients backend unavailable:', err.message); });
+  }
+
+  /* ══════════════ PATIENT REGISTER + PRIOR-HISTORY POPUP ══════════════
+     Registering by name is checked against the backend patient registry
+     (case/whitespace-insensitive). A match means this person has been
+     treated before — the doctor sees that history before continuing. */
+  function showPatientHistoryModal(name, records) {
+    var modal = $('#patientHistoryModal');
+    if (!modal) return;
+    var title = $('#patientHistoryModalTitle');
+    if (title) title.textContent = name;
+    var body = $('#patientHistoryModalBody');
+    if (body) body.innerHTML = records.map(function (r) {
+      var when = new Date(r.registered_at).toLocaleString(curLang() === 'mr' ? 'mr-IN' : 'en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+      return '<div class="patient-history-row">' +
+        '<span class="patient-history-row__when">' + when + '</span>' +
+        '<div class="patient-history-row__main"><b>' + (r.condition || '—') + '</b><span>' + campLabel(r.camp_id) + '</span></div>' +
+        '<span class="fstat">' + patientStatusLabel(r.status) + '</span>' +
+        (r.notes ? '<div class="patient-history-row__notes">' + r.notes + '</div>' : '') +
+      '</div>';
+    }).join('');
+    modal.hidden = false;
+  }
+
+  function hidePatientHistoryModal() {
+    var modal = $('#patientHistoryModal');
+    if (modal) modal.hidden = true;
+  }
+
+  function initPatientRegisterForm(role) {
+    var panel = $('#patientRegisterPanel');
+    var form = $('#patientRegisterForm');
+    if (!panel || !form) return;
+
+    /* Wari Supervisor reads everything but submits nothing — same rule
+       Records already follows for that role. */
+    var canRegister = role.id !== 'supervisor';
+    panel.hidden = !canRegister;
+    if (!canRegister) return;
+
+    $('#pr-camp', form).innerHTML = campOptions();
+    /* Not tOptions() here on purpose: that helper makes value === i18n key
+       (matches the Records form's opt.* convention), but the backend needs
+       the raw status word (admitted/discharged/referred) as the value while
+       only the visible label is translated. */
+    $('#pr-status', form).innerHTML = Object.keys(PSTATUS_LABEL).map(function (k) {
+      return '<option value="' + k + '">' + t(PSTATUS_LABEL[k]) + '</option>';
+    }).join('');
+
+    form.onsubmit = function (e) {
+      e.preventDefault();
+      var name = $('#pr-name', form).value.trim();
+      if (!name) return;
+
+      fetch(BACKEND_URL + '/api/patients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name,
+          age: $('#pr-age', form).value || null,
+          camp_id: $('#pr-camp', form).value || null,
+          condition: $('#pr-condition', form).value.trim(),
+          status: $('#pr-status', form).value,
+          notes: $('#pr-notes', form).value.trim(),
+          role: role.id
+        })
+      }).then(function (r) {
+        return r.json().then(function (data) { return { ok: r.ok, data: data }; });
+      }).then(function (res) {
+        if (!res.ok) { toast(t('medical.registerFailed')); return; }
+        form.reset();
+        loadPatientsFromBackend();
+        if (res.data.prior_history && res.data.prior_history.length) {
+          showPatientHistoryModal(name, res.data.prior_history);
+        } else {
+          toast(t('medical.registerSuccess'));
+        }
+      }).catch(function (err) {
+        console.warn('[Wari] patient register backend unavailable:', err.message);
+        toast(t('medical.registerOffline'));
+      });
+    };
   }
 
   /* ══════════════ TOAST ══════════════ */
@@ -602,11 +859,15 @@
     renderDashboard(role);
     if (role.pages.indexOf('live-ops') !== -1) renderLiveOps();
     if (role.pages.indexOf('records') !== -1) renderRecords(role);
-    if (role.pages.indexOf('medical') !== -1) renderMedical();
-    if (role.pages.indexOf('intel') !== -1) renderIntel(INTEL_DATA);
+    if (role.pages.indexOf('medical') !== -1) renderMedical(role);
+
+    var refreshBtn = $('#intelRefreshBtn');
+    if (refreshBtn) refreshBtn.onclick = function () { loadIntel(true); };
+    loadIntel(false); // feeds the dashboard's Wari-status stat for every role; Intel tab only exists for the supervisor
+    loadFeedFromBackend(); // real submitted-report history, not just this tab's in-memory pushes
 
     showPage(role.pages[0]);
-    startFeedSimulation();
+    startFeedClock();
 
     document.getElementById('loginScreen').style.display = 'none';
     var shell = document.getElementById('appShell');
@@ -662,6 +923,12 @@
     initLogin();
 
     $('#logoutBtn').addEventListener('click', logout);
+
+    var histClose = $('#patientHistoryModalClose'), histOverlay = $('#patientHistoryModalOverlay'), histOk = $('#patientHistoryModalOk');
+    if (histClose) histClose.addEventListener('click', hidePatientHistoryModal);
+    if (histOverlay) histOverlay.addEventListener('click', hidePatientHistoryModal);
+    if (histOk) histOk.addEventListener('click', hidePatientHistoryModal);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') hidePatientHistoryModal(); });
 
     var session = null;
     try { session = JSON.parse(localStorage.getItem('wci_session') || 'null'); } catch (e) {}
