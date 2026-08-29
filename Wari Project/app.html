@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#3A0B0B" />
+<title>Wari Command Intelligence — Command Center</title>
+<meta name="description" content="Shared operational command center for every authority moving with the Pandharpur Wari." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Inter:wght@300;400;500;600;700&family=Tiro+Devanagari+Marathi:ital@0;1&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="assets/css/style.css" />
+<link rel="stylesheet" href="assets/css/app.css" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%233A0B0B'/%3E%3Ccircle cx='50' cy='26' r='11' fill='%23E2361B'/%3E%3Cpolygon points='28,42 72,42 50,68' fill='%23E2361B'/%3E%3Cpolygon points='50,68 31,90 69,90' fill='%23C9A227'/%3E%3C/svg%3E">
+</head>
+<body class="appbody">
+
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="w-sun" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="17" fill="currentColor"/>
+      <g stroke="currentColor" stroke-width="3.4" stroke-linecap="round">
+        <path d="M50 24 L50 8"/><path d="M50 76 L50 92"/>
+        <path d="M24 50 L8 50"/><path d="M76 50 L92 50"/>
+        <path d="M31 31 L20 20"/><path d="M69 31 L80 20"/>
+        <path d="M31 69 L20 80"/><path d="M69 69 L80 80"/>
+      </g>
+    </symbol>
+
+    <symbol id="w-arch" viewBox="0 0 200 260">
+      <path fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"
+        d="M20 256 V120
+           q0-22 14-33 q-4-18 12-25 q6-17 24-16 q10-14 30-14 q20 0 30 14 q18-1 24 16 q16 7 12 25 q14 11 14 33 V256"/>
+      <path fill="none" stroke="currentColor" stroke-width="2" opacity=".55"
+        d="M33 256 V124 q0-17 12-26 q-3-14 10-20 q5-13 20-12 q8-11 25-11 q17 0 25 11 q15-1 20 12 q13 6 10 20 q12 9 12 26 V256"/>
+    </symbol>
+
+    <symbol id="w-palkhi" viewBox="0 0 220 120">
+      <circle cx="110" cy="5" r="4" fill="currentColor"/>
+      <path d="M110 9 L110 16" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M62 45 L110 16 L158 45 Z" fill="currentColor"/>
+      <rect x="66" y="45" width="88" height="24" fill="currentColor"/>
+      <path d="M8 68 H212" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+      <g stroke="currentColor" stroke-width="3.6" stroke-linecap="round" fill="none">
+        <path d="M28 70 L22 116"/><path d="M40 70 L46 116"/>
+        <path d="M180 70 L174 116"/><path d="M192 70 L198 116"/>
+      </g>
+      <circle cx="34" cy="56" r="8" fill="currentColor"/>
+      <circle cx="186" cy="56" r="8" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="g-dindi" viewBox="0 0 120 100">
+      <g fill="currentColor">
+        <circle cx="24" cy="20" r="7"/><polygon points="10,31 38,31 24,50" /><polygon points="24,50 11,70 37,70"/>
+        <circle cx="60" cy="14" r="7"/><polygon points="46,25 74,25 60,44" /><polygon points="60,44 47,64 73,64"/>
+        <circle cx="96" cy="20" r="7"/><polygon points="82,31 110,31 96,50" /><polygon points="96,50 83,70 109,70"/>
+      </g>
+      <g stroke="currentColor" stroke-width="3.4" stroke-linecap="round" fill="none">
+        <path d="M14 70 L8 94"/><path d="M34 70 L40 94"/>
+        <path d="M50 64 L44 94"/><path d="M70 64 L76 94"/>
+        <path d="M86 70 L80 94"/><path d="M106 70 L112 94"/>
+      </g>
+    </symbol>
+
+    <symbol id="g-medical" viewBox="0 0 120 100">
+      <path d="M18 52 L60 18 L102 52 Z" fill="currentColor"/>
+      <rect x="28" y="52" width="64" height="40" fill="none" stroke="currentColor" stroke-width="4"/>
+      <g stroke="currentColor" stroke-width="7" stroke-linecap="square">
+        <path d="M60 60 L60 84"/><path d="M48 72 L72 72"/>
+      </g>
+      <circle cx="60" cy="10" r="5" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="g-police" viewBox="0 0 120 100">
+      <circle cx="60" cy="16" r="9" fill="currentColor"/>
+      <polygon points="41,30 79,30 60,55" fill="currentColor"/>
+      <polygon points="60,55 43,78 77,78" fill="currentColor"/>
+      <g stroke="currentColor" stroke-width="4.5" stroke-linecap="round" fill="none">
+        <path d="M43 34 L22 12"/><path d="M77 34 L98 12"/>
+        <path d="M48 78 L40 98"/><path d="M72 78 L80 98"/>
+      </g>
+      <circle cx="20" cy="9" r="6" fill="currentColor"/>
+      <circle cx="100" cy="9" r="6" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="g-municipal" viewBox="0 0 120 100">
+      <path d="M16 46 L44 20 L72 46 Z" fill="currentColor"/>
+      <rect x="24" y="46" width="40" height="46" fill="none" stroke="currentColor" stroke-width="4"/>
+      <g stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none">
+        <path d="M84 92 V54 h20"/><path d="M84 62 h14"/>
+      </g>
+      <path d="M96 24 c8 10 13 16 13 22 a13 13 0 0 1 -26 0 c0-6 5-12 13-22 Z" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="g-sanitation" viewBox="0 0 120 100">
+      <g stroke="currentColor" stroke-width="4.5" stroke-linecap="round" fill="none">
+        <path d="M34 8 L34 54"/>
+      </g>
+      <path d="M18 54 h32 l10 38 h-52 Z" fill="currentColor"/>
+      <path d="M92 30 c9 12 15 19 15 26 a15 15 0 0 1 -30 0 c0-7 6-14 15-26 Z" fill="none" stroke="currentColor" stroke-width="4"/>
+      <circle cx="92" cy="60" r="4" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="g-supervisor" viewBox="0 0 120 100">
+      <path fill="none" stroke="currentColor" stroke-width="4"
+        d="M20 94 V52 q0-14 10-21 q-3-12 9-16 q4-11 21-11 q17 0 21 11 q12 4 9 16 q10 7 10 21 V94"/>
+      <path d="M38 62 q22-20 44 0 q-22 20 -44 0 Z" fill="none" stroke="currentColor" stroke-width="4"/>
+      <circle cx="60" cy="62" r="8" fill="currentColor"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="grain" aria-hidden="true"></div>
+
+<!-- ═══════════════════════ LOGIN ═══════════════════════ -->
+<div class="login" id="loginScreen">
+  <div class="login__side" aria-hidden="true">
+    <svg class="login__art" viewBox="0 0 200 260"><use href="#w-arch"/></svg>
+    <svg class="login__sun" viewBox="0 0 100 100"><use href="#w-sun"/></svg>
+    <svg class="login__palkhi" viewBox="0 0 220 120"><use href="#w-palkhi"/></svg>
+    <p class="login__side-mr">ज्ञानोबा माऊली तुकाराम</p>
+  </div>
+
+  <div class="login__panel">
+    <div class="login__topbar">
+      <span class="login__id"><span class="nav__plus">✦</span> W.C.I.</span>
+      <div class="lang-toggle" id="langToggle" role="group" aria-label="Language / भाषा">
+        <button type="button" class="lang-btn is-on" data-lang-btn="mr">मराठी</button>
+        <button type="button" class="lang-btn" data-lang-btn="en">English</button>
+      </div>
+    </div>
+
+    <header class="login__brand">
+      <span class="login__mark">वारी</span>
+      <h1 class="dsp dsp--ink login__title" data-i18n="login.title">प्राधिकरण प्रवेश</h1>
+      <p class="lede login__sub" data-i18n="login.sub">पंढरपूर वारीच्या एका सामायिक कार्यचित्रात प्रवेश करण्यासाठी आपली भूमिका निवडा.</p>
+    </header>
+
+    <div class="login__roles" id="loginRoles" aria-label="Select authority"></div>
+
+    <form class="login__form" id="loginForm" hidden>
+      <button type="button" class="login__back" id="loginBack">
+        <span aria-hidden="true">‹</span> <span data-i18n="login.back">मागे</span>
+      </button>
+      <div class="login__role-chip" id="loginRoleChip"></div>
+
+      <label class="field">
+        <span data-i18n="login.userLabel">वापरकर्ता आयडी</span>
+        <input id="loginUser" type="text" autocomplete="username" required />
+      </label>
+      <label class="field">
+        <span data-i18n="login.passLabel">पासवर्ड</span>
+        <input id="loginPass" type="password" autocomplete="current-password" required />
+      </label>
+
+      <button type="submit" class="btn btn--lg login__submit" data-i18n="login.submit">प्रवेश करा</button>
+      <p class="login__note" data-i18n="login.note">प्रोटोटाइप प्रवेश — निवडलेल्या भूमिकेसाठी कोणतेही तपशील स्वीकारले जातील.</p>
+    </form>
+  </div>
+</div>
+
+<!-- ═══════════════════════ APP SHELL ═══════════════════════ -->
+<div class="app" id="appShell" hidden>
+
+  <header class="app__nav">
+    <div class="app__nav-in">
+      <a class="app__brand" href="index.html" data-hover>
+        <span class="nav__plus">✦</span> <span>W.C.I.</span>
+      </a>
+      <nav class="app__tabs" id="appTabs" aria-label="Sections"></nav>
+      <div class="app__user">
+        <span class="app__role" id="appRoleLabel"></span>
+        <button class="app__logout" id="logoutBtn">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="app__main" id="appMain">
+
+    <!-- DASHBOARD -->
+    <section class="page" id="page-dashboard" data-page="dashboard">
+      <div class="wrap page__wrap">
+        <header class="page__head">
+          <span class="sec__label">Command Dashboard</span>
+          <h1 class="dsp dsp--ink page__title">Namaskar, <span id="dashRoleName">Authority</span></h1>
+          <p class="lede">One shared, real-time picture of the Wari right now.</p>
+        </header>
+
+        <div class="stat-strip" id="statStrip"></div>
+
+        <div class="dash-grid">
+          <section class="panel panel--palkhi">
+            <h2 class="panel__title">Palkhi Status</h2>
+            <div id="palkhiStatus"></div>
+          </section>
+
+          <section class="panel panel--domains">
+            <h2 class="panel__title">Domain Readiness</h2>
+            <div class="domain-grid" id="domainGrid"></div>
+          </section>
+
+          <section class="panel panel--feed">
+            <div class="panel__title-row">
+              <h2 class="panel__title">Live Activity</h2>
+              <div style="display:flex;align-items:center;gap:.8rem;">
+                <span class="feed__updated" id="feedUpdated"></span>
+                <div class="feed__live"><i></i> LIVE</div>
+              </div>
+            </div>
+            <ul class="feed__list" id="dashFeedList"></ul>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- LIVE OPS -->
+    <section class="page" id="page-live-ops" data-page="live-ops">
+      <div class="wrap page__wrap">
+        <header class="page__head">
+          <span class="sec__label">Live Operations</span>
+          <h1 class="dsp dsp--ink page__title">Wari, in motion.</h1>
+          <p class="lede">Location-by-location operational status across the route.</p>
+        </header>
+
+        <div class="palkhi-mini" id="palkhiMini"></div>
+
+        <div class="chip-row" id="liveOpsFilters"></div>
+
+        <div class="loc-grid" id="locGrid"></div>
+      </div>
+    </section>
+
+    <!-- RECORDS -->
+    <section class="page" id="page-records" data-page="records">
+      <div class="wrap page__wrap page__wrap--narrow">
+        <header class="page__head">
+          <span class="sec__label">Records</span>
+          <h1 class="dsp dsp--ink page__title">File an update.</h1>
+          <p class="lede">Your report becomes shared operational state the moment you submit it.</p>
+        </header>
+
+        <form class="report-form" id="reportForm"></form>
+      </div>
+    </section>
+
+    <!-- MEDICAL -->
+    <section class="page" id="page-medical" data-page="medical">
+      <div class="wrap page__wrap">
+        <header class="page__head">
+          <span class="sec__label">Medical Command</span>
+          <h1 class="dsp dsp--ink page__title">Camps &amp; patients.</h1>
+          <p class="lede">Tap a camp to see its full status — load, beds, ambulances and medicine stock together.</p>
+        </header>
+
+        <section class="panel">
+          <h2 class="panel__title">Camp Status</h2>
+          <div class="camp-list" id="campList"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel__title-row">
+            <h2 class="panel__title">Patient Records</h2>
+            <span class="panel__hint">Restricted to Medical Authority &amp; Wari Supervisor</span>
+          </div>
+          <div class="patient-search">
+            <input id="patientSearch" type="search" placeholder="Search by name, ID, camp, or condition…" />
+          </div>
+          <div class="patient-list" id="patientList"></div>
+        </section>
+      </div>
+    </section>
+
+    <!-- INTEL -->
+    <section class="page" id="page-intel" data-page="intel">
+      <div class="wrap page__wrap">
+        <header class="page__head">
+          <span class="sec__label">Supervisor Intelligence</span>
+          <h1 class="dsp dsp--ink page__title">The whole day, on one page.</h1>
+          <p class="lede">Placeholder shell — wired to synthetic data until the risk-scoring model ships. Layout will not change when live scoring is connected.</p>
+        </header>
+
+        <div class="intel-top">
+          <div class="gauge" id="intelGauge">
+            <svg viewBox="0 0 240 240" class="gauge__svg">
+              <circle class="gauge__bg" cx="120" cy="120" r="98"/>
+              <circle class="gauge__fg" id="intelArc" cx="120" cy="120" r="98"/>
+            </svg>
+            <div class="gauge__mid">
+              <span class="gauge__lab">WARI STATUS</span>
+              <b class="gauge__n" id="intelNum">0</b>
+              <span class="gauge__state" id="intelState">—</span>
+            </div>
+          </div>
+          <div class="brief__conf" id="intelConf"></div>
+        </div>
+
+        <article class="doc doc--full" id="intelDoc"></article>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="assets/js/app.js"></script>
+</body>
+</html>

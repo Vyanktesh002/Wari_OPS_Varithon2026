@@ -926,12 +926,6 @@
 
   /* ══════════════ 18. CTA ══════════════ */
   function initCTA() {
-    var btn = $('#ctaEnter');
-    if (btn) {
-      btn.addEventListener('click', function () {
-        toast('Interface prototype — the command center screens are the next build.');
-      });
-    }
     if (!HAS_GSAP || REDUCED) return;
 
     var figs = $$('#ctaProcession .wfig');
