@@ -109,7 +109,28 @@
     { id: 'wakhari',   en: 'Wakhari',       mr: 'वाखरी',      lat: 17.6600, lng: 75.2850, dom: { police: 'ok',   medical: 'warn', municipal: 'ok',   sanitation: 'ok' } },
     { id: 'pandharpur',en: 'Pandharpur',    mr: 'पंढरपूर',     lat: 17.6790, lng: 75.3233, dom: { police: 'ok',   medical: 'ok',   municipal: 'ok',   sanitation: 'ok' } }
   ];
-  var PALKHI = { locId: 'lonand', delayMin: 22 };
+  var PALKHI = { locId: 'lonand', delayMin: 22, nameKey: 'palkhi.dnyaneshwar' };
+
+  /* Halt coordinates for the Sant Tukaram Palkhi route, Dehu to
+     Pandharpur — a different road for most of the way (via Baramati and
+     Akluj), converging with the Dnyaneshwar route only in the last
+     stretch through Wakhari. Approximate town centres, same fidelity as
+     LOCATIONS above. This route carries no domain/camp data of its own —
+     it exists only so the tracking map can show both processions. */
+  var TUKARAM_ROUTE = [
+    { id: 'tuk-dehu',        en: 'Dehu',         mr: 'देहू',         lat: 18.7167, lng: 73.7667 },
+    { id: 'tuk-akurdi',      en: 'Akurdi',       mr: 'आकुर्डी',      lat: 18.6480, lng: 73.7660 },
+    { id: 'tuk-pune',        en: 'Pune',         mr: 'पुणे',         lat: 18.5100, lng: 73.8600 },
+    { id: 'tuk-lonikalbhor', en: 'Loni Kalbhor', mr: 'लोणी काळभोर', lat: 18.4536, lng: 73.9967 },
+    { id: 'tuk-yavat',       en: 'Yavat',        mr: 'येवत',         lat: 18.4167, lng: 74.1500 },
+    { id: 'tuk-varvand',     en: 'Varvand',      mr: 'वरवंड',        lat: 18.3833, lng: 74.2333 },
+    { id: 'tuk-baramati',    en: 'Baramati',     mr: 'बारामती',      lat: 18.1514, lng: 74.5815 },
+    { id: 'tuk-indapur',     en: 'Indapur',      mr: 'इंदापूर',      lat: 18.1167, lng: 75.0167 },
+    { id: 'tuk-akluj',       en: 'Akluj',        mr: 'आकलूज',        lat: 17.8833, lng: 75.0167 },
+    { id: 'tuk-wakhari',     en: 'Wakhari',      mr: 'वाखरी',        lat: 17.6600, lng: 75.2850 },
+    { id: 'tuk-pandharpur',  en: 'Pandharpur',   mr: 'पंढरपूर',      lat: 17.6790, lng: 75.3233 }
+  ];
+  var PALKHI2 = { locId: 'tuk-baramati', delayMin: 15, nameKey: 'palkhi.tukaram' };
 
   /* ══════════════ MOCK DATA — MEDICAL CAMPS ══════════════ */
   var MED_KEY_LABEL = { ors: 'med.ors', antipyretics: 'med.antipyretics', analgesics: 'med.analgesics', ivFluids: 'med.ivFluids', antiseptics: 'med.antiseptics' };
@@ -276,6 +297,8 @@
      backend from real POST /model/analyze calls (see MODEL_INTEGRATION.md). Nothing here
      invents scores or copy — it only renders what the model actually returned. */
   var BACKEND_URL = window.WCI_BACKEND_URL || 'http://127.0.0.1:5050';
+  /* Bearer token for the signed-in authority, issued by POST /api/auth/login. */
+  var authToken = null;
   var RISK_STATUS_KEY = { NORMAL: 'gauge.low', ELEVATED: 'gauge.mod', HIGH: 'gauge.high', CRITICAL: 'gauge.crit' };
   /* Green / amber / orange / red, the same bands the distribution card counts. */
   var RISK_BAND = {
@@ -650,7 +673,9 @@
       cta: {
         text: t('dcard.ctaText'),
         btn: t('ui.moreDetails'),
-        onClick: function () { showPage('live-ops'); }
+        /* Was live-ops — a supervisor filing nothing here has no report to
+           track down; the dashboard is where the wider picture actually is. */
+        onClick: function () { showPage('dashboard'); }
       }
     });
   }
@@ -1058,11 +1083,14 @@
     return activeDomains().reduce(function (acc, d) { return worst(acc, domainStatus(loc.id, d.id)); }, 'ok');
   }
 
+  /* The "Palkhi currently near X — more details" strip used to live here
+     as this card's cta block — removed per request, it duplicated
+     #palkhiMini just below with nothing new in it. Route Coverage itself
+     (the figure + ok/warn/crit bar) is unchanged. */
   function renderCoverageCard() {
     var el = $('#liveOpsCoverage');
     if (!el) return;
     var c = locTally();
-    var palkhi = LOCATIONS.filter(function (l) { return l.id === PALKHI.locId; })[0];
 
     renderMCard(el, {
       title: t('liveops.coverage'),
@@ -1072,13 +1100,7 @@
         { cls: 'ok', w: pctOf(c.ok, c.total), label: statusWord('ok'), n: c.ok },
         { cls: 'warn', w: pctOf(c.warn, c.total), label: statusWord('warn'), n: c.warn },
         { cls: 'crit', w: pctOf(c.crit, c.total), label: statusWord('crit'), n: c.crit }
-      ],
-      cta: {
-        icon: 'i-clock',
-        text: t('liveops.palkhi') + ' ' + (palkhi ? palkhi.en : '') + ' — ' + PALKHI.delayMin + ' min ' + t('liveops.behind'),
-        btn: t('ui.moreDetails'),
-        onClick: function () { openLocDrawer(PALKHI.locId); }
-      }
+      ]
     });
   }
 
@@ -1241,14 +1263,19 @@
       if (!open) { drawer.hidden = true; document.body.classList.remove('is-locked'); }
       return;
     }
+    /* The panel's resting position comes from CSS (transform:translateX(100%)).
+       Once the drawer is shown, GSAP reads that computed matrix as a *pixel*
+       x of 440 and then stacks its own xPercent on top — so tweening xPercent
+       to 0 left the panel parked 440px off the right edge, i.e. invisible.
+       Pin x to 0 on both tweens so GSAP owns the whole transform. */
     if (open) {
       gsap.to(overlay, { opacity: 1, duration: 0.3, overwrite: 'auto' });
-      gsap.fromTo(panel, { xPercent: 100 }, { xPercent: 0, duration: 0.55, ease: 'power3.out', overwrite: 'auto' });
+      gsap.fromTo(panel, { xPercent: 100, x: 0 }, { xPercent: 0, x: 0, duration: 0.55, ease: 'power3.out', overwrite: 'auto' });
       M.stagger($$('.drawer__blk', drawer), { y: 16, delay: 0.18, stagger: 0.07 });
     } else {
       gsap.to(overlay, { opacity: 0, duration: 0.25, overwrite: 'auto' });
       gsap.to(panel, {
-        xPercent: 100, duration: 0.4, ease: 'power3.in', overwrite: 'auto',
+        xPercent: 100, x: 0, duration: 0.4, ease: 'power3.in', overwrite: 'auto',
         onComplete: function () { drawer.hidden = true; document.body.classList.remove('is-locked'); }
       });
     }
@@ -1278,8 +1305,10 @@
 
     var idx = LOCATIONS.map(function (l) { return l.id; }).indexOf(loc.id);
     var pos = pctOf(idx, LOCATIONS.length - 1);
+    var summary = locConditionSentence(loc);
 
     $('#locDrawerBody').innerHTML =
+      '<p class="drawer__summary drawer__summary--' + summary.status + '">' + esc(summary.text) + '</p>' +
       (loc.id === PALKHI.locId
         ? '<span class="loc-card__palkhi" style="margin-top:.9rem"><i></i>' + esc(t('drawer.palkhiHere')) + '</span>'
         : '') +
@@ -1317,7 +1346,6 @@
      on a dead connection, which on a route like this one matters. */
   var ESRI_IMAGERY = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
   var ESRI_PLACES = 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}';
-  var ESRI_CREDIT = 'Imagery &copy; Esri, Maxar, Earthstar Geographics';
   var ROUTE_PATH_D = 'M60 96 C 150 60, 210 150, 288 154 S 420 226, 486 200 S 596 108, 668 138 S 780 250, 852 244 S 972 178, 1042 220 S 1120 300, 1146 330';
   var mapsBuilt = {};
   var mapObjs = {};          /* opts.id -> { map, markers, camps } */
@@ -1326,13 +1354,29 @@
     return DOMAINS.reduce(function (acc, d) { return worst(acc, domainStatus(loc.id, d.id)); }, 'ok');
   }
 
+  /* One sentence: whichever domain is worst off at this halt, or a clean
+     bill of health if none of the four are flagged. */
+  var STATUS_RANK = { ok: 0, warn: 1, crit: 2 };
+  function locConditionSentence(loc) {
+    var worstSt = 'ok', worstDom = null;
+    DOMAINS.forEach(function (d) {
+      var st = domainStatus(loc.id, d.id);
+      if (STATUS_RANK[st] > STATUS_RANK[worstSt]) { worstSt = st; worstDom = d; }
+    });
+    if (worstSt === 'ok' || !worstDom) return { text: t('drawer.allClearSentence'), status: 'ok' };
+    var key = worstSt === 'crit' ? 'drawer.critSentence' : 'drawer.warnSentence';
+    return { text: t(key).replace('{domain}', t('chip.' + worstDom.id)), status: worstSt };
+  }
+
   function legendHtml(opts) {
+    /* Dashboard's map tracks the Palkhis only — the halt/capacity/attention
+       legend describes domain-status colouring it no longer shows there. */
+    if (opts.legend === false) return '';
     return '<div class="ops-map__legend">' +
       '<span><i class="dot dot--ok"></i>' + esc(t('route.legendOk')) + '</span>' +
       '<span><i class="dot dot--warn"></i>' + esc(t('route.legendWarn')) + '</span>' +
       '<span><i class="dot dot--crit"></i>' + esc(t('route.legendCrit')) + '</span>' +
       (opts.showCamps ? '<span>✚ ' + esc(t('liveops.camps')) + '</span>' : '') +
-      (opts.satellite ? '<span class="ops-map__legend-src">' + esc(t('map.source')) + '</span>' : '') +
     '</div>';
   }
 
@@ -1345,6 +1389,17 @@
     return '<b>' + esc(loc.en) + '</b><span class="ops-map__tip-mr">' + esc(loc.mr) + '</span>' + rows +
       (loc.id === PALKHI.locId
         ? '<span class="ops-map__tip-palkhi">' + esc(t('drawer.palkhiHere')) + '</span>'
+        : '');
+  }
+
+  /* The Dashboard's map tracks the Palkhis only — no domain rows, just the
+     halt name and, where a procession currently stands, which one and how
+     far behind schedule. Also used for every halt on the second (Tukaram)
+     route, which has no domain data on either page. */
+  function simpleTipHtml(loc, palkhi) {
+    return '<b>' + esc(loc.en) + '</b><span class="ops-map__tip-mr">' + esc(loc.mr) + '</span>' +
+      (palkhi
+        ? '<span class="ops-map__tip-palkhi">' + esc(t(palkhi.nameKey)) + ' — ' + palkhi.delayMin + ' ' + esc(t('liveops.behind')) + '</span>'
         : '');
   }
 
@@ -1414,15 +1469,19 @@
     /* A marker was mouse-only before: reachable and readable by keyboard now. */
     container.addEventListener('mouseleave', function () { tip.classList.remove('is-on'); });
 
+    var domainColors = opts.domainColors !== false;
+    var clickOpensDrawer = opts.clickOpensDrawer !== false;
+    function isPalkhiHalt(loc0) { return loc0.id === PALKHI.locId; }
+
     var pts = [];
     LOCATIONS.forEach(function (loc, i) {
       var tt = i / (LOCATIONS.length - 1);
       var pt = path.getPointAtLength(len * tt);
       pts.push({ loc: loc, pt: pt });
 
-      var s = locWorstStatus(loc);
+      var s = domainColors ? locWorstStatus(loc) : 'plain';
       var g = document.createElementNS(NS, 'g');
-      g.setAttribute('class', 'routemap__stop ops-map__stop' + (s === 'warn' ? ' is-warn' : s === 'crit' ? ' is-crit' : ''));
+      g.setAttribute('class', 'routemap__stop ops-map__stop' + (s === 'warn' ? ' is-warn' : s === 'crit' ? ' is-crit' : s === 'plain' ? ' is-plain' : ''));
       g.setAttribute('data-loc', loc.id);
       g.setAttribute('transform', 'translate(' + pt.x.toFixed(1) + ',' + pt.y.toFixed(1) + ')');
       var c = document.createElementNS(NS, 'circle');
@@ -1430,17 +1489,23 @@
       g.appendChild(c);
       stopsG.appendChild(g);
 
+      var showTip = function () {
+        if (domainColors) showLocTip(tip, container, g, loc);
+        else { tip.innerHTML = simpleTipHtml(loc, isPalkhiHalt(loc) ? PALKHI : null); positionTip(tip, container, g); tip.classList.add('is-on'); }
+      };
       g.setAttribute('tabindex', '0');
       g.setAttribute('role', 'button');
       g.setAttribute('aria-label', loc.en);
-      g.addEventListener('mouseenter', function () { showLocTip(tip, container, g, loc); });
+      g.addEventListener('mouseenter', showTip);
       g.addEventListener('mouseleave', function () { tip.classList.remove('is-on'); });
-      g.addEventListener('focus', function () { showLocTip(tip, container, g, loc); });
+      g.addEventListener('focus', showTip);
       g.addEventListener('blur', function () { tip.classList.remove('is-on'); });
-      g.addEventListener('click', function () { openLocDrawer(loc.id); });
-      g.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLocDrawer(loc.id); }
-      });
+      if (clickOpensDrawer) {
+        g.addEventListener('click', function () { openLocDrawer(loc.id); });
+        g.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLocDrawer(loc.id); }
+        });
+      }
     });
 
     if (opts.showCamps && campsG) {
@@ -1485,13 +1550,17 @@
   }
 
   /* ── satellite: icons ─────────────────────────────────────────── */
-  function haltIcon(status, isPalkhi) {
-    if (isPalkhi) {
-      /* Carries its own status ring too: the halt the Palkhi is standing
-         at is still a halt, and its state must not disappear. */
+  /* status: 'ok' | 'warn' | 'crit' | 'plain' (no domain data attached —
+     the Dashboard's map, and always for the second/Tukaram route).
+     palkhiMode: 0 = ordinary halt, 1 = a Palkhi stands here (primary,
+     vermillion ring), 2 = second Palkhi (Tukaram, gold ring). */
+  function haltIcon(status, palkhiMode) {
+    if (palkhiMode) {
+      /* Carries its own status ring too: the halt a Palkhi is standing at
+         is still a halt, and its state must not disappear. */
       return L.divIcon({
         className: 'opsmk-wrap',
-        html: '<span class="opspk opspk--' + status + '">' +
+        html: '<span class="opspk opspk--' + status + (palkhiMode === 2 ? ' opspk--pk2' : '') + '">' +
                 '<span class="opspk__ring"></span><span class="opspk__ring opspk__ring--2"></span>' +
                 '<svg class="opspk__icon" viewBox="0 0 220 120" aria-hidden="true"><use href="#w-palkhi"/></svg>' +
               '</span>',
@@ -1542,46 +1611,24 @@
     return coords[coords.length - 1];
   }
 
-  function buildSatMap(container, opts) {
-    var coords = routeLatLngs();
-    var idx = LOCATIONS.map(function (l) { return l.id; }).indexOf(PALKHI.locId);
-    if (idx < 0) idx = 0;
-
-    container.classList.add('ops-map--sat');
-    container.innerHTML = '';
-
-    var map = L.map(container, {
-      zoomControl: true,
-      attributionControl: true,
-      zoomSnap: 0.25,
-      /* Never swallow the page's scroll: the wheel only zooms once the
-         operator has actually clicked into the map. */
-      scrollWheelZoom: false
-    });
-
-    L.tileLayer(ESRI_IMAGERY, { maxZoom: 18, attribution: ESRI_CREDIT }).addTo(map);
-    L.tileLayer(ESRI_PLACES, { maxZoom: 18, opacity: 0.85 }).addTo(map);
-
-    var bounds = L.latLngBounds(coords);
-    map.fitBounds(bounds, { padding: [34, 34] });
-
-    map.on('click focus', function () { map.scrollWheelZoom.enable(); });
-    container.addEventListener('mouseleave', function () { map.scrollWheelZoom.disable(); });
-
+  /* Draws one procession's route (walked leg solid + pulsing, remaining
+     leg dashed) and returns the walked-so-far coordinate list, which the
+     Palkhi marker for that route is placed at the end of. */
+  function drawProcessionRoute(map, coords, idx, color, cometColor) {
     var done = coords.slice(0, idx + 1);
     var todo = coords.slice(idx);
 
     if (todo.length > 1) {
       L.polyline(todo, { color: '#F5F0E6', weight: 2.5, opacity: 0.45, dashArray: '5 9', interactive: false }).addTo(map);
     }
-    L.polyline(done, { color: '#C9A227', weight: 11, opacity: 0.16, interactive: false }).addTo(map);
-    var line = L.polyline(done, { color: '#C9A227', weight: 3.6, opacity: 0.95, interactive: false, className: 'route-live' }).addTo(map);
+    L.polyline(done, { color: color, weight: 11, opacity: 0.16, interactive: false }).addTo(map);
+    var line = L.polyline(done, { color: color, weight: 3.6, opacity: 0.95, interactive: false, className: 'route-live' }).addTo(map);
     M.drawPath(line.getElement());
 
     /* A pulse running the walked legs, so the line reads as movement. */
     if (M.on && done.length > 1) {
       var comet = L.circleMarker(done[0], {
-        radius: 5, weight: 0, color: '#E2361B', fillColor: '#E2361B',
+        radius: 5, weight: 0, color: cometColor, fillColor: cometColor,
         fillOpacity: 1, interactive: false, className: 'route-comet'
       }).addTo(map);
       var prog = { p: 0 };
@@ -1590,17 +1637,77 @@
         onUpdate: function () { comet.setLatLng(pointAlong(done, prog.p)); }
       });
     }
+    return done;
+  }
+
+  function buildSatMap(container, opts) {
+    var coords = routeLatLngs();
+    var coords2 = TUKARAM_ROUTE.map(function (l) { return [l.lat, l.lng]; });
+    var idx = LOCATIONS.map(function (l) { return l.id; }).indexOf(PALKHI.locId);
+    if (idx < 0) idx = 0;
+    var idx2 = TUKARAM_ROUTE.map(function (l) { return l.id; }).indexOf(PALKHI2.locId);
+    if (idx2 < 0) idx2 = 0;
+
+    /* Dashboard's map is Palkhi-tracking only: no domain colouring on the
+       halts, and a click shows nothing beyond the marker's own tooltip. */
+    var domainColors = opts.domainColors !== false;
+    var clickOpensDrawer = opts.clickOpensDrawer !== false;
+
+    container.classList.add('ops-map--sat');
+    container.innerHTML = '';
+
+    var map = L.map(container, {
+      zoomControl: true,
+      attributionControl: false,
+      zoomSnap: 0.25,
+      /* Never swallow the page's scroll: the wheel only zooms once the
+         operator has actually clicked into the map. */
+      scrollWheelZoom: false
+    });
+
+    L.tileLayer(ESRI_IMAGERY, { maxZoom: 18 }).addTo(map);
+    L.tileLayer(ESRI_PLACES, { maxZoom: 18, opacity: 0.85 }).addTo(map);
+
+    var bounds = L.latLngBounds(coords.concat(coords2));
+    map.fitBounds(bounds, { padding: [34, 34] });
+
+    map.on('click focus', function () { map.scrollWheelZoom.enable(); });
+    container.addEventListener('mouseleave', function () { map.scrollWheelZoom.disable(); });
+
+    /* Sant Dnyaneshwar Palkhi (Alandi route) in saturated gold + a red
+       comet; Sant Tukaram Palkhi (Dehu route) in pale gold throughout, so
+       the two are told apart without a legend. */
+    drawProcessionRoute(map, coords, idx, '#C9A227', '#E2361B');
+    drawProcessionRoute(map, coords2, idx2, '#E7CE7C', '#E7CE7C');
 
     var markers = {};
+    var allMarkerEls = [];
+
     LOCATIONS.forEach(function (loc) {
       var isPalkhi = loc.id === PALKHI.locId;
+      var status = domainColors ? locWorstStatus(loc) : 'plain';
       var m = L.marker([loc.lat, loc.lng], {
-        icon: haltIcon(locWorstStatus(loc), isPalkhi),
+        icon: haltIcon(status, isPalkhi ? 1 : 0),
         title: loc.en, alt: loc.en, keyboard: true, riseOnHover: true,
         zIndexOffset: isPalkhi ? 1000 : 0
       }).addTo(map);
-      m.bindTooltip(locTipHtml(loc), { direction: 'top', className: 'ops-tip', offset: [0, -14], opacity: 1 });
-      m.on('click', function () { openLocDrawer(loc.id); });
+      m.bindTooltip(domainColors ? locTipHtml(loc) : simpleTipHtml(loc, isPalkhi ? PALKHI : null),
+        { direction: 'top', className: 'ops-tip', offset: [0, -14], opacity: 1 });
+      if (clickOpensDrawer) m.on('click', function () { openLocDrawer(loc.id); });
+      markers[loc.id] = m;
+    });
+
+    /* The second route carries no domain data on either page — always a
+       plain waypoint, tooltip only, never the drawer. */
+    TUKARAM_ROUTE.forEach(function (loc) {
+      var isPalkhi = loc.id === PALKHI2.locId;
+      var m = L.marker([loc.lat, loc.lng], {
+        icon: haltIcon('plain', isPalkhi ? 2 : 0),
+        title: loc.en, alt: loc.en, keyboard: true, riseOnHover: true,
+        zIndexOffset: isPalkhi ? 1000 : 0
+      }).addTo(map);
+      m.bindTooltip(simpleTipHtml(loc, isPalkhi ? PALKHI2 : null),
+        { direction: 'top', className: 'ops-tip', offset: [0, -14], opacity: 1 });
       markers[loc.id] = m;
     });
 
@@ -1619,18 +1726,19 @@
       });
     }
 
-    mapObjs[opts.id] = { map: map, markers: markers, camps: camps };
+    mapObjs[opts.id] = { map: map, markers: markers, camps: camps, opts: opts };
 
     /* Halts drop in once the route has finished drawing itself. The
        inner span is animated, never the icon element itself: Leaflet
        positions each marker with a transform on that element, and the
        tween's y/clearProps would overwrite it and strand the marker. */
-    M.stagger(LOCATIONS.map(function (l) {
-      var el = markers[l.id].getElement();
-      return el && el.firstElementChild;
-    }).filter(Boolean), { y: -14, stagger: 0.045, delay: 0.65, duration: 0.5 });
+    LOCATIONS.concat(TUKARAM_ROUTE).forEach(function (l) {
+      var el = markers[l.id] && markers[l.id].getElement();
+      if (el && el.firstElementChild) allMarkerEls.push(el.firstElementChild);
+    });
+    M.stagger(allMarkerEls, { y: -14, stagger: 0.03, delay: 0.65, duration: 0.5 });
 
-    container.insertAdjacentHTML('afterend', legendHtml({ showCamps: opts.showCamps, satellite: true }));
+    container.insertAdjacentHTML('afterend', legendHtml({ showCamps: opts.showCamps, legend: opts.legend }));
 
     /* The container only has its true size once the page is on screen. */
     requestAnimationFrame(function () {
@@ -1659,16 +1767,21 @@
   }
 
   /* Live status re-colours the markers in place rather than rebuilding
-     the map, so pan and zoom survive an incoming report. */
+     the map, so pan and zoom survive an incoming report. Respects each
+     map's own build-time mode — the Dashboard's plain/no-domain-data
+     Palkhi-tracking view must not be re-coloured back to Live Ops' full
+     domain view just because a report came in. */
   function refreshMapMarkers() {
     Object.keys(mapObjs).forEach(function (id) {
       var o = mapObjs[id];
       if (!o) return;
+      var domainColors = !o.opts || o.opts.domainColors !== false;
       LOCATIONS.forEach(function (loc) {
         var m = o.markers[loc.id];
         if (!m) return;
-        m.setIcon(haltIcon(locWorstStatus(loc), loc.id === PALKHI.locId));
-        m.setTooltipContent(locTipHtml(loc));
+        var isPalkhi = loc.id === PALKHI.locId;
+        m.setIcon(haltIcon(domainColors ? locWorstStatus(loc) : 'plain', isPalkhi ? 1 : 0));
+        m.setTooltipContent(domainColors ? locTipHtml(loc) : simpleTipHtml(loc, isPalkhi ? PALKHI : null));
       });
       (o.camps || []).forEach(function (c) {
         c.marker.setIcon(campMapIcon(campOverall(c.camp)));
@@ -1799,11 +1912,13 @@
       return '<div class="camp-card" data-camp="' + esc(c.id) + '">' +
         '<button type="button" class="camp-card__head" aria-expanded="false" aria-controls="' + bodyId + '">' +
           '<span class="camp-card__name">' + esc(c.en) + '<span>' + esc(c.mr) + '</span></span>' +
-          '<span class="camp-card__load">' +
-            '<span class="camp-card__load-track"><span class="camp-card__load-fill meter__fill--' + loadS + '" data-w="' + loadPct + '"></span></span>' +
-            loadPct + '%</span>' +
-          sBadge(overall, statusWord(overall)) +
-          '<span class="camp-card__chevron" aria-hidden="true">▾</span>' +
+          '<span class="camp-card__status">' +
+            '<span class="camp-card__load">' +
+              '<span class="camp-card__load-track"><span class="camp-card__load-fill meter__fill--' + loadS + '" data-w="' + loadPct + '"></span></span>' +
+              loadPct + '%</span>' +
+            sBadge(overall, statusWord(overall)) +
+            '<span class="camp-card__chevron" aria-hidden="true">▾</span>' +
+          '</span>' +
         '</button>' +
         '<div class="camp-card__body" id="' + bodyId + '">' +
           '<div class="metric-grid">' +
@@ -1895,14 +2010,18 @@
        grid declares four columns and only three were ever filled, which
        left a dangling gap at the end of every row. */
     list.innerHTML = filtered.map(function (p) {
-      return '<div class="patient-row">' +
+      return '<button type="button" class="patient-row" data-name="' + esc(p.name) + '" aria-label="' + esc(p.name) + ' — ' + esc(t('medical.patientHistoryTitle')) + '">' +
         '<span class="patient-row__id">' + esc(p.id) + '</span>' +
         '<span><span class="patient-row__name">' + esc(p.name) + '</span>' +
           '<div class="patient-row__meta">' + esc(p.age) + ' ' + esc(t('medical.yrs')) + ' · ' + esc(p.condition) + '</div></span>' +
         '<span class="patient-row__camp">' + esc(p.camp) + '</span>' +
         '<span class="pill pill--' + esc(p.status) + '">' + esc(patientStatusLabel(p.status)) + '</span>' +
-      '</div>';
+      '</button>';
     }).join('');
+    list.onclick = function (e) {
+      var row = e.target.closest('.patient-row');
+      if (row) openPatientHistory(row.getAttribute('data-name'));
+    };
     M.stagger($$('.patient-row', list), { y: 10, stagger: 0.02, duration: 0.4 });
   }
 
@@ -1913,10 +2032,17 @@
     return { id: p.id, name: p.name, age: p.age, camp: campLabel(p.camp_id), condition: p.condition || '—', status: p.status };
   }
 
+  /* Raw backend rows (registered_at, camp_id, notes and all) kept
+     alongside the display-shaped patientsCache above, so clicking a
+     patient can show their full history via the same modal the
+     duplicate-name check already uses on registration. */
+  var patientsRawCache = [];
+
   function loadPatientsFromBackend() {
     return fetch(BACKEND_URL + '/api/patients', { cache: 'no-store' })
       .then(function (r) { if (!r.ok) throw new Error('backend responded ' + r.status); return r.json(); })
       .then(function (rows) {
+        patientsRawCache = rows;
         patientsCache = rows.map(backendPatientToRow);
         var search = $('#patientSearch');
         renderPatients(search ? search.value : '');
@@ -1924,13 +2050,27 @@
       .catch(function (err) { console.warn('[Wari] patients backend unavailable:', err.message); });
   }
 
+  function openPatientHistory(name) {
+    var target = (name || '').trim().toLowerCase();
+    if (!target) return;
+    var matches = patientsRawCache
+      .filter(function (r) { return (r.name || '').trim().toLowerCase() === target; })
+      .sort(function (a, b) { return new Date(b.registered_at) - new Date(a.registered_at); });
+    if (matches.length) showPatientHistoryModal(name, matches, 'view');
+  }
+
   /* ══════════════ PATIENT REGISTER + PRIOR-HISTORY POPUP ══════════════
      Registering by name is checked against the backend patient registry
      (case/whitespace-insensitive). A match means this person has been
      treated before — the doctor sees that history before continuing. */
-  function showPatientHistoryModal(name, records) {
+  function showPatientHistoryModal(name, records, mode) {
     var modal = $('#patientHistoryModal');
     if (!modal) return;
+    var isView = mode === 'view';
+    var eyebrow = $('#patientHistoryModalEyebrow');
+    if (eyebrow) eyebrow.textContent = t(isView ? 'medical.patientHistoryTitle' : 'medical.priorHistoryTitle');
+    var lede = $('#patientHistoryModalLede');
+    if (lede) lede.textContent = t(isView ? 'medical.patientHistoryNote' : 'medical.priorHistoryNote');
     var title = $('#patientHistoryModalTitle');
     if (title) title.textContent = name;
     var body = $('#patientHistoryModalBody');
@@ -2033,8 +2173,12 @@
 
     /* The map can only be measured once its page is on screen — build
        it after the class toggle above, never before. */
-    if (pageId === 'dashboard') buildOpsMap($('#opsMapMini'), { id: 'mini', showCamps: false });
-    if (pageId === 'live-ops') buildOpsMap($('#opsMapFull'), { id: 'full', showCamps: true });
+    /* Dashboard: Palkhi tracking only — no domain colouring, no camps, no
+       legend, and a click shows nothing beyond the marker's own tooltip.
+       Live Ops keeps the full picture: domain-coloured halts, camps, the
+       legend, and the location drawer on click. Both show both Palkhis. */
+    if (pageId === 'dashboard') buildOpsMap($('#opsMapMini'), { id: 'mini', showCamps: false, domainColors: false, clickOpensDrawer: false, legend: false });
+    if (pageId === 'live-ops') buildOpsMap($('#opsMapFull'), { id: 'full', showCamps: true, domainColors: true, clickOpensDrawer: true, legend: true });
 
     /* The entrance now runs per page, against the page being shown. It
        used to run once over every .panel in the document — including the
@@ -2086,6 +2230,18 @@
   }
 
   function logout() {
+    /* Tell the backend to drop the session too, but never block the UI on
+       it — the local session is cleared and the page reloads either way. */
+    if (authToken) {
+      try {
+        fetch(BACKEND_URL + '/api/auth/logout', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + authToken },
+          keepalive: true
+        }).catch(function () {});
+      } catch (e) {}
+    }
+    authToken = null;
     try { localStorage.removeItem('wci_session'); } catch (e) {}
     location.reload();
   }
@@ -2118,11 +2274,60 @@
       rolesWrap.hidden = false;
     });
 
+    var errBox = $('#loginError'), submitBtn = $('#loginSubmit');
+
+    function showLoginError(msg) {
+      if (!errBox) return;
+      errBox.textContent = msg;
+      errBox.hidden = false;
+    }
+    function clearLoginError() { if (errBox) errBox.hidden = true; }
+
+    $('#loginUser').addEventListener('input', clearLoginError);
+    $('#loginPass').addEventListener('input', clearLoginError);
+
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       if (!selected) return;
-      try { localStorage.setItem('wci_session', JSON.stringify({ roleId: selected.id })); } catch (err) {}
-      initApp(selected.id);
+      clearLoginError();
+
+      var user = $('#loginUser').value.trim(), pass = $('#loginPass').value;
+      var label = submitBtn ? submitBtn.textContent : '';
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = t('login.signingIn'); }
+
+      function done() {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = label; }
+      }
+
+      fetch(BACKEND_URL + '/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: user, password: pass, role: selected.id })
+      })
+        .then(function (res) {
+          return res.json().catch(function () { return {}; }).then(function (data) {
+            return { ok: res.ok, data: data };
+          });
+        })
+        .then(function (r) {
+          done();
+          if (!r.ok) { showLoginError(r.data.error || t('login.errGeneric')); return; }
+          // The role comes from the account, never from the clicked tile.
+          var role = roleById(r.data.role);
+          if (!role) { showLoginError(t('login.errGeneric')); return; }
+          try {
+            localStorage.setItem('wci_session', JSON.stringify({
+              roleId: role.id, token: r.data.token, username: r.data.username
+            }));
+          } catch (err) {}
+          authToken = r.data.token;
+          $('#loginPass').value = '';
+          initApp(role.id);
+        })
+        .catch(function () {
+          done();
+          showLoginError(t('login.errOffline'));
+        });
     });
 
     revealIn($$('.role-tile'));
@@ -2152,10 +2357,27 @@
       closeLocDrawer();
     });
 
+    /* Restore a previous sign-in. A session saved before this build has no
+       token, so it is discarded and the authority signs in properly. The
+       token is re-checked against the backend: a rejected one is cleared,
+       but a network failure leaves the session alone — a backend that is
+       merely down must not sign a supervisor out mid-Wari. */
     var session = null;
     try { session = JSON.parse(localStorage.getItem('wci_session') || 'null'); } catch (e) {}
-    if (session && roleById(session.roleId)) {
+    if (session && session.token && roleById(session.roleId)) {
+      authToken = session.token;
       initApp(session.roleId);
+      fetch(BACKEND_URL + '/api/auth/me', { headers: { 'Authorization': 'Bearer ' + session.token } })
+        .then(function (res) {
+          if (res.status === 401 || res.status === 403) {
+            try { localStorage.removeItem('wci_session'); } catch (e) {}
+            authToken = null;
+            location.reload();
+          }
+        })
+        .catch(function () { /* backend unreachable — keep the local session */ });
+    } else if (session) {
+      try { localStorage.removeItem('wci_session'); } catch (e) {}
     }
   });
 })();

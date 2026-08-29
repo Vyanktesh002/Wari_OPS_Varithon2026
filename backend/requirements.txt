@@ -1,2 +1,9 @@
 flask>=3.0.0
 requests>=2.31.0
+
+# Production WSGI server. Not used by `python app.py` (the local dev path),
+# only by the deploy start command:
+#   gunicorn --bind 0.0.0.0:$PORT app:app
+# Linux/macOS only — on Windows it installs but cannot run, so keep using
+# `python app.py` locally.
+gunicorn>=21.2.0; sys_platform != "win32"

@@ -76,8 +76,102 @@ def init_db(path: str) -> None:
                 registered_at TEXT NOT NULL
             );
             CREATE INDEX IF NOT EXISTS idx_patients_name ON patients (name);
+
+            CREATE TABLE IF NOT EXISTS users (
+                username TEXT PRIMARY KEY,
+                role TEXT NOT NULL,
+                display_name TEXT NOT NULL,
+                pass_salt TEXT NOT NULL,
+                pass_hash TEXT NOT NULL,
+                iterations INTEGER NOT NULL,
+                active INTEGER NOT NULL DEFAULT 1,
+                created_at TEXT NOT NULL,
+                last_login_at TEXT
+            );
+
+            CREATE TABLE IF NOT EXISTS sessions (
+                token TEXT PRIMARY KEY,
+                username TEXT NOT NULL REFERENCES users(username),
+                created_at TEXT NOT NULL,
+                expires_at TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions (username);
             """
         )
+        _conn.commit()
+
+
+# ── users & sessions (authentication) ───────────────────────────────────
+def users_is_empty() -> bool:
+    with _lock:
+        row = _conn.execute("SELECT COUNT(*) AS n FROM users").fetchone()
+    return row["n"] == 0
+
+
+def insert_user(user: dict) -> None:
+    """Idempotent: re-seeding never clobbers an existing account's password."""
+    with _lock:
+        _conn.execute(
+            "INSERT OR IGNORE INTO users "
+            "(username, role, display_name, pass_salt, pass_hash, iterations, active, created_at) "
+            "VALUES (:username, :role, :display_name, :pass_salt, :pass_hash, :iterations, 1, :created_at)",
+            user,
+        )
+        _conn.commit()
+
+
+def get_user(username: str) -> dict | None:
+    with _lock:
+        row = _conn.execute(
+            "SELECT * FROM users WHERE lower(trim(username)) = lower(trim(?))", (username,)
+        ).fetchone()
+    return dict(row) if row else None
+
+
+def list_users() -> list[dict]:
+    with _lock:
+        rows = _conn.execute(
+            "SELECT username, role, display_name, active, created_at, last_login_at "
+            "FROM users ORDER BY rowid"
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def touch_user_login(username: str, ts: str) -> None:
+    with _lock:
+        _conn.execute("UPDATE users SET last_login_at = ? WHERE username = ?", (ts, username))
+        _conn.commit()
+
+
+def create_session(token: str, username: str, created_at: str, expires_at: str) -> None:
+    with _lock:
+        _conn.execute(
+            "INSERT INTO sessions (token, username, created_at, expires_at) VALUES (?, ?, ?, ?)",
+            (token, username, created_at, expires_at),
+        )
+        _conn.commit()
+
+
+def get_session(token: str) -> dict | None:
+    """Returns the session joined to its user, or None if unknown."""
+    with _lock:
+        row = _conn.execute(
+            "SELECT s.token, s.username, s.expires_at, u.role, u.display_name, u.active "
+            "FROM sessions s JOIN users u ON u.username = s.username WHERE s.token = ?",
+            (token,),
+        ).fetchone()
+    return dict(row) if row else None
+
+
+def delete_session(token: str) -> None:
+    with _lock:
+        _conn.execute("DELETE FROM sessions WHERE token = ?", (token,))
+        _conn.commit()
+
+
+def purge_expired_sessions(now_iso: str) -> None:
+    with _lock:
+        _conn.execute("DELETE FROM sessions WHERE expires_at < ?", (now_iso,))
         _conn.commit()
 
 

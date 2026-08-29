@@ -253,3 +253,38 @@ def populate_patients_if_empty(store) -> None:
             "registered_at": _iso(now - timedelta(hours=p["hours_ago"])),
         }
         store.insert_patient(record)
+
+
+# ── demo authority accounts ─────────────────────────────────────────────
+# One per role in the frontend's ROLES list (assets/js/app.js). The role
+# recorded here is what actually decides which tabs the account can open —
+# the login screen's tile is only a hint, and is checked against this.
+DEMO_USERS = [
+    {"username": "dindi",      "role": "dindi",      "password": "Dindi@2026",      "display_name": "Dindi Coordinator"},
+    {"username": "medical",    "role": "medical",    "password": "Medical@2026",    "display_name": "Medical Authority"},
+    {"username": "police",     "role": "police",     "password": "Police@2026",     "display_name": "Police Authority"},
+    {"username": "municipal",  "role": "municipal",  "password": "Municipal@2026",  "display_name": "Municipal Authority"},
+    {"username": "sanitation", "role": "sanitation", "password": "Sanitation@2026", "display_name": "Sanitation Authority"},
+    {"username": "supervisor", "role": "supervisor", "password": "Supervisor@2026", "display_name": "Wari Supervisor"},
+]
+
+
+def populate_users_if_empty(store, hash_password) -> None:
+    """Create the six demo accounts.
+
+    Runs on every boot rather than only on an empty table, so adding a role
+    later still gets an account — insert_user is INSERT OR IGNORE, so an
+    account whose password was already changed is never reset.
+    """
+    now = _iso(datetime.now(timezone.utc))
+    for u in DEMO_USERS:
+        salt, digest, iterations = hash_password(u["password"])
+        store.insert_user({
+            "username": u["username"],
+            "role": u["role"],
+            "display_name": u["display_name"],
+            "pass_salt": salt,
+            "pass_hash": digest,
+            "iterations": iterations,
+            "created_at": now,
+        })

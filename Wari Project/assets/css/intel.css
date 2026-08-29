@@ -152,6 +152,31 @@
 .intel-live-badge.is-generating::before{ background:var(--gold); }
 
 /* ─── brief sections as disclosures ─────────────────────────────── */
+/* The brief's section names ("Key Factors", "Resource Gaps"…) were tiny
+   spaced-out Inter capitals — correct, on-system UI type, but next to the
+   rest of the site's Bodoni Moda display headings it read as a bolted-on
+   dashboard widget rather than part of the same document. Give them the
+   same serif the site uses for every other heading instead. */
+.doc--full .doc__h{
+  font-family:var(--f-dsp); font-weight:500; font-size:1.08rem;
+  letter-spacing:-.005em; text-transform:none; color:var(--ink);
+}
+.doc--full .doc__h::before{ display:none; }
+.doc--full .doc__h--crit{ color:var(--vermillion); }
+.doc--full .doc__h--act{ color:var(--ok); }
+.doc--full .ai-note{ font-family:var(--f-ui); }
+
+/* A faint, always-on scan line along the top edge — the brief reads as
+   something a live system is continuously watching, not a card that was
+   filled in once and left there. No overflow:hidden here: .doc__orn's
+   corner marks sit right at this box's edge and would clip. */
+.doc--full::before{
+  content:''; position:absolute; inset-inline:0; top:0; height:2px; z-index:1;
+  background:linear-gradient(90deg, transparent, var(--vermillion), var(--gold), var(--vermillion), transparent);
+  background-size:200% 100%; animation:docScan 5s linear infinite;
+}
+@keyframes docScan{ to{ background-position:200% 0; } }
+
 .doc__blk{ border-top:1px solid var(--rule); margin-bottom:0 !important; }
 .doc__blk:first-of-type{ border-top:0; }
 
@@ -187,5 +212,5 @@
 .doc__blk:last-of-type .doc__body li::before{ background:var(--vermillion); }
 
 @media (prefers-reduced-motion:reduce){
-  .ai-badge, .ai-badge__icon, .ai-dots i, .ai-skeleton span{ animation:none; }
+  .ai-badge, .ai-badge__icon, .ai-dots i, .ai-skeleton span, .doc--full::before{ animation:none; }
 }

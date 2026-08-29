@@ -74,6 +74,77 @@ on port 5510, set `window.WCI_BACKEND_URL` (see `assets/js/app.js`) before
 - CORS is enabled for all origins (`backend/app.py`, manual headers, no
   `flask-cors` dependency) so the static frontend can call it regardless
   of which port serves the HTML.
-- There's no auth here, matching the frontend's own prototype login
-  ("any credentials are accepted"). Don't expose this outside a trusted
-  network as-is.
+## Deploying
+
+Three pieces: the static frontend (`Wari Project/`), this Flask backend,
+and the FastAPI model service (`model_service/`). The frontend can go on
+any static host; both Python services need a host that runs long-lived
+processes and offers a **persistent disk** — the SQLite file must survive
+restarts, so a serverless/ephemeral filesystem will silently lose every
+patient, user and session.
+
+Deploy in this order, since each step needs the previous URL.
+
+**1. Model service**
+```
+pip install -r requirements.txt
+uvicorn main:app --host 0.0.0.0 --port $PORT
+```
+
+**2. This backend**
+```
+pip install -r requirements.txt
+gunicorn --bind 0.0.0.0:$PORT app:app
+```
+| Env var | Purpose |
+|---|---|
+| `MODEL_SERVICE_URL` | URL from step 1. Default `http://127.0.0.1:8001`. |
+| `WCI_DB_PATH` | Path to `wci.db` **on the persistent disk**. Default is next to `app.py`. |
+| `WCI_ALLOWED_ORIGIN` | The frontend's origin, e.g. `https://wari.vercel.app`. Default `*` (fine locally, too open in production). |
+| `PORT` | Set by most hosts automatically. Default `5050`. |
+
+**3. Frontend** — serve `Wari Project/` as a static site (that folder is the
+site root, not the repo root). Then open
+`Wari Project/assets/js/config.js` and set `BACKEND_URL` to step 2's URL.
+Leave it empty only if one host serves both the page and this API, in
+which case same-origin requests are used automatically.
+
+Nothing needs changing to run locally: with no env vars set and
+`BACKEND_URL` empty, everything falls back to the same localhost ports as
+before.
+
+## Authentication
+
+Real credential checks live in the `users` / `sessions` tables. Passwords
+are stored as PBKDF2-HMAC-SHA256 (200k iterations, per-user random salt) —
+never in plaintext — using only the standard library, so no new dependency.
+
+- `POST /api/auth/login` — `{username, password, role}`. Returns a bearer
+  `token` plus the account's `role`. The `role` in the body is only the
+  tile the user clicked on the login screen; it is checked against the
+  account and rejected on mismatch. The account's stored role is what
+  actually decides which tabs open.
+- `GET /api/auth/me` — validates a bearer token, returns the account.
+- `POST /api/auth/logout` — deletes the session server-side.
+
+Sessions expire after 12 hours; expired rows are purged on each login.
+Unknown username and wrong password return the same 401 (and do the same
+hashing work) so neither can be probed for.
+
+### Demo accounts
+
+Created automatically on boot, one per authority. `insert_user` is
+`INSERT OR IGNORE`, so restarting never resets a changed password.
+
+| Username     | Password          | Role                 |
+|--------------|-------------------|----------------------|
+| `dindi`      | `Dindi@2026`      | Dindi Coordinator    |
+| `medical`    | `Medical@2026`    | Medical Authority    |
+| `police`     | `Police@2026`     | Police Authority     |
+| `municipal`  | `Municipal@2026`  | Municipal Authority  |
+| `sanitation` | `Sanitation@2026` | Sanitation Authority |
+| `supervisor` | `Supervisor@2026` | Wari Supervisor      |
+
+These are demo credentials in a public repo — rotate them before running
+anywhere but a trusted local network. The rest of the API is still
+unauthenticated; only the login gate is enforced so far.

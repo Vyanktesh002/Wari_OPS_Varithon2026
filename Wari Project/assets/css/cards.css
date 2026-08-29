@@ -417,6 +417,18 @@
 }
 .drawer__title{ font-family:var(--f-dsp); font-size:clamp(1.7rem,4vw,2.2rem); line-height:1.05; }
 .drawer__mr{ font-family:var(--f-mr); color:var(--vermillion); font-size:1rem; display:block; margin-top:.2rem; }
+
+/* One-sentence read: whichever domain is worst off here, or an all-clear.
+   A left border in the same colour as its severity so it reads before the
+   words do. */
+.drawer__summary{
+  margin-top:1.2rem; padding:.85rem 1rem; border-radius:10px;
+  font-size:.88rem; line-height:1.5; font-weight:600;
+  background:var(--paper); border-left:3px solid var(--ok); color:var(--ink-70);
+}
+.drawer__summary--warn{ border-left-color:var(--warn); }
+.drawer__summary--crit{ border-left-color:var(--vermillion); color:var(--vermillion); }
+
 .drawer__blk{ margin-top:1.6rem; }
 .drawer__h{
   font-size:.62rem; letter-spacing:.2em; text-transform:uppercase; font-weight:700;
@@ -457,7 +469,15 @@
 .camp-card{ transition:border-color .3s, box-shadow .3s; }
 .camp-card:hover{ border-color:rgba(201,162,39,.55); }
 .camp-card.is-open{ box-shadow:0 14px 32px rgba(58,11,11,.09); border-color:rgba(201,162,39,.55); }
-.camp-card__head{ cursor:pointer; }
+/* The load bar, the risk pill and the chevron are three separate flex
+   children of different intrinsic heights, so nudging each one by hand
+   could only ever get them close — they were still ~6px out. Group them
+   into one centered row instead: sharing a single line box makes their
+   centers identical by construction, at any font size or zoom level. */
+.camp-card__head{ cursor:pointer; align-items:center; }
+.camp-card__status{
+  display:flex; align-items:center; gap:1rem; flex:none;
+}
 .camp-card__head:hover .camp-card__name{ color:var(--vermillion); }
 .camp-card__name{ transition:color .25s; }
 .camp-card__load{

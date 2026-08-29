@@ -57,6 +57,75 @@
       </g>
     </symbol>
 
+    <!-- Bhagwa flag bearer -->
+    <symbol id="w-flag" viewBox="0 0 62 104">
+      <circle cx="31" cy="14" r="8.5" fill="currentColor"/>
+      <polygon points="14,26 48,26 31,49" fill="currentColor"/>
+      <polygon points="31,49 15,71 47,71" fill="currentColor"/>
+      <g stroke="currentColor" stroke-width="4.2" stroke-linecap="round" fill="none">
+        <path d="M16 30 L4 46"/>
+        <path d="M46 30 L53 18"/>
+        <path d="M20 71 L12 100"/><path d="M42 71 L50 100"/>
+        <path d="M53 18 L53 3" stroke-width="2.6"/>
+      </g>
+      <polygon points="53,3 53,16 61,10" fill="currentColor"/>
+    </symbol>
+
+    <!-- Tulsi vrindavan carried on the head -->
+    <symbol id="w-tulsi" viewBox="0 0 62 104">
+      <g stroke="currentColor" stroke-width="2.6" stroke-linecap="round" fill="none">
+        <path d="M31 8 L31 1"/><path d="M31 4 L25 1"/><path d="M31 4 L37 1"/>
+      </g>
+      <rect x="17" y="8" width="28" height="10" fill="currentColor"/>
+      <circle cx="31" cy="27" r="8.5" fill="currentColor"/>
+      <polygon points="14,39 48,39 31,60" fill="currentColor"/>
+      <polygon points="31,60 15,81 47,81" fill="currentColor"/>
+      <g stroke="currentColor" stroke-width="4.2" stroke-linecap="round" fill="none">
+        <path d="M16 42 L14 20"/><path d="M46 42 L48 20"/>
+        <path d="M20 81 L14 102"/><path d="M42 81 L48 102"/>
+      </g>
+    </symbol>
+
+    <!-- Veena / ektari player -->
+    <symbol id="w-veena" viewBox="0 0 62 104">
+      <circle cx="31" cy="12" r="8.5" fill="currentColor"/>
+      <polygon points="14,24 48,24 31,47" fill="currentColor"/>
+      <polygon points="31,47 15,70 47,70" fill="currentColor"/>
+      <g stroke="currentColor" stroke-width="4.2" stroke-linecap="round" fill="none">
+        <path d="M16 28 L10 46"/><path d="M46 28 L40 44"/>
+        <path d="M20 70 L12 100"/><path d="M42 70 L50 100"/>
+      </g>
+      <g stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none">
+        <path d="M8 52 L52 8"/>
+      </g>
+      <circle cx="9" cy="53" r="7" fill="currentColor"/>
+    </symbol>
+
+    <!-- Mridang drummer -->
+    <symbol id="w-drum" viewBox="0 0 62 104">
+      <circle cx="31" cy="12" r="8.5" fill="currentColor"/>
+      <polygon points="14,24 48,24 31,47" fill="currentColor"/>
+      <polygon points="31,47 15,70 47,70" fill="currentColor"/>
+      <g stroke="currentColor" stroke-width="4.2" stroke-linecap="round" fill="none">
+        <path d="M16 28 L2 40"/><path d="M46 28 L60 40"/>
+        <path d="M20 70 L12 100"/><path d="M42 70 L50 100"/>
+      </g>
+      <rect x="8" y="44" width="46" height="15" rx="7.5" fill="currentColor"/>
+    </symbol>
+
+    <!-- Taal / cymbal player, arms raised -->
+    <symbol id="w-taal" viewBox="0 0 62 104">
+      <circle cx="31" cy="12" r="8.5" fill="currentColor"/>
+      <polygon points="14,24 48,24 31,47" fill="currentColor"/>
+      <polygon points="31,47 15,70 47,70" fill="currentColor"/>
+      <g stroke="currentColor" stroke-width="4.2" stroke-linecap="round" fill="none">
+        <path d="M16 28 L8 8"/><path d="M46 28 L54 8"/>
+        <path d="M20 70 L12 100"/><path d="M42 70 L50 100"/>
+      </g>
+      <circle cx="7" cy="6" r="6" fill="currentColor"/>
+      <circle cx="55" cy="6" r="6" fill="currentColor"/>
+    </symbol>
+
     <symbol id="w-arch" viewBox="0 0 200 260">
       <path fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"
         d="M20 256 V120
@@ -212,8 +281,10 @@
         <input id="loginPass" type="password" autocomplete="current-password" required />
       </label>
 
-      <button type="submit" class="btn btn--lg login__submit" data-i18n="login.submit">प्रवेश करा</button>
-      <p class="login__note" data-i18n="login.note">प्रोटोटाइप प्रवेश — निवडलेल्या भूमिकेसाठी कोणतेही तपशील स्वीकारले जातील.</p>
+      <p class="login__error" id="loginError" role="alert" hidden></p>
+
+      <button type="submit" class="btn btn--lg login__submit" id="loginSubmit" data-i18n="login.submit">प्रवेश करा</button>
+      <p class="login__note" data-i18n="login.note">आपल्या प्राधिकरण खात्याने प्रवेश करा.</p>
     </form>
   </div>
 </div>
@@ -243,12 +314,22 @@
     <!-- DASHBOARD -->
     <section class="page" id="page-dashboard" data-page="dashboard">
       <div class="warli-watermark warli-watermark--sun" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#w-sun"/></svg></div>
+      <div class="warli-watermark warli-watermark--tree" aria-hidden="true"><svg viewBox="0 0 80 110"><use href="#w-tree"/></svg></div>
       <div class="wrap page__wrap">
         <header class="page__head">
           <span class="sec__label" data-i18n="dash.label">Command Dashboard</span>
           <h1 class="dsp dsp--ink page__title"><span data-i18n="dash.greeting">Namaskar,</span> <span id="dashRoleName">Authority</span></h1>
           <p class="lede" data-i18n="dash.lede">One shared, real-time picture of the Wari right now.</p>
         </header>
+
+        <div class="page__orn" aria-hidden="true">
+          <svg class="page__orn__tree" viewBox="0 0 80 110"><use href="#w-tree"/></svg>
+          <svg class="page__orn__fig" viewBox="0 0 62 104"><use href="#w-flag"/></svg>
+          <svg class="page__orn__fig" viewBox="0 0 62 104"><use href="#w-walk"/></svg>
+          <svg class="page__orn__fig" viewBox="0 0 62 104"><use href="#w-tulsi"/></svg>
+          <span class="page__orn__line"></span>
+          <svg class="page__orn__sun" viewBox="0 0 100 100"><use href="#w-sun"/></svg>
+        </div>
 
         <div class="stat-strip" id="statStrip"></div>
 
@@ -283,17 +364,49 @@
             <ul class="feed__list" id="dashFeedList"></ul>
           </section>
         </div>
+
+        <div class="warli-mural" aria-hidden="true">
+          <svg class="warli-mural__sun" viewBox="0 0 100 100"><use href="#w-sun"/></svg>
+          <div class="warli-mural__ground">
+            <svg class="warli-mural__tree" viewBox="0 0 80 110"><use href="#w-tree"/></svg>
+            <div class="warli-mural__walk">
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-flag"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-walk"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-tulsi"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-veena"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-walk"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-drum"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-taal"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-walk"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-tulsi"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-walk"/></svg>
+            </div>
+            <svg class="warli-mural__tree" viewBox="0 0 80 110"><use href="#w-tree"/></svg>
+          </div>
+          <p class="warli-mural__cap">पंढरपूर वारी</p>
+        </div>
       </div>
     </section>
 
     <!-- LIVE OPS -->
     <section class="page" id="page-live-ops" data-page="live-ops">
+      <div class="warli-watermark warli-watermark--sun warli-watermark--r" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#w-sun"/></svg></div>
+      <div class="warli-watermark warli-watermark--tree" aria-hidden="true"><svg viewBox="0 0 80 110"><use href="#w-tree"/></svg></div>
       <div class="wrap page__wrap">
         <header class="page__head">
           <span class="sec__label" data-i18n="liveops.label">Live Operations</span>
           <h1 class="dsp dsp--ink page__title" data-i18n="liveops.h1">Wari, in motion.</h1>
           <p class="lede" data-i18n="liveops.lede">Location-by-location operational status across the route.</p>
         </header>
+
+        <div class="page__orn" aria-hidden="true">
+          <svg class="page__orn__tree" viewBox="0 0 80 110"><use href="#w-tree"/></svg>
+          <svg class="page__orn__fig" viewBox="0 0 62 104"><use href="#w-veena"/></svg>
+          <svg class="page__orn__fig" viewBox="0 0 62 104"><use href="#w-walk"/></svg>
+          <svg class="page__orn__fig" viewBox="0 0 62 104"><use href="#w-drum"/></svg>
+          <span class="page__orn__line"></span>
+          <svg class="page__orn__sun" viewBox="0 0 100 100"><use href="#w-sun"/></svg>
+        </div>
 
         <section class="panel panel--map-full">
           <div class="panel__title-row">
@@ -307,6 +420,10 @@
 
         <section class="mcard" id="liveOpsCoverage"></section>
 
+        <div class="warli-div" aria-hidden="true">
+          <svg viewBox="0 0 62 104"><use href="#w-tulsi"/></svg>
+        </div>
+
         <div class="liveops-bar">
           <div class="chip-row" id="liveOpsFilters"></div>
           <div class="liveops-sort" id="liveOpsSort"></div>
@@ -317,11 +434,34 @@
         </div>
 
         <div class="loc-grid" id="locGrid"></div>
+
+        <div class="warli-mural" aria-hidden="true">
+          <svg class="warli-mural__sun" viewBox="0 0 100 100"><use href="#w-sun"/></svg>
+          <div class="warli-mural__ground">
+            <svg class="warli-mural__tree" viewBox="0 0 80 110"><use href="#w-tree"/></svg>
+            <div class="warli-mural__walk">
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-flag"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-walk"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-tulsi"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-veena"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-walk"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-drum"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-taal"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-walk"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-tulsi"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-walk"/></svg>
+            </div>
+            <svg class="warli-mural__tree" viewBox="0 0 80 110"><use href="#w-tree"/></svg>
+          </div>
+          <p class="warli-mural__cap">पंढरपूर वारी</p>
+        </div>
       </div>
     </section>
 
     <!-- RECORDS -->
     <section class="page" id="page-records" data-page="records">
+      <div class="warli-watermark warli-watermark--sun" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#w-sun"/></svg></div>
+      <div class="warli-watermark warli-watermark--tree" aria-hidden="true"><svg viewBox="0 0 80 110"><use href="#w-tree"/></svg></div>
       <div class="wrap page__wrap page__wrap--narrow">
         <header class="page__head">
           <span class="sec__label" data-i18n="records.label">Records</span>
@@ -329,20 +469,56 @@
           <p class="lede" data-i18n="records.lede">Your report becomes shared operational state the moment you submit it.</p>
         </header>
 
+        <div class="page__orn" aria-hidden="true">
+          <svg class="page__orn__tree" viewBox="0 0 80 110"><use href="#w-tree"/></svg>
+          <svg class="page__orn__fig" viewBox="0 0 62 104"><use href="#w-walk"/></svg>
+          <svg class="page__orn__fig" viewBox="0 0 62 104"><use href="#w-flag"/></svg>
+          <span class="page__orn__line"></span>
+          <svg class="page__orn__sun" viewBox="0 0 100 100"><use href="#w-sun"/></svg>
+        </div>
+
         <section class="mcard" id="recordsCard"></section>
 
         <form class="report-form" id="reportForm"></form>
+
+        <div class="warli-mural" aria-hidden="true">
+          <svg class="warli-mural__sun" viewBox="0 0 100 100"><use href="#w-sun"/></svg>
+          <div class="warli-mural__ground">
+            <svg class="warli-mural__tree" viewBox="0 0 80 110"><use href="#w-tree"/></svg>
+            <div class="warli-mural__walk">
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-flag"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-walk"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-tulsi"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-drum"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-taal"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-walk"/></svg>
+            </div>
+            <svg class="warli-mural__tree" viewBox="0 0 80 110"><use href="#w-tree"/></svg>
+          </div>
+          <p class="warli-mural__cap">पंढरपूर वारी</p>
+        </div>
       </div>
     </section>
 
     <!-- MEDICAL -->
     <section class="page" id="page-medical" data-page="medical">
+      <div class="warli-watermark warli-watermark--sun warli-watermark--r" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#w-sun"/></svg></div>
+      <div class="warli-watermark warli-watermark--tree" aria-hidden="true"><svg viewBox="0 0 80 110"><use href="#w-tree"/></svg></div>
       <div class="wrap page__wrap">
         <header class="page__head">
           <span class="sec__label" data-i18n="medical.label">Medical Command</span>
           <h1 class="dsp dsp--ink page__title" data-i18n="medical.h1">Camps &amp; patients.</h1>
           <p class="lede" data-i18n="medical.lede">Tap a camp to see its full status — load, beds, ambulances and medicine stock together.</p>
         </header>
+
+        <div class="page__orn" aria-hidden="true">
+          <svg class="page__orn__tree" viewBox="0 0 80 110"><use href="#w-tree"/></svg>
+          <svg class="page__orn__fig" viewBox="0 0 62 104"><use href="#w-tulsi"/></svg>
+          <svg class="page__orn__fig" viewBox="0 0 62 104"><use href="#w-walk"/></svg>
+          <svg class="page__orn__fig" viewBox="0 0 62 104"><use href="#w-flag"/></svg>
+          <span class="page__orn__line"></span>
+          <svg class="page__orn__sun" viewBox="0 0 100 100"><use href="#w-sun"/></svg>
+        </div>
 
         <div class="dash-hero">
           <div class="dial-card dial-card--med" id="medDial"></div>
@@ -355,6 +531,10 @@
           <h2 class="panel__title" data-i18n="medical.campStatus">Camp Status</h2>
           <div class="camp-list" id="campList"></div>
         </section>
+
+        <div class="warli-div" aria-hidden="true">
+          <svg viewBox="0 0 62 104"><use href="#w-tulsi"/></svg>
+        </div>
 
         <section class="panel" id="patientRegisterPanel" hidden>
           <div class="panel__title-row">
@@ -386,12 +566,34 @@
           </div>
           <div class="patient-list" id="patientList"></div>
         </section>
+
+        <div class="warli-mural" aria-hidden="true">
+          <svg class="warli-mural__sun" viewBox="0 0 100 100"><use href="#w-sun"/></svg>
+          <div class="warli-mural__ground">
+            <svg class="warli-mural__tree" viewBox="0 0 80 110"><use href="#w-tree"/></svg>
+            <div class="warli-mural__walk">
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-flag"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-walk"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-tulsi"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-veena"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-walk"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-drum"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-taal"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-walk"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-tulsi"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-walk"/></svg>
+            </div>
+            <svg class="warli-mural__tree" viewBox="0 0 80 110"><use href="#w-tree"/></svg>
+          </div>
+          <p class="warli-mural__cap">पंढरपूर वारी</p>
+        </div>
       </div>
     </section>
 
     <!-- INTEL -->
     <section class="page" id="page-intel" data-page="intel">
       <div class="warli-watermark warli-watermark--sun" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#w-sun"/></svg></div>
+      <div class="warli-watermark warli-watermark--tree" aria-hidden="true"><svg viewBox="0 0 80 110"><use href="#w-tree"/></svg></div>
       <div class="wrap page__wrap">
         <header class="page__head">
           <div class="page__head-row">
@@ -406,6 +608,15 @@
             </div>
           </div>
         </header>
+
+        <div class="page__orn" aria-hidden="true">
+          <svg class="page__orn__tree" viewBox="0 0 80 110"><use href="#w-tree"/></svg>
+          <svg class="page__orn__fig" viewBox="0 0 62 104"><use href="#w-flag"/></svg>
+          <svg class="page__orn__fig" viewBox="0 0 62 104"><use href="#w-veena"/></svg>
+          <svg class="page__orn__fig" viewBox="0 0 62 104"><use href="#w-walk"/></svg>
+          <span class="page__orn__line"></span>
+          <svg class="page__orn__sun" viewBox="0 0 100 100"><use href="#w-sun"/></svg>
+        </div>
 
         <div class="intel-status-line" id="intelStatus" hidden></div>
 
@@ -438,6 +649,27 @@
 
           <article class="doc doc--full" id="intelDoc"></article>
         </div>
+
+        <div class="warli-mural" aria-hidden="true">
+          <svg class="warli-mural__sun" viewBox="0 0 100 100"><use href="#w-sun"/></svg>
+          <div class="warli-mural__ground">
+            <svg class="warli-mural__tree" viewBox="0 0 80 110"><use href="#w-tree"/></svg>
+            <div class="warli-mural__walk">
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-flag"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-walk"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-tulsi"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-veena"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-walk"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-drum"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-taal"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-walk"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-tulsi"/></svg>
+              <svg class="wfig" viewBox="0 0 62 104"><use href="#w-walk"/></svg>
+            </div>
+            <svg class="warli-mural__tree" viewBox="0 0 80 110"><use href="#w-tree"/></svg>
+          </div>
+          <p class="warli-mural__cap">पंढरपूर वारी</p>
+        </div>
       </div>
     </section>
 
@@ -461,14 +693,15 @@
   <div class="modal__card">
     <button type="button" class="modal__close" id="patientHistoryModalClose" aria-label="Close">&times;</button>
     <svg class="modal__icon" viewBox="0 0 120 100"><use href="#g-medical"/></svg>
-    <span class="modal__eyebrow" data-i18n="medical.priorHistoryTitle">Prior treatment history found</span>
+    <span class="modal__eyebrow" id="patientHistoryModalEyebrow" data-i18n="medical.priorHistoryTitle">Prior treatment history found</span>
     <h3 class="modal__title" id="patientHistoryModalTitle"></h3>
-    <p class="modal__lede" data-i18n="medical.priorHistoryNote">A patient with this name has been treated before — review before proceeding:</p>
+    <p class="modal__lede" id="patientHistoryModalLede" data-i18n="medical.priorHistoryNote">A patient with this name has been treated before — review before proceeding:</p>
     <div class="modal__body" id="patientHistoryModalBody"></div>
     <button type="button" class="btn btn--lg modal__ack" id="patientHistoryModalOk" data-i18n="medical.priorHistoryAck">Got it, continue</button>
   </div>
 </div>
 
+<script src="assets/js/config.js"></script>
 <script src="assets/js/i18n.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>

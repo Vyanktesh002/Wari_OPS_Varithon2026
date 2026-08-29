@@ -46,15 +46,18 @@
 .opsmk{ position:relative; display:block; width:24px; height:24px; }
 .opsmk__core{
   position:absolute; inset:7px; border-radius:50%;
-  background:var(--gold);
+  background:var(--ok);
   box-shadow:0 0 0 2px rgba(36,5,5,.9), 0 2px 7px rgba(0,0,0,.55);
   transition:transform .28s var(--e-out);
 }
 .opsmk__ring{
   position:absolute; inset:1px; border-radius:50%;
-  border:2px solid var(--gold); opacity:.6;
+  border:2px solid var(--ok); opacity:.6;
   transform-origin:50% 50%;
 }
+/* Halt ready = green, capacity rising = yellow/amber, needs attention = red. */
+.opsmk--ok .opsmk__core{ background:var(--ok); }
+.opsmk--ok .opsmk__ring{ border-color:var(--ok); }
 .opsmk--warn .opsmk__core{ background:var(--warn); }
 .opsmk--warn .opsmk__ring{ border-color:var(--warn); }
 .opsmk--crit .opsmk__core{ background:var(--vermillion); }
@@ -77,6 +80,13 @@
   box-shadow:0 0 0 3px var(--gold), 0 2px 7px rgba(0,0,0,.55);
 }
 
+/* Plain waypoint marker — no domain status attached: the Dashboard's map
+   uses this for every halt (it tracks the Palkhis, not readiness), and
+   both maps use it for the second route's halts, which carry no domain
+   data of their own. */
+.opsmk--plain .opsmk__core{ background:var(--gold-l); }
+.opsmk--plain .opsmk__ring{ border-color:var(--gold-l); opacity:.5; animation:none !important; }
+
 /* ─── the Palkhi itself ─────────────────────────────────────────── */
 .opspk{ position:relative; display:block; width:46px; height:46px; }
 .opspk::before{
@@ -88,16 +98,25 @@
   transform:translate(-50%,-50%); color:var(--vermillion);
   overflow:visible; z-index:2;
 }
-/* the disc carries the halt's own status, the rings carry the Palkhi */
-.opspk--ok::before{ box-shadow:0 0 0 2.5px var(--gold), 0 3px 10px rgba(0,0,0,.6); }
+/* the disc carries the halt's own status, the rings carry the Palkhi.
+   "plain" — no domain data attached (Dashboard's map, and always for the
+   second route, which carries no domain data of its own) — gets the same
+   neutral tone as a plain waypoint marker. */
+.opspk--ok::before{ box-shadow:0 0 0 2.5px var(--ok), 0 3px 10px rgba(0,0,0,.6); }
 .opspk--warn::before{ box-shadow:0 0 0 2.5px var(--warn), 0 3px 10px rgba(0,0,0,.6); }
 .opspk--crit::before{ box-shadow:0 0 0 2.5px var(--vermillion), 0 3px 10px rgba(0,0,0,.6); }
+.opspk--plain::before{ box-shadow:0 0 0 2.5px var(--gold-l), 0 3px 10px rgba(0,0,0,.6); }
 .opspk__ring{
   position:absolute; inset:10px; border-radius:50%;
   border:2px solid var(--vermillion); transform-origin:50% 50%;
   animation:pkPulse 2.6s ease-out infinite;
 }
 .opspk__ring--2{ animation-delay:1.3s; }
+/* Second Palkhi (Sant Tukaram Maharaj) — a gold ring and icon instead of
+   vermillion, so both processions read apart at a glance without a label.
+   Its disc is always .opspk--plain (no domain data exists for that route). */
+.opspk--pk2 .opspk__ring{ border-color:var(--gold-l); }
+.opspk--pk2 .opspk__icon{ color:var(--gold-l); }
 @keyframes pkPulse{
   0%{ transform:scale(.55); opacity:.9; }
   80%{ transform:scale(2.1); opacity:0; }
@@ -166,8 +185,6 @@
   border-radius:8px 0 0 0;
 }
 .ops-map--sat .leaflet-control-attribution a{ color:var(--gold); }
-
-.ops-map__legend-src{ color:var(--ink-30); font-style:italic; }
 
 /* ─── reduced motion ────────────────────────────────────────────── */
 @media (prefers-reduced-motion:reduce){

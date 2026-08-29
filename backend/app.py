@@ -20,9 +20,12 @@ MODEL_SERVICE_URL (see model_client.py).
 from __future__ import annotations
 
 import copy
+import hashlib
+import hmac
 import os
+import secrets
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from flask import Flask, jsonify, request
 
@@ -36,22 +39,48 @@ DB_PATH = os.environ.get("WCI_DB_PATH", os.path.join(os.path.dirname(__file__), 
 SEVERITY_RANK = {"critical": 3, "high": 2, "medium": 1, "low": 0}
 STATUS_RANK = {"NORMAL": 0, "ELEVATED": 1, "HIGH": 2, "CRITICAL": 3}
 
+# ── password hashing (stdlib only — no new dependency) ──────────────────
+PBKDF2_ITERATIONS = 200_000
+SESSION_TTL_HOURS = 12
+
+
+def hash_password(password: str, salt: str | None = None, iterations: int = PBKDF2_ITERATIONS):
+    """Returns (salt_hex, hash_hex, iterations). PBKDF2-HMAC-SHA256."""
+    salt = salt or secrets.token_hex(16)
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), bytes.fromhex(salt), iterations)
+    return salt, digest.hex(), iterations
+
+
+def verify_password(password: str, salt: str, expected_hash: str, iterations: int) -> bool:
+    _, actual, _ = hash_password(password, salt, iterations)
+    return hmac.compare_digest(actual, expected_hash)
+
 
 def _bootstrap() -> None:
     store.init_db(DB_PATH)
     seed.populate_if_empty(store)
     seed.populate_patients_if_empty(store)
+    seed.populate_users_if_empty(store, hash_password)
 
 
 _bootstrap()
 
 
 # ── CORS (manual — no flask-cors dependency) ────────────────────────────
+# Defaults to "*" so local development keeps working with the frontend on
+# any port. In a deployment set WCI_ALLOWED_ORIGIN to the site's own origin
+# (e.g. https://wari.vercel.app) so only that page can call this API.
+ALLOWED_ORIGIN = os.environ.get("WCI_ALLOWED_ORIGIN", "*").strip() or "*"
+
+
 @app.after_request
 def _add_cors_headers(resp):
-    resp.headers["Access-Control-Allow-Origin"] = "*"
-    resp.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    resp.headers["Access-Control-Allow-Origin"] = ALLOWED_ORIGIN
+    resp.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
     resp.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    if ALLOWED_ORIGIN != "*":
+        # Caches must not serve one origin's response to another.
+        resp.headers["Vary"] = "Origin"
     return resp
 
 
@@ -70,6 +99,97 @@ def health():
 @app.get("/api/locations")
 def locations():
     return jsonify(store.list_locations())
+
+
+# ── authentication ───────────────────────────────────────────────────────
+def _now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _bearer_token() -> str | None:
+    header = request.headers.get("Authorization", "")
+    if header.lower().startswith("bearer "):
+        return header[7:].strip() or None
+    return None
+
+
+def _session_from_request() -> dict | None:
+    """The active session for this request, or None. Expired tokens are dropped."""
+    token = _bearer_token()
+    if not token:
+        return None
+    session = store.get_session(token)
+    if not session:
+        return None
+    if session["expires_at"] < _now().isoformat():
+        store.delete_session(token)
+        return None
+    if not session["active"]:
+        return None
+    return session
+
+
+@app.post("/api/auth/login")
+def auth_login():
+    body = request.get_json(silent=True) or {}
+    username = (body.get("username") or "").strip()
+    password = body.get("password") or ""
+    want_role = (body.get("role") or "").strip()
+
+    if not username or not password:
+        return jsonify({"error": "Username and password are required."}), 400
+
+    user = store.get_user(username)
+    # Same message and roughly the same work either way, so a wrong username
+    # is not distinguishable from a wrong password.
+    if user is None:
+        hash_password(password)
+        return jsonify({"error": "Incorrect username or password."}), 401
+    if not verify_password(password, user["pass_salt"], user["pass_hash"], user["iterations"]):
+        return jsonify({"error": "Incorrect username or password."}), 401
+    if not user["active"]:
+        return jsonify({"error": "This account is disabled."}), 403
+    if want_role and want_role != user["role"]:
+        return jsonify({
+            "error": f"These credentials belong to the {user['display_name']} account. "
+                     f"Pick that authority on the previous screen."
+        }), 403
+
+    now = _now()
+    store.purge_expired_sessions(now.isoformat())
+    token = secrets.token_urlsafe(32)
+    store.create_session(
+        token, user["username"], now.isoformat(), (now + timedelta(hours=SESSION_TTL_HOURS)).isoformat()
+    )
+    store.touch_user_login(user["username"], now.isoformat())
+
+    return jsonify({
+        "token": token,
+        "username": user["username"],
+        "role": user["role"],
+        "display_name": user["display_name"],
+        "expires_in": SESSION_TTL_HOURS * 3600,
+    })
+
+
+@app.get("/api/auth/me")
+def auth_me():
+    session = _session_from_request()
+    if not session:
+        return jsonify({"error": "Not authenticated."}), 401
+    return jsonify({
+        "username": session["username"],
+        "role": session["role"],
+        "display_name": session["display_name"],
+    })
+
+
+@app.post("/api/auth/logout")
+def auth_logout():
+    token = _bearer_token()
+    if token:
+        store.delete_session(token)
+    return jsonify({"ok": True})
 
 
 # ── analysis ─────────────────────────────────────────────────────────────

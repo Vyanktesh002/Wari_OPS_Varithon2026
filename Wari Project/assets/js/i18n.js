@@ -177,10 +177,13 @@
       'login.userLabel': 'User ID',
       'login.passLabel': 'Password',
       'login.submit': 'Sign In',
-      'login.note': 'Prototype access — any credentials are accepted for the selected role.',
+      'login.note': 'Sign in with your authority account.',
+      'login.signingIn': 'Signing in…',
+      'login.errOffline': 'Cannot reach the authentication server. Start the backend (backend/app.py) and try again.',
+      'login.errGeneric': 'Sign in failed. Please try again.',
 
       'app.nav.logout': 'Logout',
-      'app.tab.dashboard': 'Dashboard', 'app.tab.live-ops': 'Live Ops', 'app.tab.records': 'Records', 'app.tab.medical': 'Medical', 'app.tab.intel': 'Intel',
+      'app.tab.dashboard': 'Dashboard', 'app.tab.live-ops': 'Live Ops', 'app.tab.records': 'Reports', 'app.tab.medical': 'Medical', 'app.tab.intel': 'Intel',
 
       'dash.label': 'Command Dashboard',
       'dash.greeting': 'Namaskar,',
@@ -209,7 +212,7 @@
       'liveops.camps': 'Camps',
       'liveops.locations': 'Locations',
 
-      'records.label': 'Records',
+      'records.label': 'Reports',
       'records.h1': 'File an update.',
       'records.lede': 'Your report becomes shared operational state the moment you submit it.',
       'records.submit': 'Submit report',
@@ -248,6 +251,8 @@
       'pstatus.admitted': 'Admitted', 'pstatus.discharged': 'Treated & Discharged', 'pstatus.referred': 'Referred',
       'medical.priorHistoryTitle': 'Prior treatment history found',
       'medical.priorHistoryNote': 'A patient with this name has been treated before — review before proceeding:',
+      'medical.patientHistoryTitle': 'Patient history',
+      'medical.patientHistoryNote': 'All recorded visits for this patient, most recent first:',
       'medical.priorHistoryAck': 'Got it, continue',
 
       'intel.label': 'Supervisor Intelligence',
@@ -297,6 +302,11 @@
       'drawer.eyebrow': 'Location detail', 'drawer.domains': 'Domain status',
       'drawer.camps': 'Medical camps here', 'drawer.noCamps': 'No medical camp at this location.',
       'drawer.palkhiHere': 'Palkhi is here now', 'drawer.position': 'Route position',
+      'drawer.critSentence': '{domain} needs immediate attention here — conditions are critical.',
+      'drawer.warnSentence': '{domain} capacity is reduced here and should be watched.',
+      'drawer.allClearSentence': 'All services — police, medical, municipal and sanitation — are operating normally here.',
+
+      'palkhi.dnyaneshwar': 'Sant Dnyaneshwar Palkhi', 'palkhi.tukaram': 'Sant Tukaram Palkhi',
 
       'medical.capacity': 'Network Capacity', 'medical.occupancy': 'OCCUPANCY',
       'medical.bedsUsed': 'Beds in use', 'medical.stockLevel': 'Stock level',
@@ -306,7 +316,7 @@
 
       'intel.distribution': 'Risk distribution', 'intel.detail': 'Detail', 'intel.domains': 'Domains',
 
-      'map.source': 'Satellite imagery: Esri', 'map.zoomHint': 'Click the map to zoom',
+      'map.zoomHint': 'Click the map to zoom',
 
       'intel.aiBadge': 'AI Analysis',
       'intel.aiNote': 'Written by the Wari model from live operational data, not by hand. Re-generated on every report.',
@@ -482,10 +492,13 @@
       'login.userLabel': 'वापरकर्ता आयडी',
       'login.passLabel': 'पासवर्ड',
       'login.submit': 'प्रवेश करा',
-      'login.note': 'प्रोटोटाइप प्रवेश — निवडलेल्या भूमिकेसाठी कोणतेही तपशील स्वीकारले जातील.',
+      'login.note': 'आपल्या प्राधिकरण खात्याने प्रवेश करा.',
+      'login.signingIn': 'प्रवेश करत आहे…',
+      'login.errOffline': 'प्रमाणीकरण सर्व्हरशी संपर्क होत नाही. बॅकएंड (backend/app.py) सुरू करा आणि पुन्हा प्रयत्न करा.',
+      'login.errGeneric': 'प्रवेश अयशस्वी. कृपया पुन्हा प्रयत्न करा.',
 
       'app.nav.logout': 'बाहेर पडा',
-      'app.tab.dashboard': 'डॅशबोर्ड', 'app.tab.live-ops': 'थेट कार्यप्रणाली', 'app.tab.records': 'नोंदी', 'app.tab.medical': 'वैद्यकीय', 'app.tab.intel': 'बुद्धिमत्ता',
+      'app.tab.dashboard': 'डॅशबोर्ड', 'app.tab.live-ops': 'थेट कार्यप्रणाली', 'app.tab.records': 'अहवाल', 'app.tab.medical': 'वैद्यकीय', 'app.tab.intel': 'बुद्धिमत्ता',
 
       'dash.label': 'कमांड डॅशबोर्ड',
       'dash.greeting': 'नमस्कार,',
@@ -514,7 +527,7 @@
       'liveops.camps': 'शिबिरे',
       'liveops.locations': 'स्थळे',
 
-      'records.label': 'नोंदी',
+      'records.label': 'अहवाल',
       'records.h1': 'अद्ययावत नोंदवा.',
       'records.lede': 'तुमचा अहवाल सादर करताच तो सामायिक कार्यस्थिती बनतो.',
       'records.submit': 'अहवाल सादर करा',
@@ -553,6 +566,8 @@
       'pstatus.admitted': 'दाखल', 'pstatus.discharged': 'उपचार करून सोडले', 'pstatus.referred': 'संदर्भित',
       'medical.priorHistoryTitle': 'आधीचा उपचार इतिहास आढळला',
       'medical.priorHistoryNote': 'या नावाच्या रुग्णावर याआधी उपचार झाले आहेत — पुढे जाण्यापूर्वी पहा:',
+      'medical.patientHistoryTitle': 'रुग्ण इतिहास',
+      'medical.patientHistoryNote': 'या रुग्णाच्या सर्व नोंदवलेल्या भेटी, अलीकडील आधी:',
       'medical.priorHistoryAck': 'समजले, पुढे जा',
 
       'intel.label': 'पर्यवेक्षक बुद्धिमत्ता',
@@ -602,6 +617,11 @@
       'drawer.eyebrow': 'स्थळ तपशील', 'drawer.domains': 'विभागनिहाय स्थिती',
       'drawer.camps': 'येथील वैद्यकीय शिबिरे', 'drawer.noCamps': 'या स्थळी वैद्यकीय शिबिर नाही.',
       'drawer.palkhiHere': 'पालखी सध्या येथेच आहे', 'drawer.position': 'मार्गातील स्थान',
+      'drawer.critSentence': '{domain} ला येथे तातडीने लक्ष देण्याची गरज आहे — परिस्थिती गंभीर आहे.',
+      'drawer.warnSentence': '{domain} ची क्षमता येथे कमी झाली आहे आणि त्यावर लक्ष ठेवायला हवे.',
+      'drawer.allClearSentence': 'सर्व सेवा — पोलीस, वैद्यकीय, नगरपालिका आणि स्वच्छता — येथे सुरळीत सुरू आहेत.',
+
+      'palkhi.dnyaneshwar': 'संत ज्ञानेश्वर पालखी', 'palkhi.tukaram': 'संत तुकाराम पालखी',
 
       'medical.capacity': 'एकूण क्षमता', 'medical.occupancy': 'वापर',
       'medical.bedsUsed': 'वापरातील खाटा', 'medical.stockLevel': 'साठा पातळी',
@@ -611,7 +631,7 @@
 
       'intel.distribution': 'जोखीम वितरण', 'intel.detail': 'तपशील', 'intel.domains': 'विभाग',
 
-      'map.source': 'उपग्रह प्रतिमा: Esri', 'map.zoomHint': 'झूमसाठी नकाशावर क्लिक करा',
+      'map.zoomHint': 'झूमसाठी नकाशावर क्लिक करा',
 
       'intel.aiBadge': 'AI विश्लेषण',
       'intel.aiNote': 'हे विश्लेषण वारी प्रतिमानाने थेट कार्यचित्रातून तयार केले आहे, हाताने लिहिलेले नाही. प्रत्येक नोंदीनंतर पुन्हा तयार होते.',
