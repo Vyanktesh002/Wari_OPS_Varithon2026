@@ -292,7 +292,7 @@
     }
 
     /* slow rotation on the medallion ornament */
-    var ring = $('.medallion__ring');
+    var ring = $('.medallion__frame');
     if (ring && ring.__spin && !REDUCED) {
       gsap.to(ring.__spin, { rotation: 360, transformOrigin: '50% 50%', duration: 140, repeat: -1, ease: 'none' });
     }
@@ -705,27 +705,27 @@
 
   /* ══════════════ 15. LIVE FEED ══════════════ */
   var FEED_SEED = [
-    { cat:'medical',    sev:'critical', st:'reported', loc:'Jejuri',    mr:'जेजुरी',   t:'15:14', h:'Ambulance availability down to 2 vehicles', d:'Medical Authority' },
-    { cat:'medical',    sev:'high',     st:'progress', loc:'Jejuri',    mr:'जेजुरी',   t:'15:06', h:'Camp capacity at 88% — presentations rising', d:'Medical Authority' },
-    { cat:'police',     sev:'high',     st:'ack',      loc:'Lonand',    mr:'लोणंद',   t:'14:51', h:'Congestion high on the state highway diversion', d:'Police Authority' },
-    { cat:'dindi',      sev:'high',     st:'reported', loc:'Lonand',    mr:'लोणंद',   t:'14:38', h:'14 Dindis compressing into the approach road', d:'Dindi Coordinator' },
-    { cat:'dindi',      sev:'info',     st:'ack',      loc:'Lonand',    mr:'लोणंद',   t:'14:22', h:'Palkhi 22 minutes behind published schedule', d:'Dindi Coordinator' },
-    { cat:'municipal',  sev:'info',     st:'progress', loc:'Lonand',    mr:'लोणंद',   t:'14:05', h:'Rainfall increasing — two shelter tents taking water', d:'Municipal Authority' },
-    { cat:'sanitation', sev:'info',     st:'resolved', loc:'Walhe',     mr:'वाल्हे',   t:'13:48', h:'Mobile toilet block restored to service', d:'Nirmal Wari' },
-    { cat:'medical',    sev:'info',     st:'resolved', loc:'Saswad',    mr:'सासवड',   t:'13:20', h:'Medicine resupply received — ORS stock normal', d:'Medical Authority' },
-    { cat:'police',     sev:'info',     st:'resolved', loc:'Saswad',    mr:'सासवड',   t:'12:55', h:'Route blockage cleared at the market junction', d:'Police Authority' },
-    { cat:'municipal',  sev:'info',     st:'ack',      loc:'Phaltan',   mr:'फलटण',    t:'12:30', h:'Water tanker rotation increased to 40 min', d:'Municipal Authority' }
+    { cat:'medical',    sev:'critical', st:'reported', loc:'Jejuri',    mr:'जेजुरी',   t:'15:14', h:'Ambulance availability down to 2 vehicles', h_mr:'रुग्णवाहिका उपलब्धता २ वाहनांवर घसरली', d:'Medical Authority' },
+    { cat:'medical',    sev:'high',     st:'progress', loc:'Jejuri',    mr:'जेजुरी',   t:'15:06', h:'Camp capacity at 88% — presentations rising', h_mr:'शिबिर क्षमता ८८% — रुग्णसंख्या वाढते आहे', d:'Medical Authority' },
+    { cat:'police',     sev:'high',     st:'ack',      loc:'Lonand',    mr:'लोणंद',   t:'14:51', h:'Congestion high on the state highway diversion', h_mr:'राज्य महामार्ग वळणमार्गावर तीव्र कोंडी', d:'Police Authority' },
+    { cat:'dindi',      sev:'high',     st:'reported', loc:'Lonand',    mr:'लोणंद',   t:'14:38', h:'14 Dindis compressing into the approach road', h_mr:'१४ दिंड्या प्रवेशमार्गावर एकवटत आहेत', d:'Dindi Coordinator' },
+    { cat:'dindi',      sev:'info',     st:'ack',      loc:'Lonand',    mr:'लोणंद',   t:'14:22', h:'Palkhi 22 minutes behind published schedule', h_mr:'पालखी जाहीर वेळापत्रकापेक्षा २२ मिनिटे मागे', d:'Dindi Coordinator' },
+    { cat:'municipal',  sev:'info',     st:'progress', loc:'Lonand',    mr:'लोणंद',   t:'14:05', h:'Rainfall increasing — two shelter tents taking water', h_mr:'पावसाचा जोर वाढतो आहे — दोन निवारा तंबूंत पाणी शिरले', d:'Municipal Authority' },
+    { cat:'sanitation', sev:'info',     st:'resolved', loc:'Walhe',     mr:'वाल्हे',   t:'13:48', h:'Mobile toilet block restored to service', h_mr:'फिरते शौचालय विभाग पुन्हा सुरू', d:'Nirmal Wari' },
+    { cat:'medical',    sev:'info',     st:'resolved', loc:'Saswad',    mr:'सासवड',   t:'13:20', h:'Medicine resupply received — ORS stock normal', h_mr:'औषध पुरवठा प्राप्त — ओआरएस साठा सामान्य', d:'Medical Authority' },
+    { cat:'police',     sev:'info',     st:'resolved', loc:'Saswad',    mr:'सासवड',   t:'12:55', h:'Route blockage cleared at the market junction', h_mr:'बाजार चौकातील मार्ग अडथळा दूर', d:'Police Authority' },
+    { cat:'municipal',  sev:'info',     st:'ack',      loc:'Phaltan',   mr:'फलटण',    t:'12:30', h:'Water tanker rotation increased to 40 min', h_mr:'पाण्याच्या टँकरची फेरी ४० मिनिटांवर वाढवली', d:'Municipal Authority' }
   ];
 
   var FEED_POOL = [
-    { cat:'dindi',      sev:'info',     st:'reported', loc:'Taradgaon', mr:'तरडगाव',   h:'Dindi 214 reports headcount 1,180 — on schedule', d:'Dindi Coordinator' },
-    { cat:'medical',    sev:'high',     st:'reported', loc:'Wakhari',   mr:'वाखरी',    h:'Three heat-exhaustion cases at the forward camp', d:'Medical Authority' },
-    { cat:'sanitation', sev:'high',     st:'reported', loc:'Malshiras', mr:'माळशिरस',  h:'Sanitation block at 90% utilisation', d:'Nirmal Wari' },
-    { cat:'police',     sev:'critical', st:'reported', loc:'Natepute',  mr:'नातेपुते', h:'Two-wheeler collision on the approach — lane blocked', d:'Police Authority' },
-    { cat:'municipal',  sev:'info',     st:'progress', loc:'Velapur',   mr:'वेळापूर',  h:'Street lighting restored across halt point', d:'Municipal Authority' },
-    { cat:'medical',    sev:'info',     st:'resolved', loc:'Barad',     mr:'बरड',     h:'Patient referred to district hospital — record synced', d:'Medical Authority' },
-    { cat:'dindi',      sev:'high',     st:'reported', loc:'Phaltan',   mr:'फलटण',    h:'Support vehicle breakdown — 40 members reassigned', d:'Dindi Coordinator' },
-    { cat:'sanitation', sev:'info',     st:'ack',      loc:'Bhandishegaon', mr:'भंडीशेगाव', h:'Waste collection cycle completed for the halt', d:'Nirmal Wari' }
+    { cat:'dindi',      sev:'info',     st:'reported', loc:'Taradgaon', mr:'तरडगाव',   h:'Dindi 214 reports headcount 1,180 — on schedule', h_mr:'दिंडी २१४ ने संख्या १,१८० नोंदवली — वेळापत्रकानुसार', d:'Dindi Coordinator' },
+    { cat:'medical',    sev:'high',     st:'reported', loc:'Wakhari',   mr:'वाखरी',    h:'Three heat-exhaustion cases at the forward camp', h_mr:'अग्रगामी शिबिरात उष्माघाताची तीन प्रकरणे', d:'Medical Authority' },
+    { cat:'sanitation', sev:'high',     st:'reported', loc:'Malshiras', mr:'माळशिरस',  h:'Sanitation block at 90% utilisation', h_mr:'स्वच्छता विभाग ९०% वापरात', d:'Nirmal Wari' },
+    { cat:'police',     sev:'critical', st:'reported', loc:'Natepute',  mr:'नातेपुते', h:'Two-wheeler collision on the approach — lane blocked', h_mr:'प्रवेशमार्गावर दुचाकी अपघात — मार्गिका अडवली', d:'Police Authority' },
+    { cat:'municipal',  sev:'info',     st:'progress', loc:'Velapur',   mr:'वेळापूर',  h:'Street lighting restored across halt point', h_mr:'थांबा बिंदूवर रस्ता दिवे पुन्हा सुरू', d:'Municipal Authority' },
+    { cat:'medical',    sev:'info',     st:'resolved', loc:'Barad',     mr:'बरड',     h:'Patient referred to district hospital — record synced', h_mr:'रुग्णाला जिल्हा रुग्णालयात संदर्भित — नोंद समक्रमित', d:'Medical Authority' },
+    { cat:'dindi',      sev:'high',     st:'reported', loc:'Phaltan',   mr:'फलटण',    h:'Support vehicle breakdown — 40 members reassigned', h_mr:'सहाय्यक वाहन बिघाड — ४० सदस्य पुनर्नियुक्त', d:'Dindi Coordinator' },
+    { cat:'sanitation', sev:'info',     st:'ack',      loc:'Bhandishegaon', mr:'भंडीशेगाव', h:'Waste collection cycle completed for the halt', h_mr:'थांब्यासाठी कचरा संकलन फेरी पूर्ण', d:'Nirmal Wari' }
   ];
 
   var CAT_TAG = {
@@ -736,6 +736,11 @@
   var ST_CLASS = { reported:'', ack:'fstat--ack', progress:'fstat--progress', resolved:'fstat--resolved' };
 
   function feedNode(item) {
+    var lang = window.WCI ? WCI.curLang() : 'en';
+    var tt = window.WCI ? WCI.t : function (k) { return k; };
+    var headline = (lang === 'mr' && item.h_mr) ? item.h_mr : item.h;
+    var catLabel = tt('chip.' + item.cat);
+    var statLabel = tt('fstat.' + item.st);
     var li = document.createElement('li');
     li.className = 'fitem';
     li.dataset.cat = item.cat;
@@ -744,16 +749,16 @@
     li.innerHTML =
       '<i class="fitem__sev"></i>' +
       '<div class="fitem__main">' +
-        '<h4>' + item.h + '</h4>' +
+        '<h4>' + headline + '</h4>' +
         '<div class="fitem__meta">' +
-          '<span class="tag ' + (CAT_TAG[item.cat] || '') + '">' + item.cat + '</span>' +
+          '<span class="tag ' + (CAT_TAG[item.cat] || '') + '">' + catLabel + '</span>' +
           '<span class="fitem__loc">' + item.loc + '<span>' + item.mr + '</span></span>' +
           '<span>' + item.d + '</span>' +
         '</div>' +
       '</div>' +
       '<div class="fitem__side">' +
         '<span class="fitem__time">' + item.t + '</span>' +
-        '<span class="fstat ' + (ST_CLASS[item.st] || '') + '">' + ST_LABEL[item.st] + '</span>' +
+        '<span class="fstat ' + (ST_CLASS[item.st] || '') + '">' + statLabel + '</span>' +
       '</div>';
     return li;
   }
@@ -956,6 +961,7 @@
 
   /* ══════════════ 20. BOOT ══════════════ */
   function boot() {
+    if (window.WCI) WCI.initLangToggle();
     buildRosettes();
     bindAnchors();
     initNav();

@@ -268,6 +268,20 @@ body.menu-open .nav{ background:transparent; box-shadow:none; }
 body.menu-open .nav__id,
 body.menu-open .nav__logo-en{ color:var(--ivory); }
 
+/* — shared language toggle (landing nav + login screen) — */
+.lang-toggle{ display:inline-flex; background:var(--paper-2); border-radius:999px; padding:.2rem; gap:.2rem; flex:none; }
+.lang-btn{
+  padding:.4rem .85rem; border-radius:999px; font-size:.66rem; font-weight:600; letter-spacing:.02em;
+  color:var(--ink-50); transition:background .25s, color .25s;
+}
+.lang-btn.is-on{ background:var(--oxblood); color:var(--ivory); }
+.nav__lang{ background:rgba(26,19,16,.06); }
+@media (max-width:960px){
+  .nav__lang{ display:inline-flex; }
+  .nav__right{ gap:.7rem; }
+  .lang-btn{ padding:.36rem .6rem; font-size:.6rem; }
+}
+
 /* ─── 10. MOBILE MENU ───────────────────────────────────────────── */
 .menu{
   position:fixed; inset:0; z-index:7900;
@@ -347,7 +361,9 @@ body.menu-open .nav__logo-en{ color:var(--ivory); }
 .hl--wide{ letter-spacing:.14em; font-size:.92em; }
 .hero__title .ch{ display:inline-block; will-change:transform; }
 
-/* — ornate medallion — */
+/* — ornate medallion — a carved gold frame around a single centred
+     portrait, layered the way the corner frames are, rather than a
+     flat sun+scene diorama. — */
 .medallion{
   grid-row:1; grid-column:1;
   position:relative; z-index:3; justify-self:center;
@@ -355,41 +371,53 @@ body.menu-open .nav__logo-en{ color:var(--ivory); }
   margin-top:clamp(18px,5vh,54px);
   display:grid; place-items:center;
   pointer-events:none;
+  filter:drop-shadow(0 26px 54px rgba(0,0,0,.5));
 }
-.medallion__ring,
-.medallion__beads{ position:absolute; inset:0; }
-.medallion__ring svg{ width:100%; height:100%; overflow:visible; }
-.medallion__beads{
-  border-radius:50%;
+.medallion__frame{
+  position:absolute; inset:0; border-radius:50%;
+  background:
+    repeating-linear-gradient(45deg, rgba(0,0,0,.22) 0 2px, rgba(255,255,255,.18) 2px 4px),
+    linear-gradient(138deg, #F4E1A4 0%, #B98F1E 20%, #F0D68E 38%, #8A6612 58%, #E3C069 78%, #A8801C 100%);
   box-shadow:
-    0 0 0 2px var(--gold),
-    0 0 0 8px var(--ivory),
-    0 0 0 10px rgba(201,162,39,.5),
-    0 22px 60px rgba(58,11,11,.42);
-  inset:11%;
+    inset 0 0 0 2px rgba(0,0,0,.35),
+    inset 0 2px 4px rgba(255,255,255,.35),
+    inset 0 -3px 8px rgba(0,0,0,.3);
 }
+.medallion__frame svg{ position:absolute; inset:0; width:100%; height:100%; overflow:visible; color:rgba(58,11,11,.45); }
 .medallion__disc{
-  position:relative; width:78%; aspect-ratio:1; border-radius:50%;
-  background:radial-gradient(120% 120% at 50% 15%, #6E1414 0%, var(--oxblood) 70%);
+  position:absolute; inset:12.5%; border-radius:50%;
+  background:radial-gradient(120% 120% at 50% 22%, #7A1818 0%, var(--oxblood) 68%, #240505 100%);
+  box-shadow:
+    0 0 0 3px var(--ivory),
+    0 0 0 4px rgba(0,0,0,.3),
+    inset 0 0 34px rgba(0,0,0,.65);
   overflow:hidden;
   display:grid; place-items:center;
 }
-.medallion__ground{
-  position:absolute; inset-inline:0; bottom:0; height:22%;
-  background:var(--vermillion); opacity:.9;
+.medallion__glow{
+  position:absolute; inset:0; border-radius:50%;
+  background:radial-gradient(60% 46% at 50% 30%, rgba(231,206,124,.30) 0%, transparent 72%);
 }
-.medallion__ground::before{
-  content:''; position:absolute; inset-inline:0; top:0; height:2px;
-  background:var(--gold-l); opacity:.7;
+.medallion__portrait{
+  position:relative; z-index:2; width:52%; height:auto; overflow:visible;
+  color:var(--gold-l);
+  filter:drop-shadow(0 8px 16px rgba(0,0,0,.55));
+  transform:translateY(4%);
 }
-.medallion__sun{
-  position:absolute; top:11%; left:50%; transform:translateX(-50%);
-  width:17%; aspect-ratio:1; color:var(--gold-l); opacity:.85;
+.medallion__crest{
+  position:absolute; top:-6%; left:50%; transform:translate(-50%,0);
+  width:15%; aspect-ratio:1; z-index:4;
+  color:var(--gold-l);
+  background:radial-gradient(circle, var(--oxblood) 55%, transparent 58%);
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.5));
 }
-.medallion__scene{
-  position:relative; z-index:2; width:66%; height:auto; overflow:visible;
-  color:var(--ivory); transform:translateY(14%);
-}
+.medallion__crest svg{ width:100%; height:100%; overflow:visible; }
+
+/* faint warli tree watermarks flanking the hero sheet */
+.hero__warli{ position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
+.hero__warli-tree{ position:absolute; bottom:2%; width:clamp(70px,9vw,150px); color:var(--ink); opacity:.05; }
+.hero__warli-tree--l{ left:2%; }
+.hero__warli-tree--r{ right:2%; transform:scaleX(-1); }
 
 /* — ornate corner frames — */
 .frame{
@@ -671,7 +699,7 @@ body.menu-open .nav__logo-en{ color:var(--ivory); }
   fill:var(--gold); font-family:var(--f-mr); font-size:12px; letter-spacing:0; text-transform:none;
 }
 .routemap__stop.is-crit text{ fill:var(--ivory); }
-.routemap__marker{ opacity:0; }
+.routemap__marker{ opacity:0; pointer-events:none; }
 .routemap__pulse{ fill:rgba(226,54,27,.28); }
 .routemap__core{ fill:var(--vermillion); stroke:var(--ivory); stroke-width:2; }
 
@@ -756,6 +784,9 @@ body.menu-open .nav__logo-en{ color:var(--ivory); }
 .acard:hover .acard__win svg{ transform:translateY(-4px) scale(1.06); color:var(--ivory); }
 .acard__body{ padding:clamp(1.1rem,2vw,1.7rem); display:flex; flex-direction:column; flex:1; }
 .acard__mr{ font-family:var(--f-mr); font-size:1rem; color:var(--vermillion); }
+/* the small eyebrow already duplicates the heading once the heading itself
+   is translated to Marathi — keep it only as a bilingual accent in English */
+body[data-lang="mr"] .acard__mr{ display:none; }
 .acard h3{
   font-family:var(--f-dsp); font-weight:500; font-size:clamp(1.25rem,2vw,1.6rem);
   line-height:1.1; margin:.25rem 0 1rem; letter-spacing:-.012em;
@@ -779,6 +810,18 @@ body.menu-open .nav__logo-en{ color:var(--ivory); }
   background:var(--ivory); border:1px solid var(--rule);
   box-shadow:0 26px 60px rgba(58,11,11,.10);
 }
+.feed__panel--outline{
+  border:1px solid rgba(226,54,27,.35);
+  box-shadow:0 26px 60px rgba(58,11,11,.14), 0 0 0 1px rgba(201,162,39,.25), 0 0 40px rgba(226,54,27,.08);
+  position:relative;
+}
+.feed__panel--outline::before{
+  content:''; position:absolute; inset-inline:0; top:0; height:2px;
+  background:linear-gradient(90deg, transparent, var(--vermillion), var(--gold), var(--vermillion), transparent);
+  background-size:200% 100%;
+  animation:feedScan 5s linear infinite;
+}
+@keyframes feedScan{ 0%{ background-position:0% 0; } 100%{ background-position:200% 0; } }
 .feed__bar{
   display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
   padding:clamp(.8rem,1.4vw,1.1rem) clamp(1rem,1.8vw,1.4rem);
@@ -1219,3 +1262,31 @@ body.menu-open .nav__logo-en{ color:var(--ivory); }
 .pipe::-webkit-scrollbar{ height:4px; }
 .pipe::-webkit-scrollbar-thumb{ background:rgba(201,162,39,.45); border-radius:2px; }
 .pipe::-webkit-scrollbar-track{ background:rgba(245,240,230,.07); }
+
+/* ─── 32. WARLI BACKGROUND WATERMARKS ───────────────────────────── */
+.warli-watermark{
+  position:absolute; z-index:0; pointer-events:none; overflow:visible;
+  color:var(--vermillion); opacity:.06;
+}
+.sec--blood .warli-watermark,
+.chain .warli-watermark{ color:var(--gold); opacity:.08; }
+.warli-watermark svg{ width:100%; height:100%; overflow:visible; }
+.warli-watermark--sun{
+  top:6%; right:4%; width:clamp(140px,18vw,300px); aspect-ratio:1;
+}
+.warli-watermark--sun.warli-watermark--r{ right:auto; left:2%; top:auto; bottom:8%; }
+.warli-watermark--tree{
+  bottom:0; left:3%; width:clamp(90px,12vw,220px); aspect-ratio:80/110;
+}
+.warli-watermark--procession{
+  position:absolute; inset:auto 0 3% 0; z-index:0; pointer-events:none;
+  display:flex; justify-content:space-between; padding-inline:8%;
+  color:var(--ink); opacity:.045;
+}
+.warli-watermark--procession .wfig{ width:clamp(40px,5vw,74px); height:auto; }
+.sec,.sec--pin,.chain,.route,.auth,.fracture{ isolation:isolate; }
+.fracture,.auth{ overflow:hidden; }
+@media (prefers-reduced-motion:no-preference){
+  .warli-watermark--sun svg{ animation:warliSpin 160s linear infinite; transform-origin:50% 50%; }
+}
+@keyframes warliSpin{ to{ transform:rotate(360deg); } }

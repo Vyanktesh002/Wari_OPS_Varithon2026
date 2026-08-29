@@ -1,54 +1,24 @@
 /* ═══════════════════════════════════════════════════════════════════
    WARI COMMAND INTELLIGENCE — Command Center app logic
    Vanilla JS. No build step. Mock/simulated data throughout.
+   Language dictionary lives in assets/js/i18n.js (window.WCI).
    ═══════════════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
 
   function $(sel, ctx) { return (ctx || document).querySelector(sel); }
   function $$(sel, ctx) { return Array.prototype.slice.call((ctx || document).querySelectorAll(sel)); }
-  function el(html) { var t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; }
 
-  /* ══════════════ I18N (login screen) ══════════════ */
-  var I18N = {
-    mr: {
-      'login.title': 'प्राधिकरण प्रवेश',
-      'login.sub': 'पंढरपूर वारीच्या एका सामायिक कार्यचित्रात प्रवेश करण्यासाठी आपली भूमिका निवडा.',
-      'login.back': 'मागे',
-      'login.userLabel': 'वापरकर्ता आयडी',
-      'login.passLabel': 'पासवर्ड',
-      'login.submit': 'प्रवेश करा',
-      'login.note': 'प्रोटोटाइप प्रवेश — निवडलेल्या भूमिकेसाठी कोणतेही तपशील स्वीकारले जातील.'
-    },
-    en: {
-      'login.title': 'Authority Sign In',
-      'login.sub': 'Choose your role to enter the shared operational picture of the Pandharpur Wari.',
-      'login.back': 'Back',
-      'login.userLabel': 'User ID',
-      'login.passLabel': 'Password',
-      'login.submit': 'Sign In',
-      'login.note': 'Prototype access — any credentials are accepted for the selected role.'
-    }
-  };
+  var t = function (key) { return window.WCI ? WCI.t(key) : key; };
+  var curLang = function () { return window.WCI ? WCI.curLang() : 'mr'; };
 
-  function applyLang(lang) {
-    $$('[data-i18n]').forEach(function (node) {
-      var key = node.getAttribute('data-i18n');
-      var val = (I18N[lang] || {})[key];
-      if (val) node.textContent = val;
-    });
-    $$('[data-lang-btn]').forEach(function (b) { b.classList.toggle('is-on', b.dataset.langBtn === lang); });
-    document.body.setAttribute('data-lang', lang);
-    try { localStorage.setItem('wci_lang', lang); } catch (e) {}
-  }
+  var HAS_GSAP = typeof window.gsap !== 'undefined';
+  var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  function initLangToggle() {
-    var saved = 'mr';
-    try { saved = localStorage.getItem('wci_lang') || 'mr'; } catch (e) {}
-    applyLang(saved);
-    $$('[data-lang-btn]').forEach(function (b) {
-      b.addEventListener('click', function () { applyLang(b.dataset.langBtn); });
-    });
+  function revealIn(nodes) {
+    if (!nodes || !nodes.length) return;
+    if (!HAS_GSAP || REDUCED) return;
+    gsap.fromTo(nodes, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: .6, stagger: .05, ease: 'power2.out', clearProps: 'transform' });
   }
 
   /* ══════════════ ROLES ══════════════ */
@@ -60,8 +30,8 @@
     { id: 'sanitation', icon: 'g-sanitation', en: 'Sanitation Authority',mr:'निर्मल वारी',         pages: ['dashboard', 'live-ops', 'records'] },
     { id: 'supervisor', icon: 'g-supervisor', en: 'Wari Supervisor',   mr: 'वारी नियंत्रक',       pages: ['dashboard', 'live-ops', 'medical', 'intel'] }
   ];
-  var PAGE_LABEL = { dashboard: 'Dashboard', 'live-ops': 'Live Ops', records: 'Records', medical: 'Medical', intel: 'Intel' };
 
+  function roleName(r) { return curLang() === 'mr' ? r.mr : r.en; }
   function roleById(id) { return ROLES.filter(function (r) { return r.id === id; })[0]; }
 
   /* ══════════════ STATUS HELPERS (green / amber / red) ══════════════ */
@@ -79,7 +49,7 @@
   }
   function sDot(status) { return '<i class="s-dot s-dot--' + status + '"></i>'; }
   function sBadge(status, label) { return '<span class="s-badge s-badge--' + status + '">' + sDot(status) + label + '</span>'; }
-  var STATUS_WORD = { ok: 'Adequate', warn: 'Reduced', crit: 'Critical' };
+  function statusWord(s) { return t('status.' + s); }
 
   /* ══════════════ MOCK DATA — LOCATIONS ══════════════ */
   var LOCATIONS = [
@@ -102,7 +72,7 @@
   var PALKHI = { locId: 'lonand', delayMin: 22 };
 
   /* ══════════════ MOCK DATA — MEDICAL CAMPS ══════════════ */
-  var MED_LABEL = { ors: 'ORS', antipyretics: 'Antipyretics (fever)', analgesics: 'Analgesics (pain relief)', ivFluids: 'IV Fluids', antiseptics: 'Antiseptics' };
+  var MED_KEY_LABEL = { ors: 'med.ors', antipyretics: 'med.antipyretics', analgesics: 'med.analgesics', ivFluids: 'med.ivFluids', antiseptics: 'med.antiseptics' };
   var CAMPS = [
     { id: 'jejuri-1', en: 'Jejuri Camp 1', mr: 'जेजुरी शिबिर १', capacity: 80, patients: 42, icuTotal: 6, icuAvail: 4, ambTotal: 3, ambAvail: 3,
       meds: { ors: { stock: 160, par: 200, unit: 'packets' }, antipyretics: { stock: 120, par: 150, unit: 'strips' }, analgesics: { stock: 130, par: 150, unit: 'strips' }, ivFluids: { stock: 80, par: 100, unit: 'bottles' }, antiseptics: { stock: 60, par: 80, unit: 'bottles' } } },
@@ -147,26 +117,24 @@
 
   /* ══════════════ LIVE FEED ══════════════ */
   var CAT_TAG = { police: 'tag--police', medical: 'tag--med', dindi: 'tag--dindi', municipal: 'tag--muni', sanitation: 'tag--san' };
-  var ST_LABEL = { reported: 'Reported', ack: 'Acknowledged', progress: 'In Progress', resolved: 'Resolved' };
   var ST_CLASS = { reported: '', ack: 'fstat--ack', progress: 'fstat--progress', resolved: 'fstat--resolved' };
-  var CAT_AUTH = { police: 'Police Authority', medical: 'Medical Authority', dindi: 'Dindi Coordinator', municipal: 'Municipal Authority', sanitation: 'Nirmal Wari' };
 
   var feedItems = [
-    { cat: 'medical', sev: 'critical', st: 'reported', loc: 'Jejuri', mr: 'जेजुरी', h: 'Ambulance availability down to 2 vehicles at Camp 3', d: 'Medical Authority', ts: Date.now() - 2 * 60000 },
-    { cat: 'medical', sev: 'high', st: 'progress', loc: 'Jejuri', mr: 'जेजुरी', h: 'Camp 3 load at 88% — presentations rising', d: 'Medical Authority', ts: Date.now() - 10 * 60000 },
-    { cat: 'police', sev: 'high', st: 'ack', loc: 'Lonand', mr: 'लोणंद', h: 'Congestion high on the state highway diversion', d: 'Police Authority', ts: Date.now() - 25 * 60000 },
-    { cat: 'dindi', sev: 'high', st: 'reported', loc: 'Lonand', mr: 'लोणंद', h: '14 Dindis compressing into the approach road', d: 'Dindi Coordinator', ts: Date.now() - 38 * 60000 },
-    { cat: 'dindi', sev: 'info', st: 'ack', loc: 'Lonand', mr: 'लोणंद', h: 'Palkhi 22 minutes behind published schedule', d: 'Dindi Coordinator', ts: Date.now() - 54 * 60000 },
-    { cat: 'municipal', sev: 'info', st: 'progress', loc: 'Lonand', mr: 'लोणंद', h: 'Rainfall increasing — two shelter tents taking water', d: 'Municipal Authority', ts: Date.now() - 71 * 60000 },
-    { cat: 'sanitation', sev: 'info', st: 'resolved', loc: 'Walhe', mr: 'वाल्हे', h: 'Mobile toilet block restored to service', d: 'Nirmal Wari', ts: Date.now() - 88 * 60000 }
+    { cat: 'medical', sev: 'critical', st: 'reported', loc: 'Jejuri', mr: 'जेजुरी', h: 'Ambulance availability down to 2 vehicles at Camp 3', h_mr: 'शिबिर ३ मध्ये रुग्णवाहिका उपलब्धता २ वाहनांवर घसरली', d: 'Medical Authority', ts: Date.now() - 2 * 60000 },
+    { cat: 'medical', sev: 'high', st: 'progress', loc: 'Jejuri', mr: 'जेजुरी', h: 'Camp 3 load at 88% — presentations rising', h_mr: 'शिबिर ३ चा भार ८८% — रुग्णसंख्या वाढते आहे', d: 'Medical Authority', ts: Date.now() - 10 * 60000 },
+    { cat: 'police', sev: 'high', st: 'ack', loc: 'Lonand', mr: 'लोणंद', h: 'Congestion high on the state highway diversion', h_mr: 'राज्य महामार्ग वळणमार्गावर तीव्र कोंडी', d: 'Police Authority', ts: Date.now() - 25 * 60000 },
+    { cat: 'dindi', sev: 'high', st: 'reported', loc: 'Lonand', mr: 'लोणंद', h: '14 Dindis compressing into the approach road', h_mr: '१४ दिंड्या प्रवेशमार्गावर एकवटत आहेत', d: 'Dindi Coordinator', ts: Date.now() - 38 * 60000 },
+    { cat: 'dindi', sev: 'info', st: 'ack', loc: 'Lonand', mr: 'लोणंद', h: 'Palkhi 22 minutes behind published schedule', h_mr: 'पालखी जाहीर वेळापत्रकापेक्षा २२ मिनिटे मागे', d: 'Dindi Coordinator', ts: Date.now() - 54 * 60000 },
+    { cat: 'municipal', sev: 'info', st: 'progress', loc: 'Lonand', mr: 'लोणंद', h: 'Rainfall increasing — two shelter tents taking water', h_mr: 'पावसाचा जोर वाढतो आहे — दोन निवारा तंबूंत पाणी शिरले', d: 'Municipal Authority', ts: Date.now() - 71 * 60000 },
+    { cat: 'sanitation', sev: 'info', st: 'resolved', loc: 'Walhe', mr: 'वाल्हे', h: 'Mobile toilet block restored to service', h_mr: 'फिरते शौचालय विभाग पुन्हा सुरू', d: 'Nirmal Wari', ts: Date.now() - 88 * 60000 }
   ];
   var FEED_POOL = [
-    { cat: 'dindi', sev: 'info', st: 'reported', loc: 'Taradgaon', mr: 'तरडगाव', h: 'Dindi 214 reports headcount 1,180 — on schedule', d: 'Dindi Coordinator' },
-    { cat: 'medical', sev: 'high', st: 'reported', loc: 'Wakhari', mr: 'वाखरी', h: 'Three heat-exhaustion cases at the forward camp', d: 'Medical Authority' },
-    { cat: 'sanitation', sev: 'high', st: 'reported', loc: 'Malshiras', mr: 'माळशिरस', h: 'Sanitation block at 90% utilisation', d: 'Nirmal Wari' },
-    { cat: 'police', sev: 'critical', st: 'reported', loc: 'Natepute', mr: 'नातेपुते', h: 'Two-wheeler collision on the approach — lane blocked', d: 'Police Authority' },
-    { cat: 'municipal', sev: 'info', st: 'progress', loc: 'Velapur', mr: 'वेळापूर', h: 'Street lighting restored across halt point', d: 'Municipal Authority' },
-    { cat: 'medical', sev: 'info', st: 'resolved', loc: 'Barad', mr: 'बरड', h: 'Patient referred to district hospital — record synced', d: 'Medical Authority' }
+    { cat: 'dindi', sev: 'info', st: 'reported', loc: 'Taradgaon', mr: 'तरडगाव', h: 'Dindi 214 reports headcount 1,180 — on schedule', h_mr: 'दिंडी २१४ ने संख्या १,१८० नोंदवली — वेळापत्रकानुसार', d: 'Dindi Coordinator' },
+    { cat: 'medical', sev: 'high', st: 'reported', loc: 'Wakhari', mr: 'वाखरी', h: 'Three heat-exhaustion cases at the forward camp', h_mr: 'अग्रगामी शिबिरात उष्माघाताची तीन प्रकरणे', d: 'Medical Authority' },
+    { cat: 'sanitation', sev: 'high', st: 'reported', loc: 'Malshiras', mr: 'माळशिरस', h: 'Sanitation block at 90% utilisation', h_mr: 'स्वच्छता विभाग ९०% वापरात', d: 'Nirmal Wari' },
+    { cat: 'police', sev: 'critical', st: 'reported', loc: 'Natepute', mr: 'नातेपुते', h: 'Two-wheeler collision on the approach — lane blocked', h_mr: 'प्रवेशमार्गावर दुचाकी अपघात — मार्गिका अडवली', d: 'Police Authority' },
+    { cat: 'municipal', sev: 'info', st: 'progress', loc: 'Velapur', mr: 'वेळापूर', h: 'Street lighting restored across halt point', h_mr: 'थांबा बिंदूवर रस्ता दिवे पुन्हा सुरू', d: 'Municipal Authority' },
+    { cat: 'medical', sev: 'info', st: 'resolved', loc: 'Barad', mr: 'बरड', h: 'Patient referred to district hospital — record synced', h_mr: 'रुग्णाला जिल्हा रुग्णालयात संदर्भित — नोंद समक्रमित', d: 'Medical Authority' }
   ];
   var feedPoolIdx = 0;
   var NEW_MS = 45000;
@@ -183,6 +151,7 @@
   function feedNode(item) {
     var age = Date.now() - item.ts;
     var isNew = age < NEW_MS;
+    var headline = (curLang() === 'mr' && item.h_mr) ? item.h_mr : item.h;
     var li = document.createElement('li');
     li.className = 'fitem' + (age < 1200 ? ' fitem--enter' : '');
     li.dataset.cat = item.cat;
@@ -191,16 +160,16 @@
     li.innerHTML =
       '<i class="fitem__sev"></i>' +
       '<div class="fitem__main">' +
-        '<h4>' + item.h + (isNew ? '<span class="fitem__new">New</span>' : '') + '</h4>' +
+        '<h4>' + headline + (isNew ? '<span class="fitem__new">New</span>' : '') + '</h4>' +
         '<div class="fitem__meta">' +
-          '<span class="tag ' + (CAT_TAG[item.cat] || '') + '">' + item.cat + '</span>' +
+          '<span class="tag ' + (CAT_TAG[item.cat] || '') + '">' + t('chip.' + item.cat) + '</span>' +
           '<span class="fitem__loc">' + item.loc + '<span>' + item.mr + '</span></span>' +
           '<span>' + item.d + '</span>' +
         '</div>' +
       '</div>' +
       '<div class="fitem__side">' +
         '<span class="fitem__time">' + timeAgo(item.ts) + '</span>' +
-        '<span class="fstat ' + (ST_CLASS[item.st] || '') + '">' + ST_LABEL[item.st] + '</span>' +
+        '<span class="fstat ' + (ST_CLASS[item.st] || '') + '">' + t('fstat.' + item.st) + '</span>' +
       '</div>';
     return li;
   }
@@ -212,7 +181,7 @@
     list.innerHTML = '';
     sorted.slice(0, 12).forEach(function (item) { list.appendChild(feedNode(item)); });
     var updated = $('#feedUpdated');
-    if (updated) updated.textContent = 'Updated ' + timeAgo(sorted[0] ? sorted[0].ts : Date.now());
+    if (updated) updated.textContent = t('feed.updated') + ' ' + timeAgo(sorted[0] ? sorted[0].ts : Date.now());
   }
 
   function pushFeedItem(item) {
@@ -234,17 +203,15 @@
   /* ══════════════ INTEL (placeholder shell — data separated from layout) ══════════════ */
   var INTEL_DATA = {
     riskScore: 74,
-    state: 'HIGH',
-    confidence: 'High',
+    stateKey: 'gauge.high',
     freshnessMin: 2,
     locationsTracked: 14,
-    issuedLabel: 'ISSUED 15:16 · DAY 11',
-    criticalNow: ['Jejuri medical capacity rising rapidly', 'Ambulance availability insufficient at Jejuri Camp 3'],
-    developingRisks: ['Traffic and crowd concentration increasing near Lonand', 'Palkhi running 22 minutes behind schedule'],
-    whatChanged: ['Medical load increased rapidly at Jejuri', 'Rainfall increased at Lonand', 'Traffic changed from medium to high on the state highway'],
-    resourceGaps: ['Ambulances', 'Medicine stock — ORS, antipyretics', 'Medical camp capacity'],
-    emergingRisks: ['Dindi concentration compressing into the Lonand approach', 'Continued rainfall could further degrade the route surface'],
-    priorityActions: ['Review Jejuri medical deployment and reassign an ambulance', 'Monitor downstream congestion beyond Lonand', 'Prepare medicine resupply for Jejuri Camp 2 and 3']
+    criticalNow: ['intel.critical1', 'intel.critical2'],
+    developingRisks: ['intel.dev1', 'intel.dev2'],
+    whatChanged: ['intel.changed1', 'intel.changed2', 'intel.changed3'],
+    resourceGaps: ['intel.gap1', 'intel.gap2', 'intel.gap3'],
+    emergingRisks: ['intel.emerging1', 'intel.emerging2'],
+    priorityActions: ['intel.action1', 'intel.action2', 'intel.action3']
   };
 
   function renderIntel(data) {
@@ -254,77 +221,81 @@
     if (num) num.textContent = Math.round(data.riskScore);
     var cls = data.riskScore >= 80 ? 'is-crit' : data.riskScore >= 65 ? 'is-high' : data.riskScore >= 40 ? 'is-mod' : '';
     var gauge = $('#intelGauge'); if (gauge) gauge.className = 'gauge' + (cls ? ' ' + cls : '');
-    if (state) state.textContent = data.state;
+    if (state) state.textContent = t(data.stateKey);
 
     var conf = $('#intelConf');
     if (conf) conf.innerHTML =
-      '<div><span>Data freshness</span><b>' + data.freshnessMin + ' min</b></div>' +
-      '<div><span>Confidence</span><b>' + data.confidence + '</b></div>' +
-      '<div><span>Locations</span><b>' + data.locationsTracked + '</b></div>';
+      '<div><span>' + t('brief.freshness') + '</span><b>' + data.freshnessMin + ' min</b></div>' +
+      '<div><span>' + t('brief.confidence') + '</span><b>' + t('brief.confHigh') + '</b></div>' +
+      '<div><span>' + t('brief.locations') + '</span><b>' + data.locationsTracked + '</b></div>';
 
-    function block(heading, hClass, items) {
-      return '<section class="doc__blk"><h4 class="doc__h' + (hClass ? ' ' + hClass : '') + '">' + heading + '</h4><ul>' +
-        items.map(function (i) { return '<li>' + i + '</li>'; }).join('') + '</ul></section>';
+    function block(headingKey, hClass, keys) {
+      return '<section class="doc__blk"><h4 class="doc__h' + (hClass ? ' ' + hClass : '') + '">' + t(headingKey) + '</h4><ul>' +
+        keys.map(function (k) { return '<li>' + t(k) + '</li>'; }).join('') + '</ul></section>';
     }
 
     var doc = $('#intelDoc');
     if (doc) doc.innerHTML =
       '<div class="doc__orn"></div>' +
-      '<header class="doc__head"><span>WARI STATUS</span><b>' + data.state + '</b></header>' +
-      block('Critical Now', 'doc__h--crit', data.criticalNow) +
-      block('Developing Risks', 'doc__h--warn', data.developingRisks) +
-      block('What Changed', '', data.whatChanged) +
-      block('Resource Gaps', '', data.resourceGaps) +
-      block('Emerging Risks', '', data.emergingRisks) +
-      block('Priority Actions', 'doc__h--act', data.priorityActions) +
-      '<footer class="doc__foot"><span>' + data.issuedLabel + '</span><span>SIMULATION</span></footer>';
+      '<header class="doc__head"><span>' + t('doc.status') + '</span><b>' + t(data.stateKey) + '</b></header>' +
+      block('doc.critNow', 'doc__h--crit', data.criticalNow) +
+      block('doc.developing', 'doc__h--warn', data.developingRisks) +
+      block('doc.whatChanged', '', data.whatChanged) +
+      block('doc.resourceGaps', '', data.resourceGaps) +
+      block('doc.emerging', '', data.emergingRisks) +
+      block('doc.attention', 'doc__h--act', data.priorityActions) +
+      '<footer class="doc__foot"><span>' + t('intel.issued') + '</span><span>' + t('doc.sim') + '</span></footer>';
+    revealIn($$('.doc__blk', doc));
   }
 
   /* ══════════════ REPORT FORM (Records) ══════════════ */
-  var LOC_OPTIONS = LOCATIONS.map(function (l) { return '<option value="' + l.id + '">' + l.en + ' / ' + l.mr + '</option>'; }).join('');
-  var CAMP_OPTIONS = CAMPS.map(function (c) { return '<option value="' + c.id + '">' + c.en + '</option>'; }).join('');
+  function locOptions() { return LOCATIONS.map(function (l) { return '<option value="' + l.id + '">' + l.en + ' / ' + l.mr + '</option>'; }).join(''); }
+  function campOptions() { return CAMPS.map(function (c) { return '<option value="' + c.id + '">' + c.en + '</option>'; }).join(''); }
+  function tOptions(keys) { return keys.map(function (k) { return '<option value="' + k + '">' + t(k) + '</option>'; }).join(''); }
 
-  var REPORT_FIELDS = {
-    dindi: [
-      { key: 'location', label: 'Location', type: 'select', options: LOC_OPTIONS },
-      { key: 'headcount', label: 'Current headcount', type: 'number' },
-      { key: 'delay', label: 'Delay (minutes, if any)', type: 'number' },
-      { key: 'details', label: 'Member / vehicle issue (optional)', type: 'textarea' }
-    ],
-    medical: [
-      { key: 'camp', label: 'Camp', type: 'select', options: CAMP_OPTIONS },
-      { key: 'type', label: 'Update type', type: 'select', options: ['Camp load update', 'Medicine shortage', 'Emergency / referral', 'Ambulance request'].map(function (o) { return '<option>' + o + '</option>'; }).join('') },
-      { key: 'details', label: 'Details', type: 'textarea' }
-    ],
-    police: [
-      { key: 'location', label: 'Location', type: 'select', options: LOC_OPTIONS },
-      { key: 'type', label: 'Incident type', type: 'select', options: ['Accident', 'Congestion', 'Route blockage', 'Crowd issue'].map(function (o) { return '<option>' + o + '</option>'; }).join('') },
-      { key: 'severity', label: 'Severity', type: 'select', options: ['Low', 'Medium', 'High', 'Critical'].map(function (o) { return '<option>' + o + '</option>'; }).join('') },
-      { key: 'details', label: 'Details', type: 'textarea' }
-    ],
-    municipal: [
-      { key: 'location', label: 'Location', type: 'select', options: LOC_OPTIONS },
-      { key: 'type', label: 'Category', type: 'select', options: ['Water', 'Shelter', 'Electricity', 'Infrastructure'].map(function (o) { return '<option>' + o + '</option>'; }).join('') },
-      { key: 'details', label: 'Details', type: 'textarea' }
-    ],
-    sanitation: [
-      { key: 'location', label: 'Location', type: 'select', options: LOC_OPTIONS },
-      { key: 'type', label: 'Category', type: 'select', options: ['Toilet block', 'Cleanliness', 'Facility status'].map(function (o) { return '<option>' + o + '</option>'; }).join('') },
-      { key: 'details', label: 'Details', type: 'textarea' }
-    ]
-  };
-  var SEV_MAP = { Low: 'info', Medium: 'info', High: 'high', Critical: 'critical' };
+  function reportFields() {
+    return {
+      dindi: [
+        { key: 'location', labelKey: 'field.location', type: 'select', options: locOptions() },
+        { key: 'headcount', labelKey: 'field.headcount', type: 'number' },
+        { key: 'delay', labelKey: 'field.delay', type: 'number' },
+        { key: 'details', labelKey: 'field.memberIssue', type: 'textarea' }
+      ],
+      medical: [
+        { key: 'camp', labelKey: 'field.camp', type: 'select', options: campOptions() },
+        { key: 'type', labelKey: 'field.updateType', type: 'select', options: tOptions(['opt.campLoad', 'opt.medShortage', 'opt.emergency', 'opt.ambRequest']) },
+        { key: 'details', labelKey: 'field.details', type: 'textarea' }
+      ],
+      police: [
+        { key: 'location', labelKey: 'field.location', type: 'select', options: locOptions() },
+        { key: 'type', labelKey: 'field.incidentType', type: 'select', options: tOptions(['opt.accident', 'opt.congestion', 'opt.blockage', 'opt.crowdIssue']) },
+        { key: 'severity', labelKey: 'field.severity', type: 'select', options: tOptions(['opt.low', 'opt.medium', 'opt.high', 'opt.critical']) },
+        { key: 'details', labelKey: 'field.details', type: 'textarea' }
+      ],
+      municipal: [
+        { key: 'location', labelKey: 'field.location', type: 'select', options: locOptions() },
+        { key: 'type', labelKey: 'field.category', type: 'select', options: tOptions(['opt.water', 'opt.shelter', 'opt.electricity', 'opt.infra']) },
+        { key: 'details', labelKey: 'field.details', type: 'textarea' }
+      ],
+      sanitation: [
+        { key: 'location', labelKey: 'field.location', type: 'select', options: locOptions() },
+        { key: 'type', labelKey: 'field.category', type: 'select', options: tOptions(['opt.toilet', 'opt.cleanliness', 'opt.facility']) },
+        { key: 'details', labelKey: 'field.details', type: 'textarea' }
+      ]
+    };
+  }
+  var SEV_MAP = { 'opt.low': 'info', 'opt.medium': 'info', 'opt.high': 'high', 'opt.critical': 'critical' };
 
   function renderRecords(role) {
     var form = $('#reportForm');
     if (!form) return;
-    var fields = REPORT_FIELDS[role.id] || [];
+    var fields = reportFields()[role.id] || [];
     form.innerHTML = fields.map(function (f) {
       var input = f.type === 'textarea' ? '<textarea id="rf-' + f.key + '"></textarea>'
         : f.type === 'select' ? '<select id="rf-' + f.key + '">' + f.options + '</select>'
         : '<input id="rf-' + f.key + '" type="' + f.type + '" />';
-      return '<label class="field"><span>' + f.label + '</span>' + input + '</label>';
-    }).join('') + '<button type="submit" class="btn btn--lg report-form__submit">Submit report</button>';
+      return '<label class="field"><span>' + t(f.labelKey) + '</span>' + input + '</label>';
+    }).join('') + '<button type="submit" class="btn btn--lg report-form__submit">' + t('records.submit') + '</button>';
 
     form.onsubmit = function (e) {
       e.preventDefault();
@@ -333,23 +304,24 @@
 
       var loc = LOCATIONS.filter(function (l) { return l.id === values.location; })[0];
       var camp = CAMPS.filter(function (c) { return c.id === values.camp; })[0];
-      var headline = values.type ? values.type + (values.details ? ' — ' + values.details : '') : (values.details || (role.en + ' update'));
+      var typeLabel = values.type ? t(values.type) : '';
+      var headline = typeLabel ? typeLabel + (values.details ? ' — ' + values.details : '') : (values.details || (roleName(role) + ' update'));
       pushFeedItem({
         cat: role.id, sev: SEV_MAP[values.severity] || 'info', st: 'reported',
         loc: loc ? loc.en : (camp ? camp.en : '—'), mr: loc ? loc.mr : (camp ? camp.mr : ''),
-        h: headline, d: role.en
+        h: headline, h_mr: headline, d: roleName(role)
       });
-      toast('Report submitted — now visible on the shared live feed.');
+      toast(t('toast.reportSubmitted'));
       form.reset();
     };
   }
 
   /* ══════════════ DASHBOARD ══════════════ */
   var DOMAINS = [
-    { id: 'police', icon: 'g-police', name: 'Police' },
-    { id: 'medical', icon: 'g-medical', name: 'Medical' },
-    { id: 'municipal', icon: 'g-municipal', name: 'Municipal' },
-    { id: 'sanitation', icon: 'g-sanitation', name: 'Sanitation' }
+    { id: 'police', icon: 'g-police' },
+    { id: 'medical', icon: 'g-medical' },
+    { id: 'municipal', icon: 'g-municipal' },
+    { id: 'sanitation', icon: 'g-sanitation' }
   ];
 
   function domainOverall(domId) {
@@ -357,29 +329,29 @@
   }
 
   function renderDashboard(role) {
-    $('#dashRoleName').textContent = role.en;
+    $('#dashRoleName').textContent = roleName(role);
 
-    var overallStatus = INTEL_DATA.state;
     $('#statStrip').innerHTML = [
-      { n: '11 / 21', label: 'Days on foot' },
-      { n: '138 km', label: 'Alandi → Pandharpur so far' },
-      { n: '512+', label: 'Dindis in motion' },
-      { n: '15', label: 'Tracked locations' },
-      { n: INTEL_DATA.riskScore, label: 'Wari status — ' + overallStatus }
+      { n: '11 / 21', label: t('stat.daysOnFoot') },
+      { n: '138 km', label: t('stat.kmSoFar') },
+      { n: '512+', label: t('stat.dindisMotion') },
+      { n: '15', label: t('stat.trackedLoc') },
+      { n: INTEL_DATA.riskScore, label: t('stat.wariStatus') + ' — ' + t(INTEL_DATA.stateKey) }
     ].map(function (s) { return '<div class="stat-strip__cell"><b class="stat-strip__n">' + s.n + '</b><span class="stat-strip__label">' + s.label + '</span></div>'; }).join('');
 
     var loc = LOCATIONS.filter(function (l) { return l.id === PALKHI.locId; })[0];
     $('#palkhiStatus').innerHTML =
-      '<div class="palkhi-row"><span>Currently near</span><b>' + loc.en + ' <span style="font-family:var(--f-mr);color:var(--vermillion);font-size:1rem;">' + loc.mr + '</span></b></div>' +
-      '<div class="palkhi-row"><span>Schedule</span><b>' + PALKHI.delayMin + ' min behind</b></div>';
+      '<div class="palkhi-row"><span>' + t('dash.currentlyNear') + '</span><b>' + loc.en + ' <span style="font-family:var(--f-mr);color:var(--vermillion);font-size:1rem;">' + loc.mr + '</span></b></div>' +
+      '<div class="palkhi-row"><span>' + t('dash.schedule') + '</span><b>' + PALKHI.delayMin + ' ' + t('dash.minBehind') + '</b></div>';
 
     $('#domainGrid').innerHTML = DOMAINS.map(function (d) {
       var s = domainOverall(d.id);
       return '<div class="domain-cell"><svg viewBox="0 0 120 100"><use href="#' + d.icon + '"/></svg>' +
-        '<span class="domain-cell__name">' + d.name + '</span>' + sBadge(s, STATUS_WORD[s]) + '</div>';
+        '<span class="domain-cell__name">' + t('chip.' + d.id) + '</span>' + sBadge(s, statusWord(s)) + '</div>';
     }).join('');
 
     renderFeed();
+    revealIn($$('.panel'));
   }
 
   /* ══════════════ LIVE OPS ══════════════ */
@@ -387,16 +359,16 @@
 
   function renderLiveOps() {
     var loc = LOCATIONS.filter(function (l) { return l.id === PALKHI.locId; })[0];
-    $('#palkhiMini').innerHTML = 'Palkhi currently near <b>' + loc.en + '</b> <span style="font-family:var(--f-mr);color:var(--vermillion);">' + loc.mr + '</span> — <b>' + PALKHI.delayMin + ' min</b> behind schedule';
+    $('#palkhiMini').innerHTML = t('liveops.palkhi') + ' <b>' + loc.en + '</b> <span style="font-family:var(--f-mr);color:var(--vermillion);">' + loc.mr + '</span> — <b>' + PALKHI.delayMin + ' min</b> ' + t('liveops.behind');
 
     $('#liveOpsFilters').innerHTML = DOMAINS.map(function (d) {
-      return '<button class="chip is-on" data-dom="' + d.id + '">' + d.name + '</button>';
+      return '<button class="chip is-on" data-dom="' + d.id + '">' + t('chip.' + d.id) + '</button>';
     }).join('');
 
     $('#locGrid').innerHTML = LOCATIONS.map(function (l) {
       var doms = DOMAINS.map(function (d) {
         var s = l.dom[d.id];
-        return '<span class="loc-dom is-active" data-dom="' + d.id + '">' + sDot(s) + d.name + '</span>';
+        return '<span class="loc-dom is-active" data-dom="' + d.id + '">' + sDot(s) + t('chip.' + d.id) + '</span>';
       }).join('');
       return '<article class="loc-card"><div class="loc-card__head"><span class="loc-card__name">' + l.en + '</span><span class="loc-card__mr">' + l.mr + '</span></div>' +
         '<div class="loc-card__doms">' + doms + '</div></article>';
@@ -410,6 +382,126 @@
       btn.classList.toggle('is-on', liveOpsActive[dom]);
       $$('.loc-dom[data-dom="' + dom + '"]').forEach(function (n) { n.style.display = liveOpsActive[dom] ? '' : 'none'; });
     };
+
+    revealIn($$('.loc-card'));
+  }
+
+  /* ══════════════ LIVE TRACKING MAP (Dashboard + Live Ops) ══════════════
+     A stylised route path — the same visual language as the landing
+     page's Route section — with hoverable markers per halt (worst
+     domain status) and, on the full map, a marker per medical camp. */
+  var ROUTE_PATH_D = 'M60 96 C 150 60, 210 150, 288 154 S 420 226, 486 200 S 596 108, 668 138 S 780 250, 852 244 S 972 178, 1042 220 S 1120 300, 1146 330';
+  var mapsBuilt = {};
+
+  function locWorstStatus(loc) {
+    return DOMAINS.reduce(function (acc, d) { return worst(acc, loc.dom[d.id]); }, 'ok');
+  }
+
+  function positionTip(tip, container, targetEl) {
+    var cRect = container.getBoundingClientRect();
+    var tRect = targetEl.getBoundingClientRect();
+    tip.style.left = (tRect.left + tRect.width / 2 - cRect.left) + 'px';
+    tip.style.top = (tRect.top - cRect.top) + 'px';
+  }
+
+  function showLocTip(tip, container, el, loc) {
+    var doms = DOMAINS.map(function (d) {
+      var s = loc.dom[d.id];
+      return '<div class="ops-map__tip-row">' + sDot(s) + t('chip.' + d.id) + ' — ' + statusWord(s) + '</div>';
+    }).join('');
+    tip.innerHTML = '<b>' + loc.en + '</b><span class="ops-map__tip-mr">' + loc.mr + '</span>' + doms;
+    positionTip(tip, container, el);
+    tip.classList.add('is-on');
+  }
+
+  function showCampTip(tip, container, el, camp) {
+    var loadPct = Math.round((camp.patients / camp.capacity) * 100);
+    var loadS = loadStatus(loadPct), icuS = ratioStatus(camp.icuAvail, camp.icuTotal), ambS = ratioStatus(camp.ambAvail, camp.ambTotal);
+    tip.innerHTML = '<b>' + camp.en + '</b><span class="ops-map__tip-mr">' + camp.mr + '</span>' +
+      '<div class="ops-map__tip-row">' + sDot(loadS) + t('metric.campLoad') + ' — ' + loadPct + '%</div>' +
+      '<div class="ops-map__tip-row">' + sDot(icuS) + t('metric.icuFree') + ' — ' + camp.icuAvail + '/' + camp.icuTotal + '</div>' +
+      '<div class="ops-map__tip-row">' + sDot(ambS) + t('metric.ambReady') + ' — ' + camp.ambAvail + '/' + camp.ambTotal + '</div>';
+    positionTip(tip, container, el);
+    tip.classList.add('is-on');
+  }
+
+  function buildOpsMap(container, opts) {
+    if (!container || mapsBuilt[opts.id]) return;
+    var NS = 'http://www.w3.org/2000/svg';
+
+    container.innerHTML =
+      '<svg class="ops-map__svg" viewBox="0 0 1200 420" preserveAspectRatio="xMidYMid meet">' +
+        '<path class="routemap__ghost" d="' + ROUTE_PATH_D + '"/>' +
+        '<path class="routemap__path" id="opsPath-' + opts.id + '" d="' + ROUTE_PATH_D + '"/>' +
+        '<g id="opsStops-' + opts.id + '"></g>' +
+        (opts.showCamps ? '<g id="opsCamps-' + opts.id + '"></g>' : '') +
+        '<g class="routemap__marker" id="opsPalkhi-' + opts.id + '" style="opacity:1"><circle class="routemap__pulse" r="20"/><circle class="routemap__core" r="7"/></g>' +
+      '</svg>' +
+      '<div class="ops-map__tip" id="opsTip-' + opts.id + '"></div>';
+
+    container.insertAdjacentHTML('afterend',
+      '<div class="ops-map__legend">' +
+        '<span><i class="dot dot--ok"></i>' + t('route.legendOk') + '</span>' +
+        '<span><i class="dot dot--warn"></i>' + t('route.legendWarn') + '</span>' +
+        '<span><i class="dot dot--crit"></i>' + t('route.legendCrit') + '</span>' +
+        (opts.showCamps ? '<span>✚ ' + t('liveops.camps') + '</span>' : '') +
+      '</div>');
+
+    var path = $('#opsPath-' + opts.id, container);
+    var stopsG = $('#opsStops-' + opts.id, container);
+    var campsG = opts.showCamps ? $('#opsCamps-' + opts.id, container) : null;
+    var palkhiMarker = $('#opsPalkhi-' + opts.id, container);
+    var tip = $('#opsTip-' + opts.id, container);
+
+    var len = 0;
+    try { len = path.getTotalLength(); } catch (e) {}
+    if (!len) return;
+    mapsBuilt[opts.id] = true;
+
+    var pts = [];
+    LOCATIONS.forEach(function (loc, i) {
+      var tt = i / (LOCATIONS.length - 1);
+      var pt = path.getPointAtLength(len * tt);
+      pts.push({ loc: loc, pt: pt });
+
+      var s = locWorstStatus(loc);
+      var g = document.createElementNS(NS, 'g');
+      g.setAttribute('class', 'routemap__stop ops-map__stop' + (s === 'warn' ? ' is-warn' : s === 'crit' ? ' is-crit' : ''));
+      g.setAttribute('transform', 'translate(' + pt.x.toFixed(1) + ',' + pt.y.toFixed(1) + ')');
+      var c = document.createElementNS(NS, 'circle');
+      c.setAttribute('r', (i === 0 || i === LOCATIONS.length - 1) ? '8' : '6');
+      g.appendChild(c);
+      stopsG.appendChild(g);
+
+      g.addEventListener('mouseenter', function () { showLocTip(tip, container, g, loc); });
+      g.addEventListener('mouseleave', function () { tip.classList.remove('is-on'); });
+    });
+
+    if (opts.showCamps && campsG) {
+      var seenAtLoc = {};
+      CAMPS.forEach(function (camp) {
+        var locId = camp.id.split('-')[0];
+        var match = pts.filter(function (p) { return p.loc.id === locId; })[0];
+        if (!match) return;
+        var idx = seenAtLoc[locId] || 0;
+        seenAtLoc[locId] = idx + 1;
+        var offset = 24 + idx * 17;
+        var g = document.createElementNS(NS, 'g');
+        g.setAttribute('class', 'ops-map__camp');
+        g.setAttribute('transform', 'translate(' + match.pt.x.toFixed(1) + ',' + (match.pt.y - offset).toFixed(1) + ')');
+        g.innerHTML = '<circle r="9" fill="#F5F0E6" opacity=".95"/><path d="M-4 0h8M0 -4v8" stroke="#E2361B" stroke-width="2.4" stroke-linecap="round"/>';
+        campsG.appendChild(g);
+        g.addEventListener('mouseenter', function () { showCampTip(tip, container, g, camp); });
+        g.addEventListener('mouseleave', function () { tip.classList.remove('is-on'); });
+      });
+    }
+
+    var palkhiPt = pts.filter(function (p) { return p.loc.id === PALKHI.locId; })[0];
+    if (palkhiPt) palkhiMarker.setAttribute('transform', 'translate(' + palkhiPt.pt.x.toFixed(1) + ',' + palkhiPt.pt.y.toFixed(1) + ')');
+
+    if (HAS_GSAP && !REDUCED) {
+      gsap.to($('.routemap__pulse', container), { scale: 1.7, opacity: 0, transformOrigin: '50% 50%', duration: 1.8, repeat: -1, ease: 'power2.out' });
+    }
   }
 
   /* ══════════════ MEDICAL ══════════════ */
@@ -423,23 +515,23 @@
 
       var meds = Object.keys(c.meds).map(function (k) {
         var m = c.meds[k], s = stockStatus(m.stock, m.par);
-        return '<div class="med-item"><span class="med-item__name">' + sDot(s) + MED_LABEL[k] + '</span><span class="med-item__qty">' + m.stock + ' / ' + m.par + ' ' + m.unit + '</span></div>';
+        return '<div class="med-item"><span class="med-item__name">' + sDot(s) + t(MED_KEY_LABEL[k]) + '</span><span class="med-item__qty">' + m.stock + ' / ' + m.par + ' ' + m.unit + '</span></div>';
       }).join('');
 
       return '<div class="camp-card" data-camp="' + c.id + '">' +
         '<button type="button" class="camp-card__head">' +
           '<span class="camp-card__name">' + c.en + '<span>' + c.mr + '</span></span>' +
-          sBadge(overall, STATUS_WORD[overall]) +
+          sBadge(overall, statusWord(overall)) +
           '<span class="camp-card__chevron">▾</span>' +
         '</button>' +
         '<div class="camp-card__body">' +
           '<div class="metric-grid">' +
-            '<div class="metric"><div class="metric__label">' + sDot(loadS) + 'Camp load</div><div class="metric__value">' + loadPct + '%</div><div class="metric__sub">how full the camp is versus its bed capacity</div></div>' +
-            '<div class="metric"><div class="metric__label">Patients being treated</div><div class="metric__value">' + c.patients + ' / ' + c.capacity + '</div><div class="metric__sub">current patients out of total beds</div></div>' +
-            '<div class="metric"><div class="metric__label">' + sDot(icuS) + 'ICU beds free</div><div class="metric__value">' + c.icuAvail + ' / ' + c.icuTotal + '</div><div class="metric__sub">intensive-care beds available right now</div></div>' +
-            '<div class="metric"><div class="metric__label">' + sDot(ambS) + 'Ambulances ready</div><div class="metric__value">' + c.ambAvail + ' / ' + c.ambTotal + '</div><div class="metric__sub">vehicles available to dispatch immediately</div></div>' +
+            '<div class="metric"><div class="metric__label">' + sDot(loadS) + t('metric.campLoad') + '</div><div class="metric__value">' + loadPct + '%</div><div class="metric__sub">' + t('metric.campLoadSub') + '</div></div>' +
+            '<div class="metric"><div class="metric__label">' + t('metric.patientsTreated') + '</div><div class="metric__value">' + c.patients + ' / ' + c.capacity + '</div><div class="metric__sub">' + t('metric.patientsSub') + '</div></div>' +
+            '<div class="metric"><div class="metric__label">' + sDot(icuS) + t('metric.icuFree') + '</div><div class="metric__value">' + c.icuAvail + ' / ' + c.icuTotal + '</div><div class="metric__sub">' + t('metric.icuSub') + '</div></div>' +
+            '<div class="metric"><div class="metric__label">' + sDot(ambS) + t('metric.ambReady') + '</div><div class="metric__value">' + c.ambAvail + ' / ' + c.ambTotal + '</div><div class="metric__sub">' + t('metric.ambSub') + '</div></div>' +
           '</div>' +
-          '<div class="med-stock"><h4>Medicine stock</h4><div class="med-stock__grid">' + meds + '</div></div>' +
+          '<div class="med-stock"><h4>' + t('medical.medStock') + '</h4><div class="med-stock__grid">' + meds + '</div></div>' +
         '</div>' +
       '</div>';
     }).join('');
@@ -453,6 +545,7 @@
     renderPatients('');
     var search = $('#patientSearch');
     if (search) search.oninput = function () { renderPatients(search.value); };
+    revealIn($$('.camp-card'));
   }
 
   function renderPatients(query) {
@@ -463,7 +556,7 @@
       if (!q) return true;
       return (p.name + ' ' + p.id + ' ' + p.camp + ' ' + p.condition).toLowerCase().indexOf(q) !== -1;
     });
-    if (!filtered.length) { list.innerHTML = '<div class="patient-empty">No patient records match “' + query + '”.</div>'; return; }
+    if (!filtered.length) { list.innerHTML = '<div class="patient-empty">' + t('patient.noMatch') + ' “' + query + '”.</div>'; return; }
     list.innerHTML = filtered.map(function (p) {
       return '<div class="patient-row">' +
         '<span class="patient-row__id">' + p.id + '</span>' +
@@ -476,27 +569,30 @@
   /* ══════════════ TOAST ══════════════ */
   var toastTimer = null;
   function toast(msg) {
-    var t = $('#toast');
-    if (!t) return;
-    t.textContent = msg;
-    t.classList.add('is-on');
+    var el = $('#toast');
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.add('is-on');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { t.classList.remove('is-on'); }, 3600);
+    toastTimer = setTimeout(function () { el.classList.remove('is-on'); }, 3600);
   }
 
   /* ══════════════ APP SHELL / ROUTER ══════════════ */
   function showPage(pageId) {
     $$('.page').forEach(function (p) { p.classList.toggle('is-active', p.dataset.page === pageId); });
-    $$('.app__tab').forEach(function (t) { t.classList.toggle('is-on', t.dataset.page === pageId); });
+    $$('.app__tab').forEach(function (tab) { tab.classList.toggle('is-on', tab.dataset.page === pageId); });
+
+    if (pageId === 'dashboard') buildOpsMap($('#opsMapMini'), { id: 'mini', showCamps: false });
+    if (pageId === 'live-ops') buildOpsMap($('#opsMapFull'), { id: 'full', showCamps: true });
   }
 
   function initApp(roleId) {
     var role = roleById(roleId);
     if (!role) return;
 
-    $('#appRoleLabel').textContent = role.en;
+    $('#appRoleLabel').textContent = roleName(role);
     $('#appTabs').innerHTML = role.pages.map(function (p, i) {
-      return '<button class="app__tab' + (i === 0 ? ' is-on' : '') + '" data-page="' + p + '">' + PAGE_LABEL[p] + '</button>';
+      return '<button class="app__tab' + (i === 0 ? ' is-on' : '') + '" data-page="' + p + '">' + t('app.tab.' + p) + '</button>';
     }).join('');
     $('#appTabs').onclick = function (e) {
       var btn = e.target.closest('.app__tab');
@@ -556,11 +652,13 @@
       try { localStorage.setItem('wci_session', JSON.stringify({ roleId: selected.id })); } catch (err) {}
       initApp(selected.id);
     });
+
+    revealIn($$('.role-tile'));
   }
 
   /* ══════════════ BOOT ══════════════ */
   document.addEventListener('DOMContentLoaded', function () {
-    initLangToggle();
+    if (window.WCI) WCI.initLangToggle();
     initLogin();
 
     $('#logoutBtn').addEventListener('click', logout);

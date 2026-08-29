@@ -29,6 +29,30 @@
       </g>
     </symbol>
 
+    <symbol id="w-tree" viewBox="0 0 80 110">
+      <g stroke="currentColor" stroke-width="3.6" stroke-linecap="round" fill="none">
+        <path d="M40 108 L40 42"/>
+        <path d="M40 62 L18 42"/><path d="M40 62 L62 42"/>
+        <path d="M40 44 L24 26"/><path d="M40 44 L56 26"/>
+        <path d="M40 30 L40 12"/>
+      </g>
+      <circle cx="17" cy="40" r="5" fill="currentColor"/>
+      <circle cx="63" cy="40" r="5" fill="currentColor"/>
+      <circle cx="23" cy="24" r="5" fill="currentColor"/>
+      <circle cx="57" cy="24" r="5" fill="currentColor"/>
+      <circle cx="40" cy="10" r="6" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="w-walk" viewBox="0 0 62 104">
+      <circle cx="31" cy="12" r="8.5" fill="currentColor"/>
+      <polygon points="14,24 48,24 31,47" fill="currentColor"/>
+      <polygon points="31,47 15,70 47,70" fill="currentColor"/>
+      <g stroke="currentColor" stroke-width="4.2" stroke-linecap="round" fill="none">
+        <path d="M16 28 L3 46"/><path d="M46 28 L59 46"/>
+        <path d="M20 70 L12 100"/><path d="M42 70 L50 100"/>
+      </g>
+    </symbol>
+
     <symbol id="w-arch" viewBox="0 0 200 260">
       <path fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"
         d="M20 256 V120
@@ -120,6 +144,8 @@
     <svg class="login__art" viewBox="0 0 200 260"><use href="#w-arch"/></svg>
     <svg class="login__sun" viewBox="0 0 100 100"><use href="#w-sun"/></svg>
     <svg class="login__palkhi" viewBox="0 0 220 120"><use href="#w-palkhi"/></svg>
+    <svg class="login__tree login__tree--l" viewBox="0 0 80 110"><use href="#w-tree"/></svg>
+    <svg class="login__tree login__tree--r" viewBox="0 0 80 110"><use href="#w-tree"/></svg>
     <p class="login__side-mr">ज्ञानोबा माऊली तुकाराम</p>
   </div>
 
@@ -127,7 +153,7 @@
     <div class="login__topbar">
       <span class="login__id"><span class="nav__plus">✦</span> W.C.I.</span>
       <div class="lang-toggle" id="langToggle" role="group" aria-label="Language / भाषा">
-        <button type="button" class="lang-btn is-on" data-lang-btn="mr">मराठी</button>
+        <button type="button" class="lang-btn" data-lang-btn="mr">मराठी</button>
         <button type="button" class="lang-btn" data-lang-btn="en">English</button>
       </div>
     </div>
@@ -171,8 +197,12 @@
       </a>
       <nav class="app__tabs" id="appTabs" aria-label="Sections"></nav>
       <div class="app__user">
+        <div class="lang-toggle app__lang" id="appLangToggle" role="group" aria-label="Language / भाषा">
+          <button type="button" class="lang-btn" data-lang-btn="mr">मराठी</button>
+          <button type="button" class="lang-btn" data-lang-btn="en">EN</button>
+        </div>
         <span class="app__role" id="appRoleLabel"></span>
-        <button class="app__logout" id="logoutBtn">Logout</button>
+        <button class="app__logout" id="logoutBtn" data-i18n="app.nav.logout">Logout</button>
       </div>
     </div>
   </header>
@@ -181,32 +211,41 @@
 
     <!-- DASHBOARD -->
     <section class="page" id="page-dashboard" data-page="dashboard">
+      <div class="warli-watermark warli-watermark--sun" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#w-sun"/></svg></div>
       <div class="wrap page__wrap">
         <header class="page__head">
-          <span class="sec__label">Command Dashboard</span>
-          <h1 class="dsp dsp--ink page__title">Namaskar, <span id="dashRoleName">Authority</span></h1>
-          <p class="lede">One shared, real-time picture of the Wari right now.</p>
+          <span class="sec__label" data-i18n="dash.label">Command Dashboard</span>
+          <h1 class="dsp dsp--ink page__title"><span data-i18n="dash.greeting">Namaskar,</span> <span id="dashRoleName">Authority</span></h1>
+          <p class="lede" data-i18n="dash.lede">One shared, real-time picture of the Wari right now.</p>
         </header>
 
         <div class="stat-strip" id="statStrip"></div>
 
         <div class="dash-grid">
           <section class="panel panel--palkhi">
-            <h2 class="panel__title">Palkhi Status</h2>
+            <h2 class="panel__title"><svg class="panel__icon" viewBox="0 0 220 120"><use href="#w-palkhi"/></svg><span data-i18n="dash.palkhiStatus">Palkhi Status</span></h2>
             <div id="palkhiStatus"></div>
           </section>
 
           <section class="panel panel--domains">
-            <h2 class="panel__title">Domain Readiness</h2>
+            <h2 class="panel__title" data-i18n="dash.domainReadiness">Domain Readiness</h2>
             <div class="domain-grid" id="domainGrid"></div>
           </section>
 
-          <section class="panel panel--feed">
+          <section class="panel panel--map">
             <div class="panel__title-row">
-              <h2 class="panel__title">Live Activity</h2>
+              <h2 class="panel__title" data-i18n="dash.routeMap">Route Map — Live Tracking</h2>
+              <span class="panel__hint" data-i18n="dash.mapHint">Hover a marker for live status</span>
+            </div>
+            <div class="ops-map ops-map--compact" id="opsMapMini"></div>
+          </section>
+
+          <section class="panel panel--feed panel--feed-outline">
+            <div class="panel__title-row">
+              <h2 class="panel__title" data-i18n="dash.liveActivity">Live Activity</h2>
               <div style="display:flex;align-items:center;gap:.8rem;">
                 <span class="feed__updated" id="feedUpdated"></span>
-                <div class="feed__live"><i></i> LIVE</div>
+                <div class="feed__live"><i></i> <span data-i18n="feed.live">LIVE</span></div>
               </div>
             </div>
             <ul class="feed__list" id="dashFeedList"></ul>
@@ -219,10 +258,18 @@
     <section class="page" id="page-live-ops" data-page="live-ops">
       <div class="wrap page__wrap">
         <header class="page__head">
-          <span class="sec__label">Live Operations</span>
-          <h1 class="dsp dsp--ink page__title">Wari, in motion.</h1>
-          <p class="lede">Location-by-location operational status across the route.</p>
+          <span class="sec__label" data-i18n="liveops.label">Live Operations</span>
+          <h1 class="dsp dsp--ink page__title" data-i18n="liveops.h1">Wari, in motion.</h1>
+          <p class="lede" data-i18n="liveops.lede">Location-by-location operational status across the route.</p>
         </header>
+
+        <section class="panel panel--map-full">
+          <div class="panel__title-row">
+            <h2 class="panel__title"><svg class="panel__icon" viewBox="0 0 220 120"><use href="#w-palkhi"/></svg><span data-i18n="liveops.mapTitle">Live Tracking Map</span></h2>
+            <span class="panel__hint" data-i18n="liveops.mapHint">Hover a marker for live status · camps are shown with a medical marker</span>
+          </div>
+          <div class="ops-map" id="opsMapFull"></div>
+        </section>
 
         <div class="palkhi-mini" id="palkhiMini"></div>
 
@@ -236,9 +283,9 @@
     <section class="page" id="page-records" data-page="records">
       <div class="wrap page__wrap page__wrap--narrow">
         <header class="page__head">
-          <span class="sec__label">Records</span>
-          <h1 class="dsp dsp--ink page__title">File an update.</h1>
-          <p class="lede">Your report becomes shared operational state the moment you submit it.</p>
+          <span class="sec__label" data-i18n="records.label">Records</span>
+          <h1 class="dsp dsp--ink page__title" data-i18n="records.h1">File an update.</h1>
+          <p class="lede" data-i18n="records.lede">Your report becomes shared operational state the moment you submit it.</p>
         </header>
 
         <form class="report-form" id="reportForm"></form>
@@ -249,23 +296,23 @@
     <section class="page" id="page-medical" data-page="medical">
       <div class="wrap page__wrap">
         <header class="page__head">
-          <span class="sec__label">Medical Command</span>
-          <h1 class="dsp dsp--ink page__title">Camps &amp; patients.</h1>
-          <p class="lede">Tap a camp to see its full status — load, beds, ambulances and medicine stock together.</p>
+          <span class="sec__label" data-i18n="medical.label">Medical Command</span>
+          <h1 class="dsp dsp--ink page__title" data-i18n="medical.h1">Camps &amp; patients.</h1>
+          <p class="lede" data-i18n="medical.lede">Tap a camp to see its full status — load, beds, ambulances and medicine stock together.</p>
         </header>
 
         <section class="panel">
-          <h2 class="panel__title">Camp Status</h2>
+          <h2 class="panel__title" data-i18n="medical.campStatus">Camp Status</h2>
           <div class="camp-list" id="campList"></div>
         </section>
 
         <section class="panel">
           <div class="panel__title-row">
-            <h2 class="panel__title">Patient Records</h2>
-            <span class="panel__hint">Restricted to Medical Authority &amp; Wari Supervisor</span>
+            <h2 class="panel__title" data-i18n="medical.patientRecords">Patient Records</h2>
+            <span class="panel__hint" data-i18n="medical.restricted">Restricted to Medical Authority &amp; Wari Supervisor</span>
           </div>
           <div class="patient-search">
-            <input id="patientSearch" type="search" placeholder="Search by name, ID, camp, or condition…" />
+            <input id="patientSearch" type="search" data-i18n-placeholder="medical.searchPlaceholder" placeholder="Search by name, ID, camp, or condition…" />
           </div>
           <div class="patient-list" id="patientList"></div>
         </section>
@@ -276,9 +323,9 @@
     <section class="page" id="page-intel" data-page="intel">
       <div class="wrap page__wrap">
         <header class="page__head">
-          <span class="sec__label">Supervisor Intelligence</span>
-          <h1 class="dsp dsp--ink page__title">The whole day, on one page.</h1>
-          <p class="lede">Placeholder shell — wired to synthetic data until the risk-scoring model ships. Layout will not change when live scoring is connected.</p>
+          <span class="sec__label" data-i18n="intel.label">Supervisor Intelligence</span>
+          <h1 class="dsp dsp--ink page__title" data-i18n="intel.h1">The whole day, on one page.</h1>
+          <p class="lede" data-i18n="intel.lede">Placeholder shell — wired to synthetic data until the risk-scoring model ships. Layout will not change when live scoring is connected.</p>
         </header>
 
         <div class="intel-top">
@@ -288,7 +335,7 @@
               <circle class="gauge__fg" id="intelArc" cx="120" cy="120" r="98"/>
             </svg>
             <div class="gauge__mid">
-              <span class="gauge__lab">WARI STATUS</span>
+              <span class="gauge__lab" data-i18n="gauge.label">WARI STATUS</span>
               <b class="gauge__n" id="intelNum">0</b>
               <span class="gauge__state" id="intelState">—</span>
             </div>
@@ -305,6 +352,9 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="assets/js/i18n.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="assets/js/app.js"></script>
 </body>
 </html>

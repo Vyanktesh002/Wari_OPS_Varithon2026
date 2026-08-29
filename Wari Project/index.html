@@ -267,7 +267,7 @@
 <div class="grain" aria-hidden="true"></div>
 <div class="cursor" id="cursor" aria-hidden="true"><span class="cursor__dot"></span><span class="cursor__ring"></span></div>
 
-<a class="skip-link" href="#hero">Skip to content</a>
+<a class="skip-link" href="#hero" data-i18n="a11y.skip">Skip to content</a>
 
 <header class="nav" id="nav">
   <div class="nav__in">
@@ -281,11 +281,15 @@
     </a>
     <div class="nav__right">
       <nav class="nav__links" aria-label="Primary">
-        <a href="#movements" data-hover>Platform</a>
-        <a href="#authorities" data-hover>Authorities</a>
-        <a href="#chain" data-hover>Intelligence</a>
+        <a href="#movements" data-hover data-i18n="nav.platform">Platform</a>
+        <a href="#authorities" data-hover data-i18n="nav.authorities">Authorities</a>
+        <a href="#chain" data-hover data-i18n="nav.intelligence">Intelligence</a>
       </nav>
-      <a href="#cta" class="btn btn--sm" data-hover>Enter Command</a>
+      <div class="lang-toggle nav__lang" id="langToggle" role="group" aria-label="Language / भाषा">
+        <button type="button" class="lang-btn" data-lang-btn="mr">मराठी</button>
+        <button type="button" class="lang-btn" data-lang-btn="en">English</button>
+      </div>
+      <a href="#cta" class="btn btn--sm" data-hover data-i18n="nav.enterCommand">Enter Command</a>
       <button class="nav__burger" id="burger" aria-label="Open menu" aria-expanded="false">
         <i></i><i></i>
       </button>
@@ -296,17 +300,17 @@
 <div class="menu" id="menu" aria-hidden="true">
   <div class="menu__bg"></div>
   <div class="menu__in">
-    <p class="menu__label">Navigate</p>
-    <a href="#fracture" class="menu__link"><em>01</em> The Problem</a>
-    <a href="#movements" class="menu__link"><em>02</em> Five Movements</a>
-    <a href="#route" class="menu__link"><em>03</em> The Route</a>
-    <a href="#authorities" class="menu__link"><em>04</em> Seven Authorities</a>
-    <a href="#feed" class="menu__link"><em>05</em> Live Feed</a>
-    <a href="#chain" class="menu__link"><em>06</em> Escalation</a>
-    <a href="#brief" class="menu__link"><em>07</em> Supervisor Brief</a>
+    <p class="menu__label" data-i18n="menu.navigate">Navigate</p>
+    <a href="#fracture" class="menu__link"><em>01</em> <span data-i18n="menu.link1">The Problem</span></a>
+    <a href="#movements" class="menu__link"><em>02</em> <span data-i18n="menu.link2">Five Movements</span></a>
+    <a href="#route" class="menu__link"><em>03</em> <span data-i18n="menu.link3">The Route</span></a>
+    <a href="#authorities" class="menu__link"><em>04</em> <span data-i18n="menu.link4">Seven Authorities</span></a>
+    <a href="#feed" class="menu__link"><em>05</em> <span data-i18n="menu.link5">Live Feed</span></a>
+    <a href="#chain" class="menu__link"><em>06</em> <span data-i18n="menu.link6">Escalation</span></a>
+    <a href="#brief" class="menu__link"><em>07</em> <span data-i18n="menu.link7">Supervisor Brief</span></a>
     <div class="menu__foot">
       <span>ज्ञानोबा माऊली तुकाराम</span>
-      <span>21 Days · 250 KM</span>
+      <span data-i18n="menu.days">21 Days · 250 KM</span>
     </div>
   </div>
 </div>
@@ -317,6 +321,10 @@
 <!-- ═══════════════════════ HERO ═══════════════════════ -->
 <section class="hero" id="hero">
   <div class="hero__sheet">
+    <div class="hero__warli" aria-hidden="true">
+      <svg class="hero__warli-tree hero__warli-tree--l" viewBox="0 0 80 110"><use href="#w-tree"/></svg>
+      <svg class="hero__warli-tree hero__warli-tree--r" viewBox="0 0 80 110"><use href="#w-tree"/></svg>
+    </div>
 
     <!-- corner frames, overflowing the sheet like the reference -->
     <figure class="frame frame--tl" data-float="0.16">
@@ -324,7 +332,7 @@
       <div class="frame__win">
         <svg class="frame__art" viewBox="0 0 220 120"><use href="#w-palkhi"/></svg>
       </div>
-      <figcaption>PALKHI · LIVE</figcaption>
+      <figcaption data-i18n="hero.framePalkhi">PALKHI · LIVE</figcaption>
     </figure>
 
     <figure class="frame frame--br" data-float="-0.2">
@@ -332,28 +340,30 @@
       <div class="frame__win frame__win--red">
         <svg class="frame__art" viewBox="0 0 62 104"><use href="#w-tulsi"/></svg>
       </div>
-      <figcaption>दिंडी · 512 ACTIVE</figcaption>
+      <figcaption data-i18n="hero.frameDindi">दिंडी · 512 ACTIVE</figcaption>
     </figure>
 
-    <div class="hero__rail hero__rail--l">Pandharpur Wari &nbsp;·&nbsp; 21 Days &nbsp;·&nbsp; 250 KM</div>
-    <div class="hero__rail hero__rail--r">Ashadhi Ekadashi &nbsp;·&nbsp; Since 13th C.</div>
+    <div class="hero__rail hero__rail--l" data-i18n="hero.railLeft">Pandharpur Wari &nbsp;·&nbsp; 21 Days &nbsp;·&nbsp; 250 KM</div>
+    <div class="hero__rail hero__rail--r" data-i18n="hero.railRight">Ashadhi Ekadashi &nbsp;·&nbsp; Since 13th C.</div>
 
     <!-- display type -->
     <h1 class="hero__title">
-      <span class="hl"><span class="hl__i" data-split>THE WARI</span></span>
-      <span class="hl"><span class="hl__i" data-split>THAT MOVES</span></span>
-      <span class="hl hl--wide"><span class="hl__i" data-split>AS ONE</span></span>
+      <span class="hl"><span class="hl__i" data-split data-i18n="hero.title1">THE WARI</span></span>
+      <span class="hl"><span class="hl__i" data-split data-i18n="hero.title2">THAT MOVES</span></span>
+      <span class="hl hl--wide"><span class="hl__i" data-split data-i18n="hero.title3">AS ONE</span></span>
     </h1>
 
-    <!-- ornate medallion -->
+    <!-- ornate medallion — carved gold frame around a single centred portrait,
+         layered like the corner frames rather than a flat diorama -->
     <div class="medallion" id="medallion">
-      <div class="medallion__ring" data-rosette="42"></div>
+      <div class="medallion__frame" data-rosette="36"></div>
       <div class="medallion__disc">
-        <svg class="medallion__sun" viewBox="0 0 100 100"><use href="#w-sun"/></svg>
-        <svg class="medallion__scene" viewBox="0 0 220 120"><use href="#w-palkhi"/></svg>
-        <div class="medallion__ground"></div>
+        <div class="medallion__glow"></div>
+        <svg class="medallion__portrait" viewBox="0 0 62 104"><use href="#w-flag"/></svg>
       </div>
-      <div class="medallion__beads"></div>
+      <div class="medallion__crest">
+        <svg viewBox="0 0 100 100"><use href="#w-sun"/></svg>
+      </div>
     </div>
 
     <!-- vermillion promo block -->
@@ -362,17 +372,17 @@
         <svg viewBox="0 0 200 260"><use href="#w-arch"/></svg>
       </div>
       <div class="promo__body">
-        <h2 class="promo__title">Command <em>Center</em></h2>
-        <p>ONE SHARED, REAL-TIME OPERATIONAL PICTURE FOR EVERY AUTHORITY MOVING WITH THE PALKHI — DINDI, MEDICAL, POLICE, MUNICIPAL, SANITATION.</p>
+        <h2 class="promo__title"><span data-i18n="hero.promoTitleA">Command</span> <em data-i18n="hero.promoTitleB">Center</em></h2>
+        <p data-i18n="hero.promoBody">ONE SHARED, REAL-TIME OPERATIONAL PICTURE FOR EVERY AUTHORITY MOVING WITH THE PALKHI — DINDI, MEDICAL, POLICE, MUNICIPAL, SANITATION.</p>
         <a href="#fracture" class="promo__arrow" data-hover>
-          <span>Begin</span>
+          <span data-i18n="hero.begin">Begin</span>
           <svg viewBox="0 0 60 12" fill="none"><path d="M0 6H56M50 1l6 5-6 5" stroke="currentColor" stroke-width="1.4"/></svg>
         </a>
       </div>
     </aside>
 
     <div class="hero__scroll" data-reveal>
-      <span>SCROLL</span>
+      <span data-i18n="hero.scroll">SCROLL</span>
       <i></i>
     </div>
 
@@ -384,8 +394,8 @@
 <section class="marquee" aria-hidden="true">
   <div class="marquee__track" id="marqueeTrack">
     <div class="marquee__set">
-      <span>पंढरपूर वारी</span><b>✦</b><span>CONNECT</span><b>✦</b><span>OBSERVE</span><b>✦</b>
-      <span>DETECT</span><b>✦</b><span>PREDICT</span><b>✦</b><span>PRIORITIZE</span><b>✦</b>
+      <span>पंढरपूर वारी</span><b>✦</b><span data-i18n="marquee.connect">CONNECT</span><b>✦</b><span data-i18n="marquee.observe">OBSERVE</span><b>✦</b>
+      <span data-i18n="marquee.detect">DETECT</span><b>✦</b><span data-i18n="marquee.predict">PREDICT</span><b>✦</b><span data-i18n="marquee.prioritize">PRIORITIZE</span><b>✦</b>
       <span>ज्ञानोबा माऊली तुकाराम</span><b>✦</b>
     </div>
   </div>
@@ -394,19 +404,20 @@
 
 <!-- ═══════════════════════ 01 · THE PROBLEM ═══════════════════════ -->
 <section class="sec sec--ivory fracture" id="fracture">
+  <div class="warli-watermark warli-watermark--sun" aria-hidden="true" data-reveal><svg viewBox="0 0 100 100"><use href="#w-sun"/></svg></div>
   <div class="wrap">
     <header class="sec__head">
       <span class="sec__num">०१</span>
-      <span class="sec__label">The Problem</span>
+      <span class="sec__label" data-i18n="fracture.label">The Problem</span>
     </header>
 
     <h2 class="dsp dsp--ink fracture__title">
-      <span data-split>Six authorities.</span>
-      <span data-split>One Wari.</span>
-      <span class="dsp__em" data-split>Six separate truths.</span>
+      <span data-split data-i18n="fracture.h1">Six authorities.</span>
+      <span data-split data-i18n="fracture.h2">One Wari.</span>
+      <span class="dsp__em" data-split data-i18n="fracture.h3">Six separate truths.</span>
     </h2>
 
-    <p class="lede" data-reveal>
+    <p class="lede" data-reveal data-i18n="fracture.lede">
       A twenty-one day, two-hundred-and-fifty kilometre moving city. Half a million people on foot.
       Five hundred Dindis. Medical camps that appear and vanish overnight. And every authority
       keeping its own notebook, its own WhatsApp group, its own version of what is happening.
@@ -415,33 +426,33 @@
     <div class="scatter" id="scatter">
       <article class="scard" data-x="-38" data-y="-30" data-r="-9">
         <svg class="scard__g"><use href="#g-dindi"/></svg>
-        <h3>Dindi</h3><p>Headcount and delay, known only to the Dindi.</p>
+        <h3 data-i18n="scard.dindi.title">Dindi</h3><p data-i18n="scard.dindi.desc">Headcount and delay, known only to the Dindi.</p>
       </article>
       <article class="scard" data-x="34" data-y="-46" data-r="7">
         <svg class="scard__g"><use href="#g-medical"/></svg>
-        <h3>Medical</h3><p>A patient treated at Jejuri arrives at Wakhari with no history.</p>
+        <h3 data-i18n="scard.medical.title">Medical</h3><p data-i18n="scard.medical.desc">A patient treated at Jejuri arrives at Wakhari with no history.</p>
       </article>
       <article class="scard" data-x="-46" data-y="24" data-r="6">
         <svg class="scard__g"><use href="#g-police"/></svg>
-        <h3>Police</h3><p>A blocked route logged on paper, radioed to no one else.</p>
+        <h3 data-i18n="scard.police.title">Police</h3><p data-i18n="scard.police.desc">A blocked route logged on paper, radioed to no one else.</p>
       </article>
       <article class="scard" data-x="42" data-y="30" data-r="-8">
         <svg class="scard__g"><use href="#g-municipal"/></svg>
-        <h3>Municipal</h3><p>Water and shelter readiness, invisible until it fails.</p>
+        <h3 data-i18n="scard.municipal.title">Municipal</h3><p data-i18n="scard.municipal.desc">Water and shelter readiness, invisible until it fails.</p>
       </article>
       <article class="scard" data-x="-14" data-y="52" data-r="10">
         <svg class="scard__g"><use href="#g-sanitation"/></svg>
-        <h3>Sanitation</h3><p>Facility status held in a separate register entirely.</p>
+        <h3 data-i18n="scard.sanitation.title">Sanitation</h3><p data-i18n="scard.sanitation.desc">Facility status held in a separate register entirely.</p>
       </article>
       <article class="scard" data-x="18" data-y="-58" data-r="-6">
         <svg class="scard__g"><use href="#g-supervisor"/></svg>
-        <h3>Supervisor</h3><p>Asked to decide, with no way to see the whole.</p>
+        <h3 data-i18n="scard.supervisor.title">Supervisor</h3><p data-i18n="scard.supervisor.desc">Asked to decide, with no way to see the whole.</p>
       </article>
     </div>
 
     <p class="fracture__strike" data-reveal>
-      <span>No shared picture.</span>
-      <em>Wari Command Intelligence is the connection layer.</em>
+      <span data-i18n="fracture.strike1">No shared picture.</span>
+      <em data-i18n="fracture.strike2">Wari Command Intelligence is the connection layer.</em>
     </p>
   </div>
 </section>
@@ -450,21 +461,27 @@
 <!-- ═══════════════════════ STATS ═══════════════════════ -->
 <section class="sec sec--blood stats">
   <div class="wrap stats__grid">
-    <div class="stat"><b class="stat__n" data-count="21">0</b><span>Days on foot</span></div>
-    <div class="stat"><b class="stat__n" data-count="250" data-suffix=" km">0</b><span>Alandi → Pandharpur</span></div>
-    <div class="stat"><b class="stat__n" data-count="500" data-suffix="+">0</b><span>Dindis in motion</span></div>
-    <div class="stat"><b class="stat__n" data-count="15">0</b><span>Tracked route locations</span></div>
-    <div class="stat"><b class="stat__n" data-count="7">0</b><span>Authority roles</span></div>
-    <div class="stat stat--zero"><b class="stat__n">01</b><span>Shared operational picture</span></div>
+    <div class="stat"><b class="stat__n" data-count="21">0</b><span data-i18n="stats.days">Days on foot</span></div>
+    <div class="stat"><b class="stat__n" data-count="250" data-suffix=" km">0</b><span data-i18n="stats.km">Alandi → Pandharpur</span></div>
+    <div class="stat"><b class="stat__n" data-count="500" data-suffix="+">0</b><span data-i18n="stats.dindis">Dindis in motion</span></div>
+    <div class="stat"><b class="stat__n" data-count="15">0</b><span data-i18n="stats.locations">Tracked route locations</span></div>
+    <div class="stat"><b class="stat__n" data-count="7">0</b><span data-i18n="stats.roles">Authority roles</span></div>
+    <div class="stat stat--zero"><b class="stat__n">01</b><span data-i18n="stats.zero">Shared operational picture</span></div>
   </div>
 </section>
 
 
 <!-- ═══════════════════════ 02 · FIVE MOVEMENTS ═══════════════════════ -->
 <section class="sec--pin movements" id="movements">
+  <div class="warli-watermark warli-watermark--procession" aria-hidden="true">
+    <svg class="wfig" viewBox="0 0 62 104"><use href="#w-walk"/></svg>
+    <svg class="wfig" viewBox="0 0 62 104"><use href="#w-flag"/></svg>
+    <svg class="wfig" viewBox="0 0 62 104"><use href="#w-tulsi"/></svg>
+    <svg class="wfig" viewBox="0 0 62 104"><use href="#w-walk"/></svg>
+  </div>
   <div class="mv__head">
     <span class="sec__num">०२</span>
-    <span class="sec__label">Five Movements</span>
+    <span class="sec__label" data-i18n="movements.label">Five Movements</span>
   </div>
 
   <div class="mv__track" id="mvTrack">
@@ -472,65 +489,65 @@
     <article class="mv">
       <div class="mv__no">01</div>
       <div class="mv__art"><svg viewBox="0 0 120 100"><use href="#g-dindi"/></svg></div>
-      <h3 class="mv__verb">CONNECT</h3>
-      <p class="mv__mr">जोडणी</p>
-      <p class="mv__txt">Six authorities that have never shared a screen now write into one operational state. Not a chat group — a structured, role-scoped record every other authority can read.</p>
+      <h3 class="mv__verb" data-i18n="mv.connect.verb">CONNECT</h3>
+      <p class="mv__mr" data-i18n="mv.connect.mr">जोडणी</p>
+      <p class="mv__txt" data-i18n="mv.connect.txt">Six authorities that have never shared a screen now write into one operational state. Not a chat group — a structured, role-scoped record every other authority can read.</p>
       <ul class="mv__list">
-        <li>Role-based authentication</li>
-        <li>Scoped permissions per authority</li>
-        <li>One shared board, many views</li>
+        <li data-i18n="mv.connect.l1">Role-based authentication</li>
+        <li data-i18n="mv.connect.l2">Scoped permissions per authority</li>
+        <li data-i18n="mv.connect.l3">One shared board, many views</li>
       </ul>
     </article>
 
     <article class="mv">
       <div class="mv__no">02</div>
       <div class="mv__art"><svg viewBox="0 0 120 100"><use href="#g-supervisor"/></svg></div>
-      <h3 class="mv__verb">OBSERVE</h3>
-      <p class="mv__mr">निरीक्षण</p>
-      <p class="mv__txt">The Wari is more than a GPS dot. Halt readiness, camp load, ambulance count, medicine stock, shelter capacity, sanitation, weather — the whole moving environment, tracked.</p>
+      <h3 class="mv__verb" data-i18n="mv.observe.verb">OBSERVE</h3>
+      <p class="mv__mr" data-i18n="mv.observe.mr">निरीक्षण</p>
+      <p class="mv__txt" data-i18n="mv.observe.txt">The Wari is more than a GPS dot. Halt readiness, camp load, ambulance count, medicine stock, shelter capacity, sanitation, weather — the whole moving environment, tracked.</p>
       <ul class="mv__list">
-        <li>Palkhi schedule vs actual</li>
-        <li>Dindi and crowd concentration</li>
-        <li>Twelve live operational overlays</li>
+        <li data-i18n="mv.observe.l1">Palkhi schedule vs actual</li>
+        <li data-i18n="mv.observe.l2">Dindi and crowd concentration</li>
+        <li data-i18n="mv.observe.l3">Twelve live operational overlays</li>
       </ul>
     </article>
 
     <article class="mv">
       <div class="mv__no">03</div>
       <div class="mv__art"><svg viewBox="0 0 120 100"><use href="#g-police"/></svg></div>
-      <h3 class="mv__verb">DETECT</h3>
-      <p class="mv__mr">शोध</p>
-      <p class="mv__txt">Meaningful change, not noise. The engine separates stable high pressure from pressure that is worsening fast, and suppresses the same alert repeating when nothing has actually moved.</p>
+      <h3 class="mv__verb" data-i18n="mv.detect.verb">DETECT</h3>
+      <p class="mv__mr" data-i18n="mv.detect.mr">शोध</p>
+      <p class="mv__txt" data-i18n="mv.detect.txt">Meaningful change, not noise. The engine separates stable high pressure from pressure that is worsening fast, and suppresses the same alert repeating when nothing has actually moved.</p>
       <ul class="mv__list">
-        <li>Cross-domain correlation</li>
-        <li>Newly critical vs. steady state</li>
-        <li>Duplicate-alert suppression</li>
+        <li data-i18n="mv.detect.l1">Cross-domain correlation</li>
+        <li data-i18n="mv.detect.l2">Newly critical vs. steady state</li>
+        <li data-i18n="mv.detect.l3">Duplicate-alert suppression</li>
       </ul>
     </article>
 
     <article class="mv">
       <div class="mv__no">04</div>
       <div class="mv__art"><svg viewBox="0 0 120 100"><use href="#g-medical"/></svg></div>
-      <h3 class="mv__verb">PREDICT</h3>
-      <p class="mv__mr">अंदाज</p>
-      <p class="mv__txt">Current state plus the last few ticks of history. A deterministic, explainable risk model — every score can be traced back to the readings that produced it.</p>
+      <h3 class="mv__verb" data-i18n="mv.predict.verb">PREDICT</h3>
+      <p class="mv__mr" data-i18n="mv.predict.mr">अंदाज</p>
+      <p class="mv__txt" data-i18n="mv.predict.txt">Current state plus the last few ticks of history. A deterministic, explainable risk model — every score can be traced back to the readings that produced it.</p>
       <ul class="mv__list">
-        <li>Trend over recent history</li>
-        <li>Emerging risk, before it lands</li>
-        <li>Data freshness and confidence</li>
+        <li data-i18n="mv.predict.l1">Trend over recent history</li>
+        <li data-i18n="mv.predict.l2">Emerging risk, before it lands</li>
+        <li data-i18n="mv.predict.l3">Data freshness and confidence</li>
       </ul>
     </article>
 
     <article class="mv mv--last">
       <div class="mv__no">05</div>
       <div class="mv__art"><svg viewBox="0 0 120 100"><use href="#g-admin"/></svg></div>
-      <h3 class="mv__verb">PRIORITIZE</h3>
-      <p class="mv__mr">प्राधान्य</p>
-      <p class="mv__txt">The supervisor should not have to discover the emerging situation by reading four hundred reports. The system says what deserves attention first, and why.</p>
+      <h3 class="mv__verb" data-i18n="mv.prioritize.verb">PRIORITIZE</h3>
+      <p class="mv__mr" data-i18n="mv.prioritize.mr">प्राधान्य</p>
+      <p class="mv__txt" data-i18n="mv.prioritize.txt">The supervisor should not have to discover the emerging situation by reading four hundred reports. The system says what deserves attention first, and why.</p>
       <ul class="mv__list">
-        <li>Ranked priority actions</li>
-        <li>Named resource gaps</li>
-        <li>End-of-day summary</li>
+        <li data-i18n="mv.prioritize.l1">Ranked priority actions</li>
+        <li data-i18n="mv.prioritize.l2">Named resource gaps</li>
+        <li data-i18n="mv.prioritize.l3">End-of-day summary</li>
       </ul>
     </article>
 
@@ -542,18 +559,19 @@
 
 <!-- ═══════════════════════ 03 · THE ROUTE ═══════════════════════ -->
 <section class="sec sec--blood route" id="route">
+  <div class="warli-watermark warli-watermark--tree" aria-hidden="true"><svg viewBox="0 0 80 110"><use href="#w-tree"/></svg></div>
   <div class="wrap">
     <header class="sec__head sec__head--light">
       <span class="sec__num">०३</span>
-      <span class="sec__label">The Route</span>
+      <span class="sec__label" data-i18n="route.label">The Route</span>
     </header>
 
     <div class="route__top">
       <h2 class="dsp dsp--gold">
-        <span data-split>Alandi to</span>
-        <span class="dsp__em" data-split>Pandharpur.</span>
+        <span data-split data-i18n="route.h1">Alandi to</span>
+        <span class="dsp__em" data-split data-i18n="route.h2">Pandharpur.</span>
       </h2>
-      <p class="lede lede--light" data-reveal>
+      <p class="lede lede--light" data-reveal data-i18n="route.lede">
         The Sant Dnyaneshwar Maharaj Palkhi route — fifteen tracked locations across twenty-one days.
         Every halt is an operational location with its own readiness, capacity and risk.
       </p>
@@ -573,18 +591,18 @@
       </svg>
 
       <div class="routemap__card" id="routeCard">
-        <span class="tag tag--amber">PALKHI</span>
+        <span class="tag tag--amber" data-i18n="route.tagPalkhi">PALKHI</span>
         <b id="routeCardName">Lonand</b>
         <span id="routeCardMr">लोणंद</span>
-        <p><em id="routeCardDelay">22 min</em> behind schedule</p>
+        <p><em id="routeCardDelay">22 min</em> <span data-i18n="route.behindSchedule">behind schedule</span></p>
       </div>
     </div>
 
     <div class="route__legend">
-      <div><i class="dot dot--ok"></i> Halt ready</div>
-      <div><i class="dot dot--warn"></i> Capacity rising</div>
-      <div><i class="dot dot--crit"></i> Needs attention</div>
-      <div class="route__sim">SIMULATION DATA</div>
+      <div><i class="dot dot--ok"></i> <span data-i18n="route.legendOk">Halt ready</span></div>
+      <div><i class="dot dot--warn"></i> <span data-i18n="route.legendWarn">Capacity rising</span></div>
+      <div><i class="dot dot--crit"></i> <span data-i18n="route.legendCrit">Needs attention</span></div>
+      <div class="route__sim" data-i18n="route.sim">SIMULATION DATA</div>
     </div>
   </div>
 </section>
@@ -592,15 +610,16 @@
 
 <!-- ═══════════════════════ 04 · SEVEN AUTHORITIES ═══════════════════════ -->
 <section class="sec sec--ivory auth" id="authorities">
+  <div class="warli-watermark warli-watermark--sun warli-watermark--r" aria-hidden="true" data-reveal><svg viewBox="0 0 100 100"><use href="#w-sun"/></svg></div>
   <div class="wrap">
     <header class="sec__head">
       <span class="sec__num">०४</span>
-      <span class="sec__label">Seven Authorities</span>
+      <span class="sec__label" data-i18n="authorities.label">Seven Authorities</span>
     </header>
 
     <h2 class="dsp dsp--ink auth__title">
-      <span data-split>Every role sees</span>
-      <span class="dsp__em" data-split>what it must.</span>
+      <span data-split data-i18n="authorities.h1">Every role sees</span>
+      <span class="dsp__em" data-split data-i18n="authorities.h2">what it must.</span>
     </h2>
 
     <div class="auth__grid">
@@ -609,8 +628,8 @@
         <div class="acard__frame"><div class="acard__win"><svg viewBox="0 0 120 100"><use href="#g-dindi"/></svg></div></div>
         <div class="acard__body">
           <span class="acard__mr">दिंडी समन्वयक</span>
-          <h3>Dindi Coordinator</h3>
-          <ul><li>Location &amp; headcount</li><li>Delay reporting</li><li>Member &amp; vehicle issues</li></ul>
+          <h3 data-i18n="acard.dindi.title">Dindi Coordinator</h3>
+          <ul><li data-i18n="acard.dindi.l1">Location &amp; headcount</li><li data-i18n="acard.dindi.l2">Delay reporting</li><li data-i18n="acard.dindi.l3">Member &amp; vehicle issues</li></ul>
         </div>
       </article>
 
@@ -618,8 +637,8 @@
         <div class="acard__frame"><div class="acard__win acard__win--red"><svg viewBox="0 0 120 100"><use href="#g-medical"/></svg></div></div>
         <div class="acard__body">
           <span class="acard__mr">वैद्यकीय अधिकारी</span>
-          <h3>Medical Authority</h3>
-          <ul><li>Camp capacity &amp; patient load</li><li>Ambulance and ICU availability</li><li>Medicine stock &amp; referrals</li><li>Cross-camp patient continuity</li></ul>
+          <h3 data-i18n="acard.medical.title">Medical Authority</h3>
+          <ul><li data-i18n="acard.medical.l1">Camp capacity &amp; patient load</li><li data-i18n="acard.medical.l2">Ambulance and ICU availability</li><li data-i18n="acard.medical.l3">Medicine stock &amp; referrals</li><li data-i18n="acard.medical.l4">Cross-camp patient continuity</li></ul>
         </div>
       </article>
 
@@ -627,8 +646,8 @@
         <div class="acard__frame"><div class="acard__win"><svg viewBox="0 0 120 100"><use href="#g-police"/></svg></div></div>
         <div class="acard__body">
           <span class="acard__mr">पोलीस प्रशासन</span>
-          <h3>Police Authority</h3>
-          <ul><li>Accidents &amp; congestion</li><li>Route blockage</li><li>Incident lifecycle</li></ul>
+          <h3 data-i18n="acard.police.title">Police Authority</h3>
+          <ul><li data-i18n="acard.police.l1">Accidents &amp; congestion</li><li data-i18n="acard.police.l2">Route blockage</li><li data-i18n="acard.police.l3">Incident lifecycle</li></ul>
         </div>
       </article>
 
@@ -636,8 +655,8 @@
         <div class="acard__frame"><div class="acard__win"><svg viewBox="0 0 120 100"><use href="#g-municipal"/></svg></div></div>
         <div class="acard__body">
           <span class="acard__mr">नगरपालिका</span>
-          <h3>Municipal Authority</h3>
-          <ul><li>Water &amp; electricity</li><li>Shelter capacity</li><li>Infrastructure faults</li></ul>
+          <h3 data-i18n="acard.municipal.title">Municipal Authority</h3>
+          <ul><li data-i18n="acard.municipal.l1">Water &amp; electricity</li><li data-i18n="acard.municipal.l2">Shelter capacity</li><li data-i18n="acard.municipal.l3">Infrastructure faults</li></ul>
         </div>
       </article>
 
@@ -645,8 +664,8 @@
         <div class="acard__frame"><div class="acard__win"><svg viewBox="0 0 120 100"><use href="#g-sanitation"/></svg></div></div>
         <div class="acard__body">
           <span class="acard__mr">निर्मल वारी</span>
-          <h3>Sanitation Authority</h3>
-          <ul><li>Toilet &amp; facility status</li><li>Cleanliness reporting</li><li>Halt-point readiness</li></ul>
+          <h3 data-i18n="acard.sanitation.title">Sanitation Authority</h3>
+          <ul><li data-i18n="acard.sanitation.l1">Toilet &amp; facility status</li><li data-i18n="acard.sanitation.l2">Cleanliness reporting</li><li data-i18n="acard.sanitation.l3">Halt-point readiness</li></ul>
         </div>
       </article>
 
@@ -654,9 +673,9 @@
         <div class="acard__frame"><div class="acard__win acard__win--red"><svg viewBox="0 0 120 100"><use href="#g-supervisor"/></svg></div></div>
         <div class="acard__body">
           <span class="acard__mr">वारी नियंत्रक</span>
-          <h3>Wari Supervisor</h3>
-          <p class="acard__note">Reads everything. Submits nothing. The only role with access to cross-authority intelligence — risk, resource gaps, emerging risk and the end-of-day brief.</p>
-          <ul><li>Cross-authority intelligence</li><li>Escalated incidents</li><li>Unresolved issue tracking</li></ul>
+          <h3 data-i18n="acard.supervisor.title">Wari Supervisor</h3>
+          <p class="acard__note" data-i18n="acard.supervisor.note">Reads everything. Submits nothing. The only role with access to cross-authority intelligence — risk, resource gaps, emerging risk and the end-of-day brief.</p>
+          <ul><li data-i18n="acard.supervisor.l1">Cross-authority intelligence</li><li data-i18n="acard.supervisor.l2">Escalated incidents</li><li data-i18n="acard.supervisor.l3">Unresolved issue tracking</li></ul>
         </div>
       </article>
 
@@ -664,8 +683,8 @@
         <div class="acard__frame"><div class="acard__win"><svg viewBox="0 0 120 100"><use href="#g-admin"/></svg></div></div>
         <div class="acard__body">
           <span class="acard__mr">प्रणाली प्रशासक</span>
-          <h3>System Administrator</h3>
-          <ul><li>Users, roles &amp; access</li><li>Camp &amp; Dindi configuration</li><li>Audit trail</li></ul>
+          <h3 data-i18n="acard.admin.title">System Administrator</h3>
+          <ul><li data-i18n="acard.admin.l1">Users, roles &amp; access</li><li data-i18n="acard.admin.l2">Camp &amp; Dindi configuration</li><li data-i18n="acard.admin.l3">Audit trail</li></ul>
         </div>
       </article>
 
@@ -679,38 +698,38 @@
   <div class="wrap">
     <header class="sec__head">
       <span class="sec__num">०५</span>
-      <span class="sec__label">Shared Live Feed</span>
+      <span class="sec__label" data-i18n="feed.label">Shared Live Feed</span>
     </header>
 
     <div class="feed__top">
       <h2 class="dsp dsp--ink">
-        <span data-split>Not a chat.</span>
-        <span class="dsp__em" data-split>A record.</span>
+        <span data-split data-i18n="feed.h1">Not a chat.</span>
+        <span class="dsp__em" data-split data-i18n="feed.h2">A record.</span>
       </h2>
-      <p class="lede" data-reveal>
+      <p class="lede" data-reveal data-i18n="feed.lede">
         Every update carries a timestamp, a location, an authority, a category, a severity and a status.
         Meaningful change only — filtered the way a field officer actually thinks.
       </p>
     </div>
 
-    <div class="feed__panel">
+    <div class="feed__panel feed__panel--outline">
       <div class="feed__bar">
-        <div class="feed__live"><i></i> LIVE</div>
+        <div class="feed__live"><i></i> <span data-i18n="feed.live">LIVE</span></div>
         <div class="feed__chips" id="feedChips">
-          <button class="chip is-on" data-filter="all">All</button>
-          <button class="chip" data-filter="police">Police</button>
-          <button class="chip" data-filter="medical">Medical</button>
-          <button class="chip" data-filter="dindi">Dindi</button>
-          <button class="chip" data-filter="municipal">Municipal</button>
-          <button class="chip" data-filter="sanitation">Sanitation</button>
-          <button class="chip chip--crit" data-filter="critical">Critical</button>
-          <button class="chip" data-filter="resolved">Resolved</button>
+          <button class="chip is-on" data-filter="all" data-i18n="chip.all">All</button>
+          <button class="chip" data-filter="police" data-i18n="chip.police">Police</button>
+          <button class="chip" data-filter="medical" data-i18n="chip.medical">Medical</button>
+          <button class="chip" data-filter="dindi" data-i18n="chip.dindi">Dindi</button>
+          <button class="chip" data-filter="municipal" data-i18n="chip.municipal">Municipal</button>
+          <button class="chip" data-filter="sanitation" data-i18n="chip.sanitation">Sanitation</button>
+          <button class="chip chip--crit" data-filter="critical" data-i18n="chip.critical">Critical</button>
+          <button class="chip" data-filter="resolved" data-i18n="chip.resolved">Resolved</button>
         </div>
       </div>
       <ul class="feed__list" id="feedList"></ul>
       <div class="feed__foot">
         <span id="feedCount">0 updates</span>
-        <span class="route__sim">SIMULATION DATA — NOT LIVE GOVERNMENT FEED</span>
+        <span class="route__sim" data-i18n="feed.simFooter">SIMULATION DATA — NOT LIVE GOVERNMENT FEED</span>
       </div>
     </div>
   </div>
@@ -724,7 +743,7 @@
     <div class="chain__stick" id="chainStick">
       <header class="sec__head sec__head--light">
         <span class="sec__num">०६</span>
-        <span class="sec__label">Escalation</span>
+        <span class="sec__label" data-i18n="chain.label">Escalation</span>
       </header>
 
       <div class="gauge">
@@ -733,13 +752,13 @@
           <circle class="gauge__fg" id="gaugeArc" cx="120" cy="120" r="98"/>
         </svg>
         <div class="gauge__mid">
-          <span class="gauge__lab">WARI STATUS</span>
+          <span class="gauge__lab" data-i18n="gauge.label">WARI STATUS</span>
           <b class="gauge__n" id="gaugeNum">12</b>
-          <span class="gauge__state" id="gaugeState">LOW</span>
+          <span class="gauge__state" id="gaugeState" data-i18n="gauge.low">LOW</span>
         </div>
       </div>
 
-      <p class="chain__cap">
+      <p class="chain__cap" data-i18n="chain.caption">
         One afternoon near Lonand. Nobody reports a crisis — six authorities each report
         something small. Scroll, and watch the score move.
       </p>
@@ -747,34 +766,34 @@
 
     <ol class="chain__list">
       <li class="ev" data-score="18" data-state="LOW">
-        <div class="ev__head"><span class="ev__t">14:05</span><span class="tag tag--muni">MUNICIPAL</span></div>
-        <h3>Rainfall increases at Lonand</h3>
-        <p>Route surface degrading. Two shelter tents reported taking water.</p>
+        <div class="ev__head"><span class="ev__t">14:05</span><span class="tag tag--muni" data-i18n="ev1.tag">MUNICIPAL</span></div>
+        <h3 data-i18n="ev1.h">Rainfall increases at Lonand</h3>
+        <p data-i18n="ev1.p">Route surface degrading. Two shelter tents reported taking water.</p>
       </li>
       <li class="ev" data-score="31" data-state="LOW">
-        <div class="ev__head"><span class="ev__t">14:22</span><span class="tag tag--dindi">DINDI</span></div>
-        <h3>Palkhi falls 22 minutes behind</h3>
-        <p>Schedule deviation crosses the twenty-minute threshold for the first time today.</p>
+        <div class="ev__head"><span class="ev__t">14:22</span><span class="tag tag--dindi" data-i18n="ev2.tag">DINDI</span></div>
+        <h3 data-i18n="ev2.h">Palkhi falls 22 minutes behind</h3>
+        <p data-i18n="ev2.p">Schedule deviation crosses the twenty-minute threshold for the first time today.</p>
       </li>
       <li class="ev" data-score="46" data-state="MODERATE">
-        <div class="ev__head"><span class="ev__t">14:38</span><span class="tag tag--dindi">DINDI</span></div>
-        <h3>Dindi concentration rises</h3>
-        <p>Fourteen Dindis compress into the Lonand approach. Density up 40% in twenty minutes.</p>
+        <div class="ev__head"><span class="ev__t">14:38</span><span class="tag tag--dindi" data-i18n="ev3.tag">DINDI</span></div>
+        <h3 data-i18n="ev3.h">Dindi concentration rises</h3>
+        <p data-i18n="ev3.p">Fourteen Dindis compress into the Lonand approach. Density up 40% in twenty minutes.</p>
       </li>
       <li class="ev" data-score="59" data-state="MODERATE">
-        <div class="ev__head"><span class="ev__t">14:51</span><span class="tag tag--police">POLICE</span></div>
-        <h3>Traffic worsens on the state highway</h3>
-        <p>Congestion moves from medium to high. Two-kilometre queue at the diversion.</p>
+        <div class="ev__head"><span class="ev__t">14:51</span><span class="tag tag--police" data-i18n="ev4.tag">POLICE</span></div>
+        <h3 data-i18n="ev4.h">Traffic worsens on the state highway</h3>
+        <p data-i18n="ev4.p">Congestion moves from medium to high. Two-kilometre queue at the diversion.</p>
       </li>
       <li class="ev" data-score="74" data-state="HIGH">
-        <div class="ev__head"><span class="ev__t">15:06</span><span class="tag tag--med">MEDICAL</span></div>
-        <h3>Medical load spikes at Jejuri camp</h3>
-        <p>Capacity at 88%. Presentations rising faster than any camp today.</p>
+        <div class="ev__head"><span class="ev__t">15:06</span><span class="tag tag--med" data-i18n="ev5.tag">MEDICAL</span></div>
+        <h3 data-i18n="ev5.h">Medical load spikes at Jejuri camp</h3>
+        <p data-i18n="ev5.p">Capacity at 88%. Presentations rising faster than any camp today.</p>
       </li>
       <li class="ev" data-score="87" data-state="CRITICAL">
-        <div class="ev__head"><span class="ev__t">15:14</span><span class="tag tag--crit">CRITICAL</span></div>
-        <h3>Ambulance availability falls to two</h3>
-        <p>Rising load, degraded route, blocked highway, two vehicles. The correlation the engine was built to catch.</p>
+        <div class="ev__head"><span class="ev__t">15:14</span><span class="tag tag--crit" data-i18n="ev6.tag">CRITICAL</span></div>
+        <h3 data-i18n="ev6.h">Ambulance availability falls to two</h3>
+        <p data-i18n="ev6.p">Rising load, degraded route, blocked highway, two vehicles. The correlation the engine was built to catch.</p>
       </li>
     </ol>
 
@@ -782,13 +801,13 @@
 
   <div class="wrap">
     <div class="pipe" id="pipe">
-      <div class="pipe__node"><b>01</b><span>Authority update</span></div>
-      <div class="pipe__node"><b>02</b><span>Live feed</span></div>
-      <div class="pipe__node"><b>03</b><span>Operational state</span></div>
-      <div class="pipe__node"><b>04</b><span>Cross-domain detection</span></div>
-      <div class="pipe__node"><b>05</b><span>Risk escalation</span></div>
-      <div class="pipe__node"><b>06</b><span>Resource gap</span></div>
-      <div class="pipe__node pipe__node--end"><b>07</b><span>Supervisor priority</span></div>
+      <div class="pipe__node"><b>01</b><span data-i18n="pipe1">Authority update</span></div>
+      <div class="pipe__node"><b>02</b><span data-i18n="pipe2">Live feed</span></div>
+      <div class="pipe__node"><b>03</b><span data-i18n="pipe3">Operational state</span></div>
+      <div class="pipe__node"><b>04</b><span data-i18n="pipe4">Cross-domain detection</span></div>
+      <div class="pipe__node"><b>05</b><span data-i18n="pipe5">Risk escalation</span></div>
+      <div class="pipe__node"><b>06</b><span data-i18n="pipe6">Resource gap</span></div>
+      <div class="pipe__node pipe__node--end"><b>07</b><span data-i18n="pipe7">Supervisor priority</span></div>
     </div>
   </div>
 </section>
@@ -799,62 +818,62 @@
   <div class="wrap">
     <header class="sec__head">
       <span class="sec__num">०७</span>
-      <span class="sec__label">Supervisor Brief</span>
+      <span class="sec__label" data-i18n="brief.label">Supervisor Brief</span>
     </header>
 
     <div class="brief__grid">
       <div class="brief__intro">
         <h2 class="dsp dsp--ink">
-          <span data-split>The whole day,</span>
-          <span class="dsp__em" data-split>on one page.</span>
+          <span data-split data-i18n="brief.h1">The whole day,</span>
+          <span class="dsp__em" data-split data-i18n="brief.h2">on one page.</span>
         </h2>
-        <p class="lede" data-reveal>
+        <p class="lede" data-reveal data-i18n="brief.lede">
           The supervisor should understand the situation without reading every report.
           This is the output of the intelligence service — deterministic, explainable,
           and traceable to the readings that produced it.
         </p>
         <div class="brief__conf" data-reveal>
-          <div><span>Data freshness</span><b>2 min</b></div>
-          <div><span>Confidence</span><b>High</b></div>
-          <div><span>Locations</span><b>14</b></div>
+          <div><span data-i18n="brief.freshness">Data freshness</span><b>2 min</b></div>
+          <div><span data-i18n="brief.confidence">Confidence</span><b data-i18n="brief.confHigh">High</b></div>
+          <div><span data-i18n="brief.locations">Locations</span><b>14</b></div>
         </div>
       </div>
 
       <article class="doc" data-reveal>
         <div class="doc__orn"></div>
         <header class="doc__head">
-          <span>WARI STATUS</span>
-          <b>HIGH</b>
+          <span data-i18n="doc.status">WARI STATUS</span>
+          <b data-i18n="gauge.high">HIGH</b>
         </header>
 
         <section class="doc__blk" data-doc>
-          <h4 class="doc__h doc__h--crit">Critical Now</h4>
-          <ul><li>Jejuri medical capacity rising rapidly</li><li>Ambulance availability insufficient</li></ul>
+          <h4 class="doc__h doc__h--crit" data-i18n="doc.critNow">Critical Now</h4>
+          <ul><li data-i18n="doc.item1">Jejuri medical capacity rising rapidly</li><li data-i18n="doc.item2">Ambulance availability insufficient</li></ul>
         </section>
 
         <section class="doc__blk" data-doc>
-          <h4 class="doc__h doc__h--warn">Developing</h4>
-          <ul><li>Traffic and crowd concentration increasing</li><li>Palkhi running 22 minutes late</li></ul>
+          <h4 class="doc__h doc__h--warn" data-i18n="doc.developing">Developing</h4>
+          <ul><li data-i18n="doc.item3">Traffic and crowd concentration increasing</li><li data-i18n="doc.item4">Palkhi running 22 minutes late</li></ul>
         </section>
 
         <section class="doc__blk" data-doc>
-          <h4 class="doc__h">Resource Gaps</h4>
-          <ul><li>Ambulances</li><li>Medicine stock</li><li>Medical capacity</li></ul>
+          <h4 class="doc__h" data-i18n="doc.resourceGaps">Resource Gaps</h4>
+          <ul><li data-i18n="doc.item5">Ambulances</li><li data-i18n="doc.item6">Medicine stock</li><li data-i18n="doc.item7">Medical capacity</li></ul>
         </section>
 
         <section class="doc__blk" data-doc>
-          <h4 class="doc__h">What Changed</h4>
-          <ul><li>Medical load increased rapidly</li><li>Rainfall increased</li><li>Traffic changed from medium to high</li></ul>
+          <h4 class="doc__h" data-i18n="doc.whatChanged">What Changed</h4>
+          <ul><li data-i18n="doc.item8">Medical load increased rapidly</li><li data-i18n="doc.item9">Rainfall increased</li><li data-i18n="doc.item10">Traffic changed from medium to high</li></ul>
         </section>
 
         <section class="doc__blk" data-doc>
-          <h4 class="doc__h doc__h--act">Attention</h4>
-          <ul><li>Review Jejuri medical deployment</li><li>Monitor downstream congestion</li></ul>
+          <h4 class="doc__h doc__h--act" data-i18n="doc.attention">Attention</h4>
+          <ul><li data-i18n="doc.item11">Review Jejuri medical deployment</li><li data-i18n="doc.item12">Monitor downstream congestion</li></ul>
         </section>
 
         <footer class="doc__foot">
-          <span>ISSUED 15:16 · DAY 11</span>
-          <span>SIMULATION</span>
+          <span data-i18n="doc.issued">ISSUED 15:16 · DAY 11</span>
+          <span data-i18n="doc.sim">SIMULATION</span>
         </footer>
       </article>
     </div>
@@ -867,15 +886,15 @@
   <div class="cta__orn" data-rosette="30"></div>
   <div class="wrap cta__in">
     <h2 class="cta__title">
-      <span data-split>FIELD UPDATES</span>
-      <span data-split>BECOME SHARED STATE.</span>
-      <span class="cta__title-b" data-split>SHARED STATE BECOMES</span>
-      <span class="cta__title-b" data-split>ACTIONABLE INTELLIGENCE.</span>
+      <span data-split data-i18n="cta.t1">FIELD UPDATES</span>
+      <span data-split data-i18n="cta.t2">BECOME SHARED STATE.</span>
+      <span class="cta__title-b" data-split data-i18n="cta.t3">SHARED STATE BECOMES</span>
+      <span class="cta__title-b" data-split data-i18n="cta.t4">ACTIONABLE INTELLIGENCE.</span>
     </h2>
 
     <div class="cta__actions" data-reveal>
-      <a class="btn btn--lg btn--ivory" id="ctaEnter" href="app.html" data-hover>Enter Command Center</a>
-      <a href="#hero" class="btn btn--lg btn--ghost" data-hover>Back to top</a>
+      <a class="btn btn--lg btn--ivory" id="ctaEnter" href="app.html" data-hover data-i18n="cta.enter">Enter Command Center</a>
+      <a href="#hero" class="btn btn--lg btn--ghost" data-hover data-i18n="cta.back">Back to top</a>
     </div>
 
     <div class="cta__procession" id="ctaProcession">
@@ -903,33 +922,33 @@
       <div class="foot__brand">
         <span class="foot__mark">वारी</span>
         <h3>Wari Command<br/>Intelligence</h3>
-        <p>Authorities report → Wari state changes → relevant users see the change → intelligence identifies what matters → the supervisor acts.</p>
+        <p data-i18n="foot.brand.p">Authorities report → Wari state changes → relevant users see the change → intelligence identifies what matters → the supervisor acts.</p>
       </div>
 
       <div class="foot__col">
-        <h4>Screens</h4>
+        <h4 data-i18n="foot.screens">Screens</h4>
         <ul>
-          <li>Login</li><li>Common Dashboard</li><li>Live Operations</li>
-          <li>Report / Update</li><li>Medical Operations</li>
-          <li>Supervisor Intelligence</li><li>Admin Panel</li>
+          <li data-i18n="foot.screens.1">Login</li><li data-i18n="foot.screens.2">Common Dashboard</li><li data-i18n="foot.screens.3">Live Operations</li>
+          <li data-i18n="foot.screens.4">Report / Update</li><li data-i18n="foot.screens.5">Medical Operations</li>
+          <li data-i18n="foot.screens.6">Supervisor Intelligence</li><li data-i18n="foot.screens.7">Admin Panel</li>
         </ul>
       </div>
 
       <div class="foot__col">
-        <h4>Authorities</h4>
+        <h4 data-i18n="foot.authorities">Authorities</h4>
         <ul>
-          <li>Dindi Coordinator</li><li>Medical Authority</li><li>Police Authority</li>
-          <li>Municipal Authority</li><li>Sanitation / Nirmal Wari</li>
-          <li>Wari Supervisor</li><li>System Administrator</li>
+          <li data-i18n="acard.dindi.title">Dindi Coordinator</li><li data-i18n="acard.medical.title">Medical Authority</li><li data-i18n="acard.police.title">Police Authority</li>
+          <li data-i18n="acard.municipal.title">Municipal Authority</li><li data-i18n="acard.sanitation.title">Sanitation / Nirmal Wari</li>
+          <li data-i18n="acard.supervisor.title">Wari Supervisor</li><li data-i18n="acard.admin.title">System Administrator</li>
         </ul>
       </div>
 
       <div class="foot__col">
-        <h4>Built with</h4>
+        <h4 data-i18n="foot.built">Built with</h4>
         <ul>
           <li>HTML · CSS · JavaScript</li><li>GSAP + ScrollTrigger</li>
           <li>Flask · REST · SocketIO</li><li>MySQL</li>
-          <li>Intelligence service (Python)</li>
+          <li data-i18n="foot.built.5">Intelligence service (Python)</li>
         </ul>
       </div>
     </div>
@@ -938,7 +957,7 @@
 
     <div class="foot__base">
       <span class="foot__bless">ज्ञानोबा माऊली तुकाराम</span>
-      <span>Prototype interface · All operational data shown is simulated</span>
+      <span data-i18n="foot.prototype">Prototype interface · All operational data shown is simulated</span>
       <span>© 2026 Wari Command Intelligence</span>
     </div>
   </div>
@@ -946,6 +965,7 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="assets/js/i18n.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js"></script>
