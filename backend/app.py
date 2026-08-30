@@ -97,6 +97,12 @@ def _add_cors_headers(resp):
     if ALLOWED_ORIGIN != "*":
         # Caches must not serve one origin's response to another.
         resp.headers["Vary"] = "Origin"
+    # Every response here is live operational state — the feed, patients,
+    # the current analysis. A CDN or proxy holding any of it produces a
+    # subtle, one-directional bug: the device that just POSTed sees fresh
+    # data because its own request bypassed the cache, while every other
+    # device keeps being handed a stale copy and looks "unsynced".
+    resp.headers["Cache-Control"] = "no-store"
     return resp
 
 
