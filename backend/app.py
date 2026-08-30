@@ -56,11 +56,27 @@ def verify_password(password: str, salt: str, expected_hash: str, iterations: in
     return hmac.compare_digest(actual, expected_hash)
 
 
-def _bootstrap() -> None:
-    store.init_db(DB_PATH)
-    seed.populate_if_empty(store)
-    seed.populate_patients_if_empty(store)
-    seed.populate_users_if_empty(store, hash_password)
+# Why this is caught rather than allowed to raise: opening the database
+# happens at import time, and on a serverless host an exception there kills
+# the whole function — including /api/health, the one endpoint whose job is
+# to say what went wrong. The deployment then shows an opaque crash page
+# with the real cause buried in the platform logs. Recording the failure
+# instead keeps the app answering, so the error is visible over HTTP.
+_BOOT_ERROR: str | None = None
+
+
+def _bootstrap() -> bool:
+    global _BOOT_ERROR
+    try:
+        store.init_db(DB_PATH)
+        seed.populate_if_empty(store)
+        seed.populate_patients_if_empty(store)
+        seed.populate_users_if_empty(store, hash_password)
+        _BOOT_ERROR = None
+        return True
+    except Exception as exc:
+        _BOOT_ERROR = f"{type(exc).__name__}: {exc}"
+        return False
 
 
 _bootstrap()
@@ -90,9 +106,35 @@ def _handle_preflight():
         return ("", 204)
 
 
+@app.before_request
+def _require_database():
+    """Retry a failed bootstrap, and fail loudly rather than obscurely.
+
+    /api/health is exempt so it can always report the diagnosis.
+    """
+    if _BOOT_ERROR is None or request.path == "/api/health":
+        return None
+    if _bootstrap():  # a transient outage may since have cleared
+        return None
+    return jsonify({"error": "database unavailable", "detail": _BOOT_ERROR}), 503
+
+
 # ── health ───────────────────────────────────────────────────────────────
 @app.get("/api/health")
 def health():
+    if _BOOT_ERROR is not None and not _bootstrap():
+        # Which URL variables were seen, but never their values: a
+        # connection string carries the database password.
+        seen = [k for k in ("WCI_DATABASE_URL", "POSTGRES_URL", "DATABASE_URL",
+                            "POSTGRES_URL_NON_POOLING", "POSTGRES_PRISMA_URL")
+                if os.environ.get(k, "").strip()]
+        return jsonify({
+            "status": "error",
+            "database": "unavailable",
+            "detail": _BOOT_ERROR,
+            "database_url_vars_present": seen or None,
+        }), 503
+
     return jsonify({
         "status": "ok",
         "model_service": "ok" if model_client.health() else "unreachable",
