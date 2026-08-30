@@ -45,12 +45,17 @@ HISTORY_LIMIT = 5
 def _database_url() -> str:
     """The Postgres URL, or "" to use SQLite.
 
-    POSTGRES_URL is what Vercel's Postgres integration injects, and is the
-    *pooled* endpoint — the right one for serverless, where many short
-    lived instances would otherwise exhaust the connection limit.
-    WCI_DATABASE_URL is checked first so it can override.
+    POSTGRES_URL is what Vercel's Postgres and Supabase integrations both
+    inject, and is the *pooled* endpoint — the right one for serverless,
+    where many short-lived instances would otherwise exhaust the
+    connection limit. WCI_DATABASE_URL is checked first so it can
+    override; POSTGRES_URL_NON_POOLING is a last resort, better than
+    falling back to an ephemeral SQLite file.
+
+    POSTGRES_PRISMA_URL is deliberately ignored: it carries Prisma-only
+    query parameters (pgbouncer=true, connect_timeout) that libpq rejects.
     """
-    for key in ("WCI_DATABASE_URL", "POSTGRES_URL", "DATABASE_URL"):
+    for key in ("WCI_DATABASE_URL", "POSTGRES_URL", "DATABASE_URL", "POSTGRES_URL_NON_POOLING"):
         value = os.environ.get(key, "").strip()
         if value:
             return value
@@ -82,7 +87,15 @@ def _connect_postgres():
     import psycopg
     from psycopg.rows import dict_row
 
-    return psycopg.connect(_pg_url, row_factory=dict_row)
+    # prepare_threshold=None disables psycopg's automatic prepared
+    # statements. Managed Postgres is normally reached through a
+    # transaction-mode pooler (Supabase's port 6543, PgBouncer, Neon's
+    # pooled endpoint), which hands each transaction a different backend
+    # session — so a statement prepared on one is missing on the next and
+    # the connection starts failing with "prepared statement already
+    # exists". The queries here are small and infrequent, so losing the
+    # prepared-statement cache costs nothing.
+    return psycopg.connect(_pg_url, row_factory=dict_row, prepare_threshold=None)
 
 
 def _run(sql: str, params=(), *, fetch: str | None = None, commit: bool = False):
