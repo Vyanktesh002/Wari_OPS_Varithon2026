@@ -83,6 +83,34 @@ def _translate(sql: str) -> str:
     return _NAMED_PARAM.sub(r"%(\1)s", sql).replace("?", "%s")
 
 
+# libpq refuses to connect if the URI carries a query parameter it does not
+# recognise, and managed providers append their own markers: Supabase tags
+# pooler URLs with "?supa=base-pooler.x", Prisma-flavoured ones carry
+# "pgbouncer=true". Keeping only the parameters libpq actually defines lets
+# any provider's URL be used as-is.
+_LIBPQ_PARAMS = frozenset({
+    "application_name", "channel_binding", "client_encoding", "connect_timeout",
+    "dbname", "fallback_application_name", "gssencmode", "gsslib", "host",
+    "hostaddr", "keepalives", "keepalives_count", "keepalives_idle",
+    "keepalives_interval", "krbsrvname", "options", "passfile", "password",
+    "port", "replication", "require_auth", "requirepeer", "service",
+    "sslcert", "sslcompression", "sslcrl", "sslcrldir", "sslkey", "sslmode",
+    "sslpassword", "sslrootcert", "sslsni", "target_session_attrs",
+    "tcp_user_timeout", "user",
+})
+
+
+def _sanitize_pg_url(url: str) -> str:
+    from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+
+    parts = urlsplit(url)
+    if not parts.query:
+        return url
+    kept = [(k, v) for k, v in parse_qsl(parts.query, keep_blank_values=True)
+            if k in _LIBPQ_PARAMS]
+    return urlunsplit(parts._replace(query=urlencode(kept)))
+
+
 def _connect_postgres():
     import psycopg
     from psycopg.rows import dict_row
@@ -95,7 +123,7 @@ def _connect_postgres():
     # the connection starts failing with "prepared statement already
     # exists". The queries here are small and infrequent, so losing the
     # prepared-statement cache costs nothing.
-    return psycopg.connect(_pg_url, row_factory=dict_row, prepare_threshold=None)
+    return psycopg.connect(_sanitize_pg_url(_pg_url), row_factory=dict_row, prepare_threshold=None)
 
 
 def _run(sql: str, params=(), *, fetch: str | None = None, commit: bool = False):
