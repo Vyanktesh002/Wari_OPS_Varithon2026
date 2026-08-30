@@ -123,7 +123,20 @@ def _connect_postgres():
     # the connection starts failing with "prepared statement already
     # exists". The queries here are small and infrequent, so losing the
     # prepared-statement cache costs nothing.
-    return psycopg.connect(_sanitize_pg_url(_pg_url), row_factory=dict_row, prepare_threshold=None)
+    # autocommit=True because the pooler runs in transaction mode: without
+    # it every SELECT opens a transaction that is never closed (only writes
+    # commit here), pinning a server connection "idle in transaction" for
+    # the whole request. /api/intel issues dozens of reads across the 15
+    # locations, so that both starves the pool and risks tripping the
+    # provider's idle_in_transaction_session_timeout mid-request. Each
+    # statement here is independently meaningful, so per-statement
+    # transactions lose nothing.
+    return psycopg.connect(
+        _sanitize_pg_url(_pg_url),
+        row_factory=dict_row,
+        prepare_threshold=None,
+        autocommit=True,
+    )
 
 
 def _run(sql: str, params=(), *, fetch: str | None = None, commit: bool = False):
@@ -157,7 +170,8 @@ def _run(sql: str, params=(), *, fetch: str | None = None, commit: bool = False)
             # once and retry before surfacing the failure.
             _reconnect_postgres()
             result = execute()
-        if commit:
+        # Postgres runs autocommit, so there is nothing to commit here.
+        if commit and _dialect != "postgres":
             _conn.commit()
     return result
 
