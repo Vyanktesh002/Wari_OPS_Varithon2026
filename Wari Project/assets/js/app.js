@@ -276,10 +276,18 @@
     };
   }
 
+  /* Signature of the last payload rendered, so a poll that returns
+     unchanged data does not re-render — re-rendering replays the entrance
+     animation and would make the list flicker every few seconds. */
+  var feedSig = null;
+
   function loadFeedFromBackend() {
     return fetch(BACKEND_URL + '/api/feed?limit=30', { cache: 'no-store' })
       .then(function (r) { if (!r.ok) throw new Error('backend responded ' + r.status); return r.json(); })
       .then(function (events) {
+        var sig = JSON.stringify(events);
+        if (sig === feedSig) return;
+        feedSig = sig;
         feedItems = events.map(feedEventToItem);
         renderFeed();
       })
@@ -290,6 +298,33 @@
      shows real submitted reports. This just keeps "X min ago" labels current. */
   function startFeedClock() {
     setInterval(renderFeed, 30000);
+  }
+
+  /* ══════════════ LIVE SYNC ══════════════
+     The backend is the shared source of truth, but the app used to read it
+     once at sign-in and never again — so a patient registered by Medical,
+     or a report filed by Police, only appeared on another authority's
+     screen after a manual page reload. Poll for both instead, so every
+     signed-in device converges on the same picture within one interval.
+
+     Skipped while the tab is hidden (a background tab needs no updates,
+     and each poll is a real request), and run immediately on return so
+     coming back to the tab shows current data rather than waiting. */
+  var LIVE_SYNC_MS = 15000;
+  var liveSyncTimer = null;
+
+  function liveSyncTick() {
+    if (document.hidden) return;
+    loadFeedFromBackend();
+    if (currentRole && currentRole.pages.indexOf('medical') !== -1) loadPatientsFromBackend();
+  }
+
+  function startLiveSync() {
+    if (liveSyncTimer) clearInterval(liveSyncTimer);
+    liveSyncTimer = setInterval(liveSyncTick, LIVE_SYNC_MS);
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) liveSyncTick();
+    });
   }
 
   /* ══════════════ INTEL (live — backed by the Flask backend + model service) ══════════════
@@ -2037,11 +2072,17 @@
      patient can show their full history via the same modal the
      duplicate-name check already uses on registration. */
   var patientsRawCache = [];
+  /* As with the feed: skip the re-render when a poll brings back the same
+     rows, so the list does not replay its stagger animation on every tick. */
+  var patientsSig = null;
 
   function loadPatientsFromBackend() {
     return fetch(BACKEND_URL + '/api/patients', { cache: 'no-store' })
       .then(function (r) { if (!r.ok) throw new Error('backend responded ' + r.status); return r.json(); })
       .then(function (rows) {
+        var sig = JSON.stringify(rows);
+        if (sig === patientsSig) return;
+        patientsSig = sig;
         patientsRawCache = rows;
         patientsCache = rows.map(backendPatientToRow);
         var search = $('#patientSearch');
@@ -2223,6 +2264,7 @@
 
     showPage(role.pages[0]);
     startFeedClock();
+    startLiveSync();
 
     document.getElementById('loginScreen').style.display = 'none';
     var shell = document.getElementById('appShell');
