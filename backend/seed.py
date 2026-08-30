@@ -194,14 +194,23 @@ def _overrides() -> dict[str, dict]:
 
 
 def populate_if_empty(store) -> None:
-    if not store.is_empty():
-        return
+    """Ensure every location exists and has an operational state.
 
+    Checked per location rather than by "is the locations table empty",
+    because those two writes are not atomic: a boot that inserted the
+    locations and then failed before writing their state left a database
+    that looked seeded, so the old all-or-nothing guard skipped it forever
+    and every analysis failed with "no state recorded for location". A
+    location that already has state is never touched, so real operational
+    data — reports filed since the seed — is preserved.
+    """
     overrides = _overrides()
     now = datetime.now(timezone.utc)
 
     for loc in LOCATIONS:
         store.upsert_location(loc["id"], loc["name_en"], loc["name_mr"])
+        if store.get_current_state(loc["id"]) is not None:
+            continue
         current = overrides.get(loc["id"]) or base_state(now)
         # Natepute's incident just happened — a short, flat history so the
         # model reads it as newly critical rather than a slow trend.
